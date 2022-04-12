@@ -26,6 +26,8 @@
     <None Remove="TTFFonts\OpenSans-Medium.ttf" />
     <None Remove="TTFFonts\OpenSans-Regular.ttf" />
     <None Remove="GameComponents\" />
+    <None Remove="GameScenes\Level0Scene\" />
+    <None Remove="GameComponents\Map\" />
   </ItemGroup>
   <ItemGroup>
     <MonoGameContentReference Include="Content\Content.mgcb" />
@@ -43,6 +45,8 @@
     <Folder Include="GameScenes\StartScene\" />
     <Folder Include="TTFFonts\" />
     <Folder Include="GameComponents\" />
+    <Folder Include="GameScenes\Level0Scene\" />
+    <Folder Include="GameComponents\Map\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Icon.bmp" />

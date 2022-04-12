@@ -9,7 +9,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 using AttackOnTitan.GameScenes;
-using AttackOnTitan.GameScenes.StartScene;
 using SpriteFontPlus;
 
 namespace AttackOnTitan
