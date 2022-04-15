@@ -65,6 +65,12 @@ namespace AttackOnTitan.GameScenes
             foreach (var component in Components)
                 component.Update(gameTime, mouseState);
 
+            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
+            {
+                Game.Components.Add(new StartScene(Game));
+                Game.Components.Remove(this);
+            }
+
             base.Update(gameTime);
         }
 

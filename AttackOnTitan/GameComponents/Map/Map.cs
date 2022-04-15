@@ -21,6 +21,11 @@ namespace AttackOnTitan.GameComponents
         private int _hexWidth;
         private int _hexHeight;
 
+        private int _leftColumnIntoView;
+        private int _rightColumnIntoView;
+        private int _topRowIntoView;
+        private int _bottomRowIntoView;
+
         public Map(IScene parent, int columnCount, int rowCount, int hexWidth, int hexHeight)
         {
             _mapItems = new MapItem[columnCount, rowCount];
@@ -66,16 +71,18 @@ namespace AttackOnTitan.GameComponents
                     selectedItem.SetSelected(true);
                     _selected.Enqueue(selectedItem);
                 }
-            } 
+            }
+
+            SetItemRangeIntoViewport();
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend,
-                null, null, null, null,
-                _camera.Transform);
-            foreach (var mapItem in _mapItems)
-                mapItem.Draw(spriteBatch);
+                null, null, null, null, _camera.Transform);
+            for (var x = _leftColumnIntoView; x < _rightColumnIntoView; x++)
+            for (var y = _topRowIntoView; y < _bottomRowIntoView; y++)
+                _mapItems[x, y].Draw(spriteBatch);
             spriteBatch.End();
         }
 
@@ -99,6 +106,24 @@ namespace AttackOnTitan.GameComponents
                     return _mapItems[x, y];
 
             return null;
+        }
+
+        private void SetItemRangeIntoViewport()
+        {
+            var viewWidth = SceneManager.GraphicsMgr.GraphicsDevice.Viewport.Width;
+            var viewHeight = SceneManager.GraphicsMgr.GraphicsDevice.Viewport.Height;
+
+            var intendedLeftColumn = (int)-_camera.Pos.X / (_hexWidth / 4 * 3);
+            var intendedRightColumn = (int)(-_camera.Pos.X + viewWidth) / (_hexWidth / 4 * 3);
+
+            var intendedTopRow = (int)-_camera.Pos.Y / _hexHeight;
+            var intendedBottomRow = (int)(-_camera.Pos.Y + viewHeight) / _hexHeight;
+
+            _leftColumnIntoView = intendedLeftColumn > 0 ? intendedLeftColumn - 1 : 0;
+            _rightColumnIntoView = intendedRightColumn >= _columnCount ? _columnCount : intendedRightColumn + 1;
+
+            _topRowIntoView = intendedTopRow > 0 ? intendedTopRow - 1 : 0;
+            _bottomRowIntoView = intendedBottomRow >= _rowCount ? _rowCount : intendedBottomRow + 1;
         }
     }
 }
