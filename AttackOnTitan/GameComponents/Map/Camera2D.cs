@@ -24,6 +24,9 @@ namespace AttackOnTitan.GameComponents
             Center = new Vector3(SceneManager.GraphicsMgr.GraphicsDevice.Viewport.Width * 0.5f,
                 SceneManager.GraphicsMgr.GraphicsDevice.Viewport.Height * 0.5f, 0);
 
+            if (rightBorder < 0) rightBorder = 0;
+            if (bottomBorder < 0) bottomBorder = 0;
+
             RightBorder = -rightBorder;
             BottomBorder = -bottomBorder;
 
