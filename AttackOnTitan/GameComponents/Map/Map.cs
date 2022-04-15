@@ -24,11 +24,18 @@ namespace AttackOnTitan.GameComponents
         public Map(IScene parent, int columnCount, int rowCount, int hexWidth, int hexHeight)
         {
             _mapItems = new MapItem[columnCount, rowCount];
-            _camera = new Camera2D(0, 0);
             _columnCount = columnCount;
             _rowCount = rowCount;
             _hexWidth = hexWidth;
             _hexHeight = hexHeight;
+
+            var mapWidth = columnCount * hexWidth / 4 * 3  + hexWidth / 4;
+            var mapHeight = rowCount * hexHeight + hexHeight / 2;
+
+            var viewWidth = SceneManager.GraphicsMgr.GraphicsDevice.Viewport.Width;
+            var viewHeight = SceneManager.GraphicsMgr.GraphicsDevice.Viewport.Height;
+
+            _camera = new Camera2D(0, 0, mapWidth - viewWidth, mapHeight - viewHeight);
 
             for (var row = 0; row < rowCount; row++)
             for (var column = 0; column < columnCount; column++)
@@ -45,9 +52,6 @@ namespace AttackOnTitan.GameComponents
         public void Update(GameTime gameTime, MouseState mouseState)
         {
             _camera.Update(gameTime, mouseState);
-
-            Console.WriteLine(_camera.Pos);
-
 
             var mousePos = new Point(mouseState.X, mouseState.Y) - new Point((int)_camera.Pos.X, (int)_camera.Pos.Y);
 

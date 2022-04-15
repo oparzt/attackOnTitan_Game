@@ -13,19 +13,19 @@ namespace AttackOnTitan.GameComponents
         public Vector3 Pos;
         public Vector3 Center;
 
-        public int LeftBorder;
-        public int RightBorder;
+        public float RightBorder;
+        public float BottomBorder;
 
         public bool IsDrag = false;
 
-        public Camera2D(int startPosX = 0, int startPosY = 0, int leftBorder = 0, int rightBorder = 0)
+        public Camera2D(int startPosX = 0, int startPosY = 0, float rightBorder = 0, float bottomBorder = 0)
         {
             Pos = new Vector3(startPosX, startPosY, 0);
             Center = new Vector3(SceneManager.GraphicsMgr.GraphicsDevice.Viewport.Width * 0.5f,
                 SceneManager.GraphicsMgr.GraphicsDevice.Viewport.Height * 0.5f, 0);
 
-            LeftBorder = leftBorder;
-            RightBorder = rightBorder;
+            RightBorder = -rightBorder;
+            BottomBorder = -bottomBorder;
 
             UpdateTransformMatrix();
         }
@@ -36,12 +36,10 @@ namespace AttackOnTitan.GameComponents
 
             if (IsDrag) UpdateMove(curMousePos);
 
-            if (mouseState.LeftButton == ButtonState.Pressed)
-            {
-                if (!IsDrag) StartMove(curMousePos);
-            }
-            else
+            if (mouseState.LeftButton == ButtonState.Released)
                 IsDrag = false;
+            else if (!IsDrag)
+                StartMove(curMousePos);
         }
 
         public void StartMove(Vector3 mousePos)
@@ -54,16 +52,19 @@ namespace AttackOnTitan.GameComponents
         public void UpdateMove(Vector3 mousePos)
         {
             Pos = mousePos - InitMouseDragPos + InitDragPos;
+
+            if (Pos.Y < BottomBorder) Pos.Y = BottomBorder;
+            if (Pos.X < RightBorder) Pos.X = RightBorder;
+            if (Pos.Y > 0) Pos.Y = 0;
+            if (Pos.X > 0) Pos.X = 0;
+
             UpdateTransformMatrix();
         }
 
         public void UpdateTransformMatrix()
         {
             Transform = Matrix.Identity * Matrix.CreateTranslation(Pos);
-
         }
-
-
 
         public void Draw(SpriteBatch spriteBatch) {}
 
