@@ -40,7 +40,7 @@ namespace AttackOnTitan.GameScenes
         {
             var device = SceneManager.GraphicsMgr.GraphicsDevice;
 
-            _map = new Map(this, 18, 10, 111, 96);
+            _map = new Map(this, 40, 35, 111, 96);
 
             base.Initialize();
         }

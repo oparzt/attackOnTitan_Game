@@ -24,11 +24,11 @@ namespace AttackOnTitan.GameComponents
 
         public void Update(GameTime gameTime, MouseState mouseState)
         {
-            if (IsComponentOnPosition(new Point(mouseState.X, mouseState.Y)))
-                _opacity = 1f;
-            else
-                _opacity = 0.3f;
+
         }
+
+        public void SetSelected(bool selected) =>
+            _opacity = selected ? 1f : 0.3f;
 
         public void Draw(SpriteBatch spriteBatch)
         {

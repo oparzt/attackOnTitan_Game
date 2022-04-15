@@ -12,7 +12,8 @@ namespace AttackOnTitan.GameComponents
     public class Map : IComponent
     {
         private MapItem[,] _mapItems;
-        private Queue<MapItem> _updateQueue = new();
+        private Camera2D _camera;
+        private Queue<MapItem> _selected = new();
 
         private int _columnCount;
         private int _rowCount;
@@ -23,6 +24,7 @@ namespace AttackOnTitan.GameComponents
         public Map(IScene parent, int columnCount, int rowCount, int hexWidth, int hexHeight)
         {
             _mapItems = new MapItem[columnCount, rowCount];
+            _camera = new Camera2D(0, 0);
             _columnCount = columnCount;
             _rowCount = rowCount;
             _hexWidth = hexWidth;
@@ -42,15 +44,32 @@ namespace AttackOnTitan.GameComponents
 
         public void Update(GameTime gameTime, MouseState mouseState)
         {
-            while(_updateQueue.TryDequeue(out var mapItem))
-                mapItem.Update(gameTime, mouseState);
+            _camera.Update(gameTime, mouseState);
 
-            UpdateMapItemsUnderCursor(gameTime, mouseState);
+            Console.WriteLine(_camera.Pos);
+
+
+            var mousePos = new Point(mouseState.X, mouseState.Y) - new Point((int)_camera.Pos.X, (int)_camera.Pos.Y);
+
+            var selectedItem = FindItemUnderCursor(mousePos);
+
+            if (mouseState.RightButton == ButtonState.Released)
+            {
+                while (_selected.TryDequeue(out var mapItem))
+                    mapItem.SetSelected(false);
+                if (selectedItem is not null)
+                {
+                    selectedItem.SetSelected(true);
+                    _selected.Enqueue(selectedItem);
+                }
+            } 
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
+            spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend,
+                null, null, null, null,
+                _camera.Transform);
             foreach (var mapItem in _mapItems)
                 mapItem.Draw(spriteBatch);
             spriteBatch.End();
@@ -61,22 +80,21 @@ namespace AttackOnTitan.GameComponents
             throw new NotImplementedException();
         }
 
-        private void UpdateMapItemsUnderCursor(GameTime gameTime, MouseState mouseState)
+        private MapItem FindItemUnderCursor(Point MousePoint)
         {
-            var intendedColumn = mouseState.X / (_hexWidth / 4 * 3);
-            var intendedRow = mouseState.Y / _hexHeight;
+            var intendedColumn = MousePoint.X / (_hexWidth / 4 * 3);
+            var intendedRow = MousePoint.Y / _hexHeight;
+            var point = new Point(MousePoint.X, MousePoint.Y);
 
-            Console.WriteLine($"{intendedColumn}:{intendedRow}");
+            intendedColumn = intendedColumn > 0 ? intendedColumn - 1 : 0;
+            intendedRow = intendedRow > 0 ? intendedRow - 1 : 0;
 
-            for (var x = intendedColumn - 1; x < intendedColumn + 1; x++)
-            for (var y = intendedRow - 1; y < intendedRow + 1; y++)
-            {
-                if (x >= 0 && x < _columnCount && y >= 0 && y < _rowCount)
-                {
-                    _mapItems[x, y].Update(gameTime, mouseState);
-                    _updateQueue.Enqueue(_mapItems[x, y]);
-                }
-             }
+            for (var x = intendedColumn; x < intendedColumn + 2 && x < _columnCount; x++)
+            for (var y = intendedRow; y < intendedRow + 2 && y < _rowCount; y++)
+                if (_mapItems[x, y].IsComponentOnPosition(point))
+                    return _mapItems[x, y];
+
+            return null;
         }
     }
 }
