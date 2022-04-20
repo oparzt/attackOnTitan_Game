@@ -9,18 +9,19 @@ using Microsoft.Xna.Framework.Input;
 
 using SpriteFontPlus;
 
-using AttackOnTitan.GameComponents;
+using AttackOnTitan.Components;
 
-namespace AttackOnTitan.GameScenes
+
+namespace AttackOnTitan.Scenes
 {
-    public class Level0Scene : DrawableGameComponent, IScene
+   
+
+    public class StartScene : DrawableGameComponent, IScene
     {
         public Dictionary<string, Texture2D> Textures { get; }
         public Dictionary<string, SpriteFont> Fonts { get; }
         public SpriteBatch Sprite { get; private set; }
         public List<IComponent> Components { get; }
-
-        private Map _map;
 
         private CharacterRange[] _characterRanges = new CharacterRange[]
         {
@@ -29,7 +30,7 @@ namespace AttackOnTitan.GameScenes
         };
 
 
-        public Level0Scene(Game game) : base(game)
+        public StartScene(Game game) : base(game)
         {
             Textures = new();
             Fonts = new();
@@ -40,7 +41,29 @@ namespace AttackOnTitan.GameScenes
         {
             var device = SceneManager.GraphicsMgr.GraphicsDevice;
 
-            _map = new Map(this, 40, 35, 111, 96);
+            var startBtn = new SimpleButton(this, "Medium", "Играть",
+                new Vector2(50, device.Viewport.Height - 250),
+                new Rectangle(45, device.Viewport.Height - 260, 90, 50),
+                Color.White);
+            var settingsBtn = new SimpleButton(this, "Medium", "Настройки",
+                new Vector2(50, device.Viewport.Height - 200),
+                new Rectangle(45, device.Viewport.Height - 210, 90, 50),
+                Color.White);
+            var exitBtn = new SimpleButton(this, "Medium", "Выход",
+                new Vector2(50, device.Viewport.Height - 150),
+                new Rectangle(45, device.Viewport.Height - 160, 90, 50),
+                Color.White);
+
+            startBtn.OnClick += () =>
+            {
+                Game.Components.Add(new Level0Scene(Game));
+                Game.Components.Remove(this);
+            };
+            exitBtn.OnClick += () => Game.Exit();
+
+            Components.Add(startBtn);
+            Components.Add(settingsBtn);
+            Components.Add(exitBtn);
 
             base.Initialize();
         }
@@ -50,7 +73,7 @@ namespace AttackOnTitan.GameScenes
             var device = SceneManager.GraphicsMgr.GraphicsDevice;
             Sprite = new SpriteBatch(Game.GraphicsDevice);
 
-            Textures["Hexagon"] = Game.Content.Load<Texture2D>("Textures/hexagon");
+            Textures["Background"] = Game.Content.Load<Texture2D>("Textures/startBackground");
             Fonts["Medium"] = TtfFontBaker.Bake(File.OpenRead("TTFFonts/OpenSans-Medium.ttf"),
                 30, 2048, 2048, _characterRanges).CreateSpriteFont(device);
 
@@ -61,15 +84,8 @@ namespace AttackOnTitan.GameScenes
         {
             var mouseState = Mouse.GetState();
 
-            _map.Update(gameTime, mouseState);
             foreach (var component in Components)
                 component.Update(gameTime, mouseState);
-
-            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
-            {
-                Game.Components.Add(new StartScene(Game));
-                Game.Components.Remove(this);
-            }
 
             base.Update(gameTime);
         }
@@ -77,15 +93,11 @@ namespace AttackOnTitan.GameScenes
         public override void Draw(GameTime gameTime)
         {
             var device = SceneManager.GraphicsMgr.GraphicsDevice;
-
-            _map.Draw(Sprite);
-
-
-            //Sprite.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
-            //Sprite.Draw(Textures["Background"], device.ScissorRectangle, Color.White);
-            //foreach (var component in Components)
-            //    component.Draw(Sprite);
-            //Sprite.End();
+            Sprite.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
+            Sprite.Draw(Textures["Background"], device.ScissorRectangle, Color.White);
+            foreach (var component in Components)
+                component.Draw(Sprite);
+            Sprite.End();
 
             base.Draw(gameTime);
         }

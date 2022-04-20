@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-namespace AttackOnTitan.GameComponents
+namespace AttackOnTitan.Components
 {
     public interface IComponent
     {

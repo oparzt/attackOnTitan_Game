@@ -3,43 +3,48 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-using AttackOnTitan.GameScenes;
+using AttackOnTitan.Scenes;
 
-namespace AttackOnTitan.GameComponents
+namespace AttackOnTitan.Components
 {
-    public class MapItem : IComponent
+    public class MapCellComponent : IComponent
     {
-        private bool _isVisible = true;
+        public readonly int X;
+        public readonly int Y;
+
         private Rectangle _destRect;
         private float _opacity = 0.3f;
         private IScene _scene;
         private string _textureName;
 
-        public MapItem(IScene scene, string textureName, int x, int y, Rectangle destRect)
+        public MapCellComponent(IScene scene, string textureName, int x, int y, Rectangle destRect)
         {
+            X = x;
+            Y = y;
+
             _scene = scene;
             _textureName = textureName;
             _destRect = destRect;
         }
 
-        public void Update(GameTime gameTime, MouseState mouseState)
-        {
+        public void Update(GameTime gameTime, MouseState mouseState) {}
 
-        }
-
-        public void SetSelected(bool selected) =>
-            _opacity = selected ? 1f : 0.3f;
+        public void SetOpacity(float opacity) => _opacity = opacity;
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            if (_isVisible)
-                spriteBatch.Draw(_scene.Textures[_textureName], _destRect, Color.White * _opacity);
+            spriteBatch.Draw(_scene.Textures[_textureName], _destRect, Color.White * _opacity);
         }
 
         public bool IsComponentOnPosition(Point point)
         {
             var dist = (point - _destRect.Center).ToVector2().Length();
             return dist <= _destRect.Height / 2;
+        }
+
+        public Point GetCenter()
+        {
+            return _destRect.Center;
         }
     }
 }

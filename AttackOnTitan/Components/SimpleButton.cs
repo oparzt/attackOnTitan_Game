@@ -3,9 +3,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-using AttackOnTitan.GameScenes;
+using AttackOnTitan.Scenes;
 
-namespace AttackOnTitan.GameComponents
+namespace AttackOnTitan.Components
 {
     public class SimpleButton : IComponent
     {

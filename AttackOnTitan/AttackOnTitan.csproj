@@ -28,6 +28,8 @@
     <None Remove="GameComponents\" />
     <None Remove="GameScenes\Level0Scene\" />
     <None Remove="GameComponents\Map\" />
+    <None Remove="GameModel\" />
+    <None Remove="Models\Map\" />
   </ItemGroup>
   <ItemGroup>
     <MonoGameContentReference Include="Content\Content.mgcb" />
@@ -41,12 +43,14 @@
     <PackageReference Include="SpriteFontPlus" Version="0.9.2" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="GameScenes\" />
-    <Folder Include="GameScenes\StartScene\" />
+    <Folder Include="Scenes\" />
+    <Folder Include="Scenes\StartScene\" />
     <Folder Include="TTFFonts\" />
-    <Folder Include="GameComponents\" />
-    <Folder Include="GameScenes\Level0Scene\" />
-    <Folder Include="GameComponents\Map\" />
+    <Folder Include="Components\" />
+    <Folder Include="Scenes\Level0Scene\" />
+    <Folder Include="Components\Map\" />
+    <Folder Include="Models\" />
+    <Folder Include="Models\Map\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Icon.bmp" />

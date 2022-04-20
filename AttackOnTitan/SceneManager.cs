@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-using AttackOnTitan.GameScenes;
+using AttackOnTitan.Scenes;
 using SpriteFontPlus;
 
 namespace AttackOnTitan

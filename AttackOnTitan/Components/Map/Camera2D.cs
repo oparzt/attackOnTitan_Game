@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-namespace AttackOnTitan.GameComponents
+namespace AttackOnTitan.Components
 {
     public class Camera2D : IComponent
     {
