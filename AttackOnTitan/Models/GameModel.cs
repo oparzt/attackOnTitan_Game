@@ -38,19 +38,8 @@ namespace AttackOnTitan.Models
             {
                 Units[i] = new UnitModel(i, true);
                 Units[i].CurCell = Map[0, i];
-                OutputActions.Enqueue(new OutputAction
-                {
-                    ActionType = OutputActionType.AddUnit,
-                    UnitInfo =
-                {
-                    ID = i,
-                    X = 0,
-                    Y = i,
-                    TextureName = "Ball"
-                }
-                });
+                OutputActions.Enqueue(new(OutputActionType.AddUnit, new(i, 0, i, "Ball", null), null));
             }
-            
 
             InitializateHandlers();
         }

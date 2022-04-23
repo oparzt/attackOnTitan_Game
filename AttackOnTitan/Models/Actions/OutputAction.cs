@@ -20,34 +20,84 @@ namespace AttackOnTitan.Models
         //ChangeCellTexture
     }
 
-    public struct OutputAction
+    public class OutputAction
     {
-        public OutputActionType ActionType;
+        public readonly OutputActionType ActionType;
 
-        public UnitInfo UnitInfo;
-        public MapCellInfo MapCellInfo;
+        public readonly UnitInfo UnitInfo;
+        public readonly MapCellInfo MapCellInfo;
+
+        public OutputAction(OutputActionType actionType, UnitInfo unitInfo, MapCellInfo mapCellInfo)
+        {
+            ActionType = actionType;
+            UnitInfo = unitInfo;
+            MapCellInfo = mapCellInfo;
+        }
     }
 
-    public struct UnitInfo
+    public class UnitInfo
     {
-        public int ID;
+        public readonly int ID;
 
-        public int X;
-        public int Y;
+        public readonly int X;
+        public readonly int Y;
 
-        public float Opacity;
+        public readonly float Opacity;
 
-        public string TextureName;
-        public string UnitText;
+        public readonly string TextureName;
+        public readonly string UnitText;
+
+        public UnitInfo(int id, float opacity)
+        {
+            ID = id;
+            Opacity = opacity;
+        }
+
+        public UnitInfo(int id, int x, int y)
+        {
+            ID = id;
+            X = x;
+            Y = y;
+        }
+
+        public UnitInfo(int id, string textureName, string unitText)
+        {
+            ID = id;
+            TextureName = textureName;
+            UnitText = unitText;
+        }
+
+        public UnitInfo(int id, int x, int y, string textureName, string unitText)
+        {
+            ID = id;
+            X = x;
+            Y = y;
+            TextureName = textureName;
+            UnitText = unitText;
+        }
     }
 
-    public struct MapCellInfo
+    public class MapCellInfo
     {
-        public int X;
-        public int Y;
+        public readonly int X;
+        public readonly int Y;
 
-        public float Opacity;
+        public readonly float Opacity;
 
-        public string TextureName;
+        public readonly string TextureName;
+
+        public MapCellInfo(int x, int y, float opacity)
+        {
+            X = x;
+            Y = y;
+            Opacity = opacity;
+        }
+
+        public MapCellInfo(int x, int y, string textureName)
+        {
+            X = x;
+            Y = y;
+            TextureName = textureName;
+        }
     }
 }

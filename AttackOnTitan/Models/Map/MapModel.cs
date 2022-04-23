@@ -49,19 +49,9 @@ namespace AttackOnTitan.Models
                     _mapCells[x, y].ConnectWithNearCells(_mapCells, _columnsCount, _rowsCount, nearCellsWeights);
         }
 
-        public void SetCellOpacity(MapCellModel mapCell, float opacity)
-        {
-            GameModel.OutputActions.Enqueue(new OutputAction
-            {
-                ActionType = OutputActionType.ChangeCellOpacity,
-                MapCellInfo =
-                    {
-                        X = mapCell.X,
-                        Y = mapCell.Y,
-                        Opacity = opacity
-                    }
-            });
-        }
+        public void SetCellOpacity(MapCellModel mapCell, float opacity) =>
+            GameModel.OutputActions.Enqueue(new(OutputActionType.ChangeCellOpacity,
+                null, new(mapCell.X, mapCell.Y, opacity)));
 
         public void SetUnselectedOpacity(MapCellModel mapCell) =>
             SetCellOpacity(mapCell, 0.3f);

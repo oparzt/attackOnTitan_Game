@@ -20,18 +20,9 @@ namespace AttackOnTitan.Models
             CanGo = canGo;
         }
 
-        public void SetOpacity(float opacity)
-        {
-            GameModel.OutputActions.Enqueue(new OutputAction
-            {
-                ActionType = OutputActionType.ChangeUnitOpacity,
-                UnitInfo =
-                {
-                    ID = ID,
-                    Opacity = opacity
-                }
-            });
-        }
+        public void SetOpacity(float opacity) =>
+            GameModel.OutputActions.Enqueue(new(OutputActionType.ChangeUnitOpacity,
+                new(ID, opacity), null));
 
         public void SetUnselectedOpacity() =>
             SetOpacity(0.65f);

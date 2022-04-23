@@ -23,25 +23,58 @@ namespace AttackOnTitan.Models
         Right
     }
 
-    public struct InputAction
+    public class InputAction
     {
-        public InputActionType ActionType;
+        public readonly InputActionType ActionType;
 
-        public Keys Key;
-        public PressedMouseBtn MouseBtn;
+        public readonly Keys Key;
+        public readonly PressedMouseBtn MouseBtn;
 
-        public SelectedCell SelectedCell;
-        public SelectedUnit SelectedUnit;
+        public readonly SelectedCell SelectedCell;
+        public readonly SelectedUnit SelectedUnit;
+
+        public InputAction()
+        {
+            ActionType = InputActionType.None;
+        }
+
+        public InputAction(SelectedCell selectedCell, PressedMouseBtn pressedMouseBtn)
+        {
+            ActionType = InputActionType.SelectMapCell;
+            MouseBtn = pressedMouseBtn;
+            SelectedCell = selectedCell;
+        }
+
+        public InputAction(SelectedUnit selectedUnit, PressedMouseBtn pressedMouseBtn)
+        {
+            ActionType = InputActionType.SelectUnit;
+            MouseBtn = pressedMouseBtn;
+            SelectedUnit = selectedUnit;
+        }
+
+        public InputAction(Keys key)
+        {
+            ActionType = InputActionType.KeyPressed;
+            Key = key;
+        }
     }
 
-    public struct SelectedCell
+    public class SelectedCell
     {
-        public int X;
-        public int Y;
+        public readonly int X;
+        public readonly int Y;
+
+        public SelectedCell(int x, int y)
+        {
+            X = x;
+            Y = y;
+        }
     }
 
-    public struct SelectedUnit
+    public class SelectedUnit
     {
-        public int ID;
+        public readonly int ID;
+
+        public SelectedUnit(int id) => ID = id;
     }
 }

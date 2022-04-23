@@ -94,16 +94,7 @@ namespace AttackOnTitan.Components.Map
 
         private void InitiateSelectMapCellAction(MapCellComponent mapItem, PressedMouseBtn mouseBtn)
         {
-            var action = new InputAction
-            {
-                ActionType = InputActionType.SelectMapCell,
-                MouseBtn = mouseBtn,
-                SelectedCell =
-                {
-                    X = mapItem.X,
-                    Y = mapItem.Y
-                }
-            };
+            var action = new InputAction(new SelectedCell(mapItem.X, mapItem.Y), mouseBtn);
 
             //if (action.Equals(_prevSelectMapAction)
                 //&& action.MouseBtn != PressedMouseBtn.None) return;
@@ -114,13 +105,7 @@ namespace AttackOnTitan.Components.Map
 
         private void InitiateSelectUnitAction(UnitComponent unitItem, PressedMouseBtn mouseBtn)
         {
-            var action = new InputAction
-            {
-                ActionType = InputActionType.SelectUnit,
-                MouseBtn = mouseBtn,
-                SelectedUnit = { ID = unitItem.ID }
-            };
-
+            var action = new InputAction(new SelectedUnit(unitItem.ID), mouseBtn);
             //if (action.Equals(_prevSelectUnitAction)) return;
 
             //_prevSelectUnitAction = action;

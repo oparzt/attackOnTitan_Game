@@ -102,13 +102,7 @@ namespace AttackOnTitan.Scenes
             var keyPressed = keyboardPressed.Length == 0 ? Keys.None : keyboardPressed[0];
 
             if (keyPressed != _lastKey && keyPressed != Keys.None)
-            {
-                GameModel.InputActions.Enqueue(new InputAction
-                {
-                    ActionType = InputActionType.KeyPressed,
-                    Key = keyPressed
-                });
-            }
+                GameModel.InputActions.Enqueue(new InputAction(keyPressed));
 
             _lastKey = keyPressed;
         }

@@ -77,16 +77,8 @@ namespace AttackOnTitan.Models
         {
             if (_pathStack.TryPeek(out var lastCell))
             {
-                GameModel.OutputActions.Enqueue(new OutputAction
-                {
-                    ActionType = OutputActionType.MoveUnit,
-                    UnitInfo =
-                    {
-                        ID = _unit.ID,
-                        X = lastCell.X,
-                        Y = lastCell.Y
-                    }
-                });
+                GameModel.OutputActions.Enqueue(new(OutputActionType.MoveUnit, new(_unit.ID, lastCell.X, lastCell.Y), null));
+
                 _unit.CurCell = lastCell;
                 _unit.Energy -= _pathCost;
             }
