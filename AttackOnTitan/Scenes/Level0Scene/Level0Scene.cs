@@ -54,6 +54,7 @@ namespace AttackOnTitan.Scenes
             CommandsActions[OutputActionType.MoveUnit] = _mapComponent.MoveUnit;
             CommandsActions[OutputActionType.ChangeUnitOpacity] = _mapComponent.ChangeUnitOpacity;
             CommandsActions[OutputActionType.ChangeCellOpacity] = _mapComponent.ChangeCellOpacity;
+            CommandsActions[OutputActionType.StopUnit] = _mapComponent.StopUnit;
 
             GameModel = new(40, 35);
             GameModel.Run();

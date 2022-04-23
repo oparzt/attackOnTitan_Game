@@ -11,6 +11,7 @@ namespace AttackOnTitan.Models
     {
         AddUnit,
         MoveUnit,
+        StopUnit,
         ChangeUnitOpacity,
 
         ChangeCellOpacity,
@@ -46,6 +47,11 @@ namespace AttackOnTitan.Models
 
         public readonly string TextureName;
         public readonly string UnitText;
+
+        public UnitInfo(int id)
+        {
+            ID = id;
+        }
 
         public UnitInfo(int id, float opacity)
         {

@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace AttackOnTitan.Components
 {
-    public class Camera2D : IComponent
+    public class Camera2D
     {
         public Matrix Transform;
         public Vector3 InitMouseDragPos;

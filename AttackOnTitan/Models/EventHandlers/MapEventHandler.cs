@@ -6,7 +6,7 @@ namespace AttackOnTitan.Models
     public class MapEventHandler
     {
         public readonly GameModel GameModel;
-        private readonly Dictionary<PressedMouseBtn, Action<InputAction>> _handlers = new();
+        private readonly Dictionary<PressedMouseBtn, Action<InputAction>> _selectHandlers = new();
 
         private MapCellModel _lastNoMouseSelected;
 
@@ -17,14 +17,14 @@ namespace AttackOnTitan.Models
             InitializeHandlers();
         }
 
-        public void Handle(InputAction action) =>
-            _handlers[action.MouseBtn](action);
+        public void HandleSelect(InputAction action) =>
+            _selectHandlers[action.MouseBtn](action);
 
         private void InitializeHandlers()
         {
-            _handlers[PressedMouseBtn.None] = HandleNoMouseSelect;
-            _handlers[PressedMouseBtn.Left] = HandleLeftMouseSelect;
-            _handlers[PressedMouseBtn.Right] = HandleRightMouseSelect;
+            _selectHandlers[PressedMouseBtn.None] = HandleNoMouseSelect;
+            _selectHandlers[PressedMouseBtn.Left] = HandleLeftMouseSelect;
+            _selectHandlers[PressedMouseBtn.Right] = HandleRightMouseSelect;
         }
 
         private void HandleNoMouseSelect(InputAction action)

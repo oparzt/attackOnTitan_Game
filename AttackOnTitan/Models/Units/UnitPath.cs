@@ -12,6 +12,7 @@ namespace AttackOnTitan.Models
         private UnitModel _unit;
 
         private Stack<MapCellModel> _pathStack = new();
+        private Stack<MapCellModel> _endPathStack = new();
         private Stack<int> _pathCosts = new();
         private HashSet<MapCellModel> _pathHash = new();
 
@@ -77,19 +78,23 @@ namespace AttackOnTitan.Models
         {
             if (_pathStack.TryPeek(out var lastCell))
             {
-                GameModel.OutputActions.Enqueue(new(OutputActionType.MoveUnit, new(_unit.ID, lastCell.X, lastCell.Y), null));
-
                 _unit.CurCell = lastCell;
+                _unit.Moved = true;
                 _unit.Energy -= _pathCost;
             }
 
             while (_pathStack.TryPop(out var prevMapCell))
             {
-                _pathHash.Remove(prevMapCell);
                 GameModel.Map.SetUnselectedOpacity(prevMapCell);
+                _endPathStack.Push(prevMapCell);
             }
+            while (_endPathStack.TryPop(out var targetCell))
+                GameModel.OutputActions.Enqueue(new(OutputActionType.MoveUnit,
+                    new(_unit.ID, targetCell.X, targetCell.Y), null));
 
+            _pathHash.Clear();
             _pathCosts.Clear();
+            _pathCost = 0;
         }
     }
 }

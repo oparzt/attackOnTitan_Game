@@ -6,7 +6,7 @@ namespace AttackOnTitan.Models
     public class UnitEventHandler
     {
         public readonly GameModel GameModel;
-        private readonly Dictionary<PressedMouseBtn, Action<InputAction>> _handlers = new();
+        private readonly Dictionary<PressedMouseBtn, Action<InputAction>> _selectHandlers = new();
 
         public UnitEventHandler(GameModel gameModel)
         {
@@ -14,14 +14,20 @@ namespace AttackOnTitan.Models
             InitializeHandlers();
         }
 
-        public void Handle(InputAction action) =>
-            _handlers[action.MouseBtn](action);
+        public void HandleSelect(InputAction action) =>
+            _selectHandlers[action.MouseBtn](action);
+
+        public void HandleStopMove(InputAction action)
+        {
+            GameModel.OutputActions.Enqueue(new(OutputActionType.StopUnit, new(action.SelectedUnit.ID), null));
+            GameModel.Units[action.SelectedUnit.ID].Moved = false;
+        }
 
         private void InitializeHandlers()
         {
-            _handlers[PressedMouseBtn.None] = HandleNoMouseSelect;
-            _handlers[PressedMouseBtn.Left] = HandleLeftMouseSelect;
-            _handlers[PressedMouseBtn.Right] = HandleRightMouseSelect;
+            _selectHandlers[PressedMouseBtn.None] = HandleNoMouseSelect;
+            _selectHandlers[PressedMouseBtn.Left] = HandleLeftMouseSelect;
+            _selectHandlers[PressedMouseBtn.Right] = HandleRightMouseSelect;
         }
 
         private void HandleNoMouseSelect(InputAction action)
@@ -49,9 +55,6 @@ namespace AttackOnTitan.Models
             GameModel.SelectedUnit.SetSelectedOpacity();
         }
 
-        private void HandleRightMouseSelect(InputAction action)
-        {
-            
-        }
+        private void HandleRightMouseSelect(InputAction action) {}
     }
 }

@@ -7,7 +7,7 @@ using AttackOnTitan.Scenes;
 
 namespace AttackOnTitan.Components
 {
-    public class MapCellComponent : IComponent
+    public class MapCellComponent
     {
         public readonly int X;
         public readonly int Y;

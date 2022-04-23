@@ -11,7 +11,7 @@ using AttackOnTitan.Models;
 
 namespace AttackOnTitan.Components.Map
 {
-    public class MapComponent : IComponent
+    public class MapComponent
     {
         private IScene _scene;
 
@@ -30,9 +30,7 @@ namespace AttackOnTitan.Components.Map
         private int _bottomRowIntoView;
 
         private Dictionary<int, UnitComponent> _units = new();
-
-        //private InputAction _prevSelectMapAction = new();
-        //private InputAction _prevSelectUnitAction = new();
+        private HashSet<UnitComponent> _movedUnits = new();
 
         public MapComponent(IScene parent, int columnCount, int rowCount, int hexWidth, int hexHeight)
         {
@@ -82,35 +80,22 @@ namespace AttackOnTitan.Components.Map
 
             if (selectedUnitItem is not null)
                 InitiateSelectUnitAction(selectedUnitItem, mouseBtn);
-            //else
-                //_prevSelectUnitAction = new();
 
             SetItemRangeIntoViewport();
+
+            foreach (var unit in _movedUnits)
+                unit.Update(gameTime, mouseState);
         }
 
         private PressedMouseBtn GetPressedBtn(ButtonState left, ButtonState right) =>
             right == ButtonState.Pressed ? PressedMouseBtn.Right :
             left == ButtonState.Pressed ?PressedMouseBtn.Left : PressedMouseBtn.None;
 
-        private void InitiateSelectMapCellAction(MapCellComponent mapItem, PressedMouseBtn mouseBtn)
-        {
-            var action = new InputAction(new SelectedCell(mapItem.X, mapItem.Y), mouseBtn);
+        private void InitiateSelectMapCellAction(MapCellComponent mapItem, PressedMouseBtn mouseBtn) =>
+            GameModel.InputActions.Enqueue(new InputAction(new SelectedCell(mapItem.X, mapItem.Y), mouseBtn));
 
-            //if (action.Equals(_prevSelectMapAction)
-                //&& action.MouseBtn != PressedMouseBtn.None) return;
-
-            //_prevSelectMapAction = action;
-            GameModel.InputActions.Enqueue(action);
-        }
-
-        private void InitiateSelectUnitAction(UnitComponent unitItem, PressedMouseBtn mouseBtn)
-        {
-            var action = new InputAction(new SelectedUnit(unitItem.ID), mouseBtn);
-            //if (action.Equals(_prevSelectUnitAction)) return;
-
-            //_prevSelectUnitAction = action;
-            GameModel.InputActions.Enqueue(action);
-        }
+        private void InitiateSelectUnitAction(UnitComponent unitItem, PressedMouseBtn mouseBtn) =>
+            GameModel.InputActions.Enqueue(new InputAction(new SelectedUnit(unitItem.ID), mouseBtn));
 
 
         public void AddUnit(UnitInfo unitInfo, MapCellInfo mapCellInfo)
@@ -124,10 +109,16 @@ namespace AttackOnTitan.Components.Map
 
         public void MoveUnit(UnitInfo unitInfo, MapCellInfo mapCellInfo)
         {
-            var centerCell = _mapItems[unitInfo.X, unitInfo.Y].GetCenter();
-            var pos = centerCell - new Point(15, 15);
+            var unit = _units[unitInfo.ID];
+            var targetCell = _mapItems[unitInfo.X, unitInfo.Y];
 
-            _units[unitInfo.ID].Move(new Rectangle(pos, new Point(30, 30)));
+            _movedUnits.Add(unit);
+            unit.Move(targetCell);
+        }
+
+        public void StopUnit(UnitInfo unitInfo, MapCellInfo mapCellInfo)
+        {
+            _movedUnits.Remove(_units[unitInfo.ID]);
         }
 
         public void ChangeUnitOpacity(UnitInfo unitInfo, MapCellInfo mapCellInfo)

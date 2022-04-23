@@ -13,7 +13,8 @@ namespace AttackOnTitan.Models
         None,
         KeyPressed,
         SelectMapCell,
-        SelectUnit
+        SelectUnit,
+        UnitStopMove
     }
 
     public enum PressedMouseBtn
@@ -37,6 +38,16 @@ namespace AttackOnTitan.Models
         {
             ActionType = InputActionType.None;
         }
+
+        public InputAction(InputActionType actionType, Keys key, PressedMouseBtn pressedMouseBtn,
+            SelectedCell selectedCell, SelectedUnit selectedUnit) {
+            ActionType = actionType;
+            Key = key;
+            MouseBtn = pressedMouseBtn;
+            SelectedCell = selectedCell;
+            SelectedUnit = selectedUnit;
+        }
+
 
         public InputAction(SelectedCell selectedCell, PressedMouseBtn pressedMouseBtn)
         {

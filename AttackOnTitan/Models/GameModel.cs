@@ -52,8 +52,9 @@ namespace AttackOnTitan.Models
 
             _handlers[InputActionType.None] = action => { };
             _handlers[InputActionType.KeyPressed] = KeyEventHandler.Handle;
-            _handlers[InputActionType.SelectMapCell] = MapEventHandler.Handle;
-            _handlers[InputActionType.SelectUnit] = UnitEventHandler.Handle;
+            _handlers[InputActionType.SelectMapCell] = MapEventHandler.HandleSelect;
+            _handlers[InputActionType.SelectUnit] = UnitEventHandler.HandleSelect;
+            _handlers[InputActionType.UnitStopMove] = UnitEventHandler.HandleStopMove;
         }
 
         public void Run()
@@ -73,13 +74,13 @@ namespace AttackOnTitan.Models
 
         private void Step()
         {
-            var stopwatch = new Stopwatch();
+            //var stopwatch = new Stopwatch();
             while (!_killThread)
             {
                 while (InputActions.TryDequeue(out var action)) {
-                    stopwatch.Restart();
+                    //stopwatch.Restart();
                     _handlers[action.ActionType](action);
-                    Console.WriteLine(stopwatch.ElapsedMilliseconds); 
+                    //Console.WriteLine(stopwatch.ElapsedMilliseconds); 
                 }
                 Thread.Sleep(30);
             }
