@@ -31,8 +31,8 @@ namespace AttackOnTitan.Components.Map
 
         private Dictionary<int, UnitComponent> _units = new();
 
-        private InputAction _prevSelectMapAction = new();
-        private InputAction _prevSelectUnitAction = new();
+        //private InputAction _prevSelectMapAction = new();
+        //private InputAction _prevSelectUnitAction = new();
 
         public MapComponent(IScene parent, int columnCount, int rowCount, int hexWidth, int hexHeight)
         {
@@ -72,9 +72,7 @@ namespace AttackOnTitan.Components.Map
             _camera.Update(gameTime, mouseState);
 
             var mousePos = new Point(mouseState.X, mouseState.Y) - new Point((int)_camera.Pos.X, (int)_camera.Pos.Y);
-            var mouseBtn = mouseState.LeftButton == ButtonState.Pressed ?
-                PressedMouseBtn.Left : mouseState.RightButton == ButtonState.Pressed ?
-                PressedMouseBtn.Right : PressedMouseBtn.None;
+            var mouseBtn = GetPressedBtn(mouseState.LeftButton, mouseState.RightButton);
 
             var selectedMapItem = FindMapItemUnderCursor(mousePos);
             var selectedUnitItem = FindUnitItemUnderCursor(mousePos);
@@ -84,9 +82,15 @@ namespace AttackOnTitan.Components.Map
 
             if (selectedUnitItem is not null)
                 InitiateSelectUnitAction(selectedUnitItem, mouseBtn);
+            //else
+                //_prevSelectUnitAction = new();
 
             SetItemRangeIntoViewport();
         }
+
+        private PressedMouseBtn GetPressedBtn(ButtonState left, ButtonState right) =>
+            right == ButtonState.Pressed ? PressedMouseBtn.Right :
+            left == ButtonState.Pressed ?PressedMouseBtn.Left : PressedMouseBtn.None;
 
         private void InitiateSelectMapCellAction(MapCellComponent mapItem, PressedMouseBtn mouseBtn)
         {
@@ -94,16 +98,17 @@ namespace AttackOnTitan.Components.Map
             {
                 ActionType = InputActionType.SelectMapCell,
                 MouseBtn = mouseBtn,
-                SelectedCell = new SelectedCell
+                SelectedCell =
                 {
                     X = mapItem.X,
                     Y = mapItem.Y
                 }
             };
 
-            if (action.Equals(_prevSelectMapAction)) return;
+            //if (action.Equals(_prevSelectMapAction)
+                //&& action.MouseBtn != PressedMouseBtn.None) return;
 
-            _prevSelectMapAction = action;
+            //_prevSelectMapAction = action;
             GameModel.InputActions.Enqueue(action);
         }
 
@@ -113,26 +118,31 @@ namespace AttackOnTitan.Components.Map
             {
                 ActionType = InputActionType.SelectUnit,
                 MouseBtn = mouseBtn,
-                SelectedUnit = new SelectedUnit { ID = unitItem.ID }
+                SelectedUnit = { ID = unitItem.ID }
             };
 
-            if (action.Equals(_prevSelectUnitAction)) return;
+            //if (action.Equals(_prevSelectUnitAction)) return;
 
-            _prevSelectUnitAction = action;
+            //_prevSelectUnitAction = action;
             GameModel.InputActions.Enqueue(action);
         }
 
 
         public void AddUnit(UnitInfo unitInfo, MapCellInfo mapCellInfo)
         {
+            var centerCell = _mapItems[unitInfo.X, unitInfo.Y].GetCenter();
+            var pos = centerCell - new Point(15, 15);
+
             _units[unitInfo.ID] = new UnitComponent(_scene, unitInfo.ID, unitInfo.TextureName,
-                new Rectangle(_mapItems[unitInfo.X, unitInfo.Y].GetCenter(), new Point(30, 30)));
+                new Rectangle(pos, new Point(30, 30)));
         }
 
         public void MoveUnit(UnitInfo unitInfo, MapCellInfo mapCellInfo)
         {
-            _units[unitInfo.ID].Move(new Rectangle(_mapItems[unitInfo.X, unitInfo.Y].GetCenter(),
-                new Point(30, 30)));
+            var centerCell = _mapItems[unitInfo.X, unitInfo.Y].GetCenter();
+            var pos = centerCell - new Point(15, 15);
+
+            _units[unitInfo.ID].Move(new Rectangle(pos, new Point(30, 30)));
         }
 
         public void ChangeUnitOpacity(UnitInfo unitInfo, MapCellInfo mapCellInfo)
@@ -144,8 +154,6 @@ namespace AttackOnTitan.Components.Map
         {
             _mapItems[mapCellInfo.X, mapCellInfo.Y].SetOpacity(mapCellInfo.Opacity);
         }
-
-
 
         public void Draw(SpriteBatch spriteBatch)
         {

@@ -30,6 +30,8 @@
     <None Remove="GameComponents\Map\" />
     <None Remove="GameModel\" />
     <None Remove="Models\Map\" />
+    <None Remove="Models\Actions\" />
+    <None Remove="Models\EventHandlers\" />
   </ItemGroup>
   <ItemGroup>
     <MonoGameContentReference Include="Content\Content.mgcb" />
@@ -51,6 +53,8 @@
     <Folder Include="Components\Map\" />
     <Folder Include="Models\" />
     <Folder Include="Models\Map\" />
+    <Folder Include="Models\Actions\" />
+    <Folder Include="Models\EventHandlers\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Icon.bmp" />

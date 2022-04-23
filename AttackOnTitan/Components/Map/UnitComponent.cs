@@ -16,17 +16,14 @@ namespace AttackOnTitan.Components
         private float _opacity = 0.65f;
         private IScene _scene;
         private string _textureName;
-        private Vector2 _origin;
 
         public UnitComponent(IScene scene, int id, string textureName, Rectangle destRect)
         {
             ID = id;
 
-
             _scene = scene;
             _textureName = textureName;
             _destRect = destRect;
-            _origin = new Vector2(destRect.Width, destRect.Height);
         }
 
         public void Update(GameTime gameTime, MouseState mouseState) {}
@@ -43,12 +40,12 @@ namespace AttackOnTitan.Components
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(_scene.Textures[_textureName], _destRect, null, Color.White * _opacity, 0f, _origin, SpriteEffects.None, 1f);
+            spriteBatch.Draw(_scene.Textures[_textureName], _destRect, null, Color.White * _opacity, 0f, Vector2.Zero, SpriteEffects.None, 1f);
         }
 
         public bool IsComponentOnPosition(Point point)
         {
-            var dist = (point - _destRect.Location).ToVector2().Length();
+            var dist = (point - _destRect.Center).ToVector2().Length();
             return dist <= _destRect.Height / 2;
         }
     }
