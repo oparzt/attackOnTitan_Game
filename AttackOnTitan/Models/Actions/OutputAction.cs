@@ -42,6 +42,7 @@ namespace AttackOnTitan.Models
 
         public readonly int X;
         public readonly int Y;
+        public readonly Position Position;
 
         public readonly float Opacity;
 
@@ -59,11 +60,12 @@ namespace AttackOnTitan.Models
             Opacity = opacity;
         }
 
-        public UnitInfo(int id, int x, int y)
+        public UnitInfo(int id, int x, int y, Position position)
         {
             ID = id;
             X = x;
             Y = y;
+            Position = position;
         }
 
         public UnitInfo(int id, string textureName, string unitText)
@@ -73,11 +75,12 @@ namespace AttackOnTitan.Models
             UnitText = unitText;
         }
 
-        public UnitInfo(int id, int x, int y, string textureName, string unitText)
+        public UnitInfo(int id, int x, int y, Position position, string textureName, string unitText)
         {
             ID = id;
             X = x;
             Y = y;
+            Position = position;
             TextureName = textureName;
             UnitText = unitText;
         }

@@ -48,7 +48,7 @@ namespace AttackOnTitan.Scenes
         {
             var device = SceneManager.GraphicsMgr.GraphicsDevice;
 
-            _mapComponent = new MapComponent(this, 40, 35, 111, 96);
+            _mapComponent = new MapComponent(this, 40, 35, 148, 128, 30, 30);
 
             CommandsActions[OutputActionType.AddUnit] = _mapComponent.AddUnit;
             CommandsActions[OutputActionType.MoveUnit] = _mapComponent.MoveUnit;

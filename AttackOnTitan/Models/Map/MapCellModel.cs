@@ -13,6 +13,21 @@ namespace AttackOnTitan.Models
         RightBottom
     }
 
+    public enum Position
+    {
+        Center,
+        Left,
+        Right,
+        Top,
+        Bottom,
+        TopBorder,
+        BottomBorder,
+        LeftTopBorder,
+        RightTopBorder,
+        LeftBottomBorder,
+        RightBottomBorder
+    }
+
     public class MapCellModel
     {
         public readonly int X;

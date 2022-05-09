@@ -90,7 +90,7 @@ namespace AttackOnTitan.Models
             }
             while (_endPathStack.TryPop(out var targetCell))
                 GameModel.OutputActions.Enqueue(new(OutputActionType.MoveUnit,
-                    new(_unit.ID, targetCell.X, targetCell.Y), null));
+                    new(_unit.ID, targetCell.X, targetCell.Y, Position.Center), null));
 
             _pathHash.Clear();
             _pathCosts.Clear();

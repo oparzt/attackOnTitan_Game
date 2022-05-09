@@ -27,7 +27,6 @@ namespace AttackOnTitan.Components
         private float _speedY = 0f;
 
         private Queue<MapCellComponent> _targetCells = new();
-        private MapCellComponent _targetCell;
         private Point _targetPoint;
 
         private float _curX = 0f;
@@ -51,7 +50,6 @@ namespace AttackOnTitan.Components
             {
                 if (_targetCells.TryDequeue(out var targetCell))
                 {
-                    _targetCell = targetCell;
                     _targetPoint = targetCell.GetCenter() - new Point(_destRect.Width / 2, _destRect.Height / 2);
 
                     _curX = _destRect.Location.X;
@@ -73,7 +71,6 @@ namespace AttackOnTitan.Components
                     return;
                 };
             }
-
 
             _curX += _speedX * elapsed;
             _curY += _speedY * elapsed;

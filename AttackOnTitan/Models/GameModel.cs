@@ -33,12 +33,21 @@ namespace AttackOnTitan.Models
         {
             Map = new MapModel(columnsMapCount, rowsMapCount);
             UnitPath = new(this);
+            var positions = new[]
+            {
+                Position.Center,
+                Position.Left, Position.Right,
+                Position.Top, Position.Bottom,
+                Position.TopBorder, Position.BottomBorder,
+                Position.LeftTopBorder, Position.RightTopBorder,
+                Position.LeftBottomBorder, Position.RightBottomBorder
+            };
 
-            for (var i = 0; i < 4; i++)
+            for (var i = 0; i < 11; i++)
             {
                 Units[i] = new UnitModel(i, true);
                 Units[i].CurCell = Map[0, i];
-                OutputActions.Enqueue(new(OutputActionType.AddUnit, new(i, 0, i, "Ball", null), null));
+                OutputActions.Enqueue(new(OutputActionType.AddUnit, new(i, 2, 2, positions[i], "Ball", null), null));
             }
 
             InitializateHandlers();
@@ -63,10 +72,6 @@ namespace AttackOnTitan.Models
             _modelThread.IsBackground = true;
             _modelThread.Start();
 
-            //for (var i = 0; i < 3; i++) {
-            //    _units[i] = new UnitModel(i);
-            //    _map.AddUnit(_units[i], i, 0);
-            //}
 
         }
 

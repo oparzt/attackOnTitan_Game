@@ -29,10 +29,13 @@ namespace AttackOnTitan.Components.Map
         private int _topRowIntoView;
         private int _bottomRowIntoView;
 
+        private Rectangle _unitRect;
+
         private Dictionary<int, UnitComponent> _units = new();
         private HashSet<UnitComponent> _movedUnits = new();
 
-        public MapComponent(IScene parent, int columnCount, int rowCount, int hexWidth, int hexHeight)
+        public MapComponent(IScene parent, int columnCount, int rowCount,
+            int hexWidth, int hexHeight, int unitWidth, int unitHeight)
         {
             _mapItems = new MapCellComponent[columnCount, rowCount];
             _columnCount = columnCount;
@@ -40,6 +43,8 @@ namespace AttackOnTitan.Components.Map
             _hexWidth = hexWidth;
             _hexHeight = hexHeight;
             _scene = parent;
+
+            _unitRect = new Rectangle(0, 0, unitWidth, unitHeight);
 
             InitializeMap();
         }
@@ -62,6 +67,7 @@ namespace AttackOnTitan.Components.Map
                             column * _hexWidth / 4 * 3,
                             row * _hexHeight + (column % 2 == 1 ? _hexHeight / 2 : 0),
                             _hexWidth, _hexHeight));
+                    _mapItems[column, row].CreatePositionsRectangles(_unitRect.Size);
                 }
         }
 
@@ -100,11 +106,8 @@ namespace AttackOnTitan.Components.Map
 
         public void AddUnit(UnitInfo unitInfo, MapCellInfo mapCellInfo)
         {
-            var centerCell = _mapItems[unitInfo.X, unitInfo.Y].GetCenter();
-            var pos = centerCell - new Point(15, 15);
-
             _units[unitInfo.ID] = new UnitComponent(_scene, unitInfo.ID, unitInfo.TextureName,
-                new Rectangle(pos, new Point(30, 30)));
+                _mapItems[unitInfo.X, unitInfo.Y].GetPosition(unitInfo.Position));
         }
 
         public void MoveUnit(UnitInfo unitInfo, MapCellInfo mapCellInfo)
