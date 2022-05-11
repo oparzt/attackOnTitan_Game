@@ -6,7 +6,7 @@ namespace AttackOnTitan.Models
 {
     public class UnitPath
     {
-        public GameModel GameModel;
+        public readonly GameModel GameModel;
         public int Count { get => _pathStack.Count; }
 
         private UnitModel _unit;
@@ -43,7 +43,7 @@ namespace AttackOnTitan.Models
                 AddToPath(_unit.CurCell, 0);
             else if (lastCell.TryGetCost(mapCell, _unit, out var cost)
                 && (_pathCost + cost) <= _unit.Energy)
-                    AddToPath(mapCell, cost);
+                AddToPath(mapCell, cost);
         }
 
         private void RemovePathToTheCell(MapCellModel mapCell)
@@ -57,10 +57,7 @@ namespace AttackOnTitan.Models
                 if (mapCell == prevMapCell) break;
             }
 
-            if (_pathCosts.TryPeek(out var lastCost))
-                _pathCost = lastCost;
-            else
-                _pathCost = 0;
+            _pathCost = _pathCosts.TryPeek(out var lastCost) ? lastCost : 0;
         }
 
         private void AddToPath(MapCellModel mapCell, int cost)

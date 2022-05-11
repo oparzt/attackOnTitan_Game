@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework.Input;
 using AttackOnTitan.Scenes;
 using AttackOnTitan.Models;
 
-namespace AttackOnTitan.Components.Map
+namespace AttackOnTitan.Components
 {
     public class MapComponent
     {
@@ -20,6 +20,9 @@ namespace AttackOnTitan.Components.Map
 
         private int _columnCount;
         private int _rowCount;
+
+        public float HexWidth => _hexWidth * _camera.Zoom;
+        public float HexHeight => _hexHeight * _camera.Zoom;
 
         private int _hexWidth;
         private int _hexHeight;
@@ -54,10 +57,10 @@ namespace AttackOnTitan.Components.Map
             var mapWidth = _columnCount * _hexWidth / 4 * 3 + _hexWidth / 4;
             var mapHeight = _rowCount * _hexHeight + _hexHeight / 2;
 
-            var viewWidth = SceneManager.GraphicsMgr.GraphicsDevice.Viewport.Width;
-            var viewHeight = SceneManager.GraphicsMgr.GraphicsDevice.Viewport.Height;
+            var viewportWidth = SceneManager.GraphicsMgr.GraphicsDevice.Viewport.Width;
+            var viewportHeight = SceneManager.GraphicsMgr.GraphicsDevice.Viewport.Height;
 
-            _camera = new Camera2D(0, 0, mapWidth - viewWidth, mapHeight - viewHeight);
+            _camera = new Camera2D(0, 0, viewportWidth, viewportHeight, mapWidth, mapHeight);
 
             for (var row = 0; row < _rowCount; row++)
                 for (var column = 0; column < _columnCount; column++)
@@ -75,11 +78,10 @@ namespace AttackOnTitan.Components.Map
         {
             _camera.Update(gameTime, mouseState);
 
-            var mousePos = new Point(mouseState.X, mouseState.Y) - new Point((int)_camera.Pos.X, (int)_camera.Pos.Y);
             var mouseBtn = GetPressedBtn(mouseState.LeftButton, mouseState.RightButton);
 
-            var selectedMapItem = FindMapItemUnderCursor(mousePos);
-            var selectedUnitItem = FindUnitItemUnderCursor(mousePos);
+            var selectedMapItem = FindMapItemUnderCursor();
+            var selectedUnitItem = FindUnitItemUnderCursor();
 
             if (selectedMapItem is not null)
                 InitiateSelectMapCellAction(selectedMapItem, mouseBtn);
@@ -143,56 +145,46 @@ namespace AttackOnTitan.Components.Map
             for (var y = _topRowIntoView; y < _bottomRowIntoView; y++)
                 _mapItems[x, y].Draw(spriteBatch);
 
-            foreach (var _unit in _units.Values)
-                _unit.Draw(spriteBatch);
+            foreach (var unit in _units.Values)
+                unit.Draw(spriteBatch);
 
             spriteBatch.End();
         }
 
-        public bool IsComponentOnPosition(Point point)
+        private MapCellComponent FindMapItemUnderCursor()
         {
-            throw new NotImplementedException();
-        }
-
-        private MapCellComponent FindMapItemUnderCursor(Point mousePoint)
-        {
-            var intendedColumn = mousePoint.X / (_hexWidth / 4 * 3);
-            var intendedRow = mousePoint.Y / _hexHeight;
-
+            var intendedColumn = _camera.MousePoint.X / (_hexWidth / 4 * 3);
+            var intendedRow = _camera.MousePoint.Y / _hexHeight;
+            
             intendedColumn = intendedColumn > 0 ? intendedColumn - 1 : 0;
             intendedRow = intendedRow > 0 ? intendedRow - 1 : 0;
 
             for (var x = intendedColumn; x < intendedColumn + 2 && x < _columnCount; x++)
             for (var y = intendedRow; y < intendedRow + 2 && y < _rowCount; y++)
-                if (_mapItems[x, y].IsComponentOnPosition(mousePoint))
+                if (_mapItems[x, y].IsComponentOnPosition(_camera.MousePoint))
                     return _mapItems[x, y];
 
             return null;
         }
 
-        private UnitComponent FindUnitItemUnderCursor(Point mousePoint)
-        {
-            foreach (var _unit in _units.Values)
-                if (_unit.IsComponentOnPosition(mousePoint))
-                    return _unit;
-
-            return null;
-        }
+        private UnitComponent FindUnitItemUnderCursor() =>
+            _units.Values
+                .FirstOrDefault(unit => unit.IsComponentOnPosition(_camera.MousePoint));
 
         private void SetItemRangeIntoViewport()
         {
             var viewWidth = SceneManager.GraphicsMgr.GraphicsDevice.Viewport.Width;
             var viewHeight = SceneManager.GraphicsMgr.GraphicsDevice.Viewport.Height;
 
-            var intendedLeftColumn = (int)-_camera.Pos.X / (_hexWidth / 4 * 3);
-            var intendedRightColumn = (int)(-_camera.Pos.X + viewWidth) / (_hexWidth / 4 * 3);
-
-            var intendedTopRow = (int)-_camera.Pos.Y / _hexHeight;
-            var intendedBottomRow = (int)(-_camera.Pos.Y + viewHeight) / _hexHeight;
-
+            var intendedLeftColumn = (int)(-_camera.Pos.X / (HexWidth / 4 * 3));
+            var intendedRightColumn = (int)((-_camera.Pos.X + viewWidth) / (HexWidth / 4 * 3));
+            
+            var intendedTopRow = (int)(-_camera.Pos.Y / HexHeight);
+            var intendedBottomRow = (int)((-_camera.Pos.Y + viewHeight) / HexHeight);
+            
             _leftColumnIntoView = intendedLeftColumn > 0 ? intendedLeftColumn - 1 : 0;
             _rightColumnIntoView = intendedRightColumn >= _columnCount ? _columnCount : intendedRightColumn + 1;
-
+            
             _topRowIntoView = intendedTopRow > 0 ? intendedTopRow - 1 : 0;
             _bottomRowIntoView = intendedBottomRow >= _rowCount ? _rowCount : intendedBottomRow + 1;
         }

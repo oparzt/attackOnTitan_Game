@@ -10,7 +10,6 @@ using Microsoft.Xna.Framework.Input;
 using SpriteFontPlus;
 
 using AttackOnTitan.Components;
-using AttackOnTitan.Components.Map;
 using AttackOnTitan.Models;
 
 namespace AttackOnTitan.Scenes
@@ -48,7 +47,7 @@ namespace AttackOnTitan.Scenes
         {
             var device = SceneManager.GraphicsMgr.GraphicsDevice;
 
-            _mapComponent = new MapComponent(this, 40, 35, 148, 128, 30, 30);
+            _mapComponent = new MapComponent(this, 40, 35, 185, 160, 60, 60);
 
             CommandsActions[OutputActionType.AddUnit] = _mapComponent.AddUnit;
             CommandsActions[OutputActionType.MoveUnit] = _mapComponent.MoveUnit;
@@ -74,11 +73,15 @@ namespace AttackOnTitan.Scenes
             var device = SceneManager.GraphicsMgr.GraphicsDevice;
             Sprite = new SpriteBatch(Game.GraphicsDevice);
 
-            Textures["Hexagon"] = Game.Content.Load<Texture2D>("Textures/hexagon");
-            Textures["Ball"] = Game.Content.Load<Texture2D>("Textures/ball");
+            var texturesName = new[] { "Hexagon", "Ball", "Scout", "Garrison", 
+                "Police", "Builder", "Cadet", "Titan" };
+
             Fonts["Medium"] = TtfFontBaker.Bake(File.OpenRead("TTFFonts/OpenSans-Medium.ttf"),
                 30, 2048, 2048, _characterRanges).CreateSpriteFont(device);
 
+            foreach (var textureName in texturesName)
+                Textures[textureName] = Game.Content.Load<Texture2D>("Textures/" + textureName);
+            
             base.LoadContent();
         }
 

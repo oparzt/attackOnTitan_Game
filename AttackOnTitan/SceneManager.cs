@@ -20,6 +20,7 @@ namespace AttackOnTitan
         public SceneManager()
         {
             GraphicsMgr = new GraphicsDeviceManager(this);
+            GraphicsMgr.GraphicsProfile = GraphicsProfile.HiDef;
 
             Window.AllowUserResizing = false;
             Content.RootDirectory = "Content";
@@ -30,9 +31,9 @@ namespace AttackOnTitan
         {
             Window.Title = "Attack On Titan - Game";
             Window.IsBorderless = true;
-
-
             //Window.BeginScreenDeviceChange(true);
+            GraphicsMgr.PreferMultiSampling = true;
+            GraphicsMgr.GraphicsDevice.PresentationParameters.MultiSampleCount = 8;
             GraphicsMgr.PreferredBackBufferWidth = GraphicsMgr.GraphicsDevice.DisplayMode.Width;
             GraphicsMgr.PreferredBackBufferHeight = GraphicsMgr.GraphicsDevice.DisplayMode.Height;
             GraphicsMgr.ApplyChanges();

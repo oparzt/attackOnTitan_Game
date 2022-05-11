@@ -33,21 +33,30 @@ namespace AttackOnTitan.Models
         {
             Map = new MapModel(columnsMapCount, rowsMapCount);
             UnitPath = new(this);
+            var textures = new[]
+            {
+                "Scout", 
+                "Garrison", "Police",
+                "Builder", "Cadet", 
+                "Titan", "Titan"
+            };
             var positions = new[]
             {
-                Position.Center,
-                Position.Left, Position.Right,
-                Position.Top, Position.Bottom,
+                Position.Center, 
+                Position.LeftTopBorder, Position.RightTopBorder, 
+                Position.LeftBottomBorder, Position.RightBottomBorder,
                 Position.TopBorder, Position.BottomBorder,
-                Position.LeftTopBorder, Position.RightTopBorder,
-                Position.LeftBottomBorder, Position.RightBottomBorder
             };
+            
+            
 
-            for (var i = 0; i < 11; i++)
+            for (var i = 0; i < 7; i++)
             {
                 Units[i] = new UnitModel(i, true);
-                Units[i].CurCell = Map[0, i];
-                OutputActions.Enqueue(new(OutputActionType.AddUnit, new(i, 2, 2, positions[i], "Ball", null), null));
+                Units[i].CurCell = Map[2, 2];
+                OutputActions.Enqueue(new(OutputActionType.AddUnit, 
+                    new(i, 2, 2, positions[i], textures[i], null), 
+                    null));
             }
 
             InitializateHandlers();
