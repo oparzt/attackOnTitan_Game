@@ -16,10 +16,10 @@ namespace AttackOnTitan.Models
     public enum Position
     {
         Center,
-        Left,
-        Right,
-        Top,
-        Bottom,
+        TopLeft,
+        TopRight,
+        BottomLeft,
+        BottomRight,
         TopBorder,
         BottomBorder,
         LeftTopBorder,

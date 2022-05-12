@@ -56,10 +56,10 @@ namespace AttackOnTitan.Components
             return _positionsRectangles[position];
         }
 
-        public void CreatePositionsRectangles(Point unitSize)
+        public void CreatePositionsRectangles(Point unitTextureSize)
         {
-            var halfUnitWidth = new Point(unitSize.X / 2, 0);
-            var halfUnitHeight = new Point(0, unitSize.Y / 2);
+            var halfUnitWidth = new Point(unitTextureSize.X / 2, 0);
+            var halfUnitHeight = new Point(0, unitTextureSize.Y / 2);
             var halfUnitSize = halfUnitWidth + halfUnitHeight;
 
             var halfRectWidth = new Point(_destRect.Width / 2, 0);
@@ -85,29 +85,32 @@ namespace AttackOnTitan.Components
                 + quarterRectWidth, quarterRectWidth + halfRectHeight).Center;
 
             _positionsRectangles[Position.Center] = new Rectangle(center
-                - halfUnitSize, unitSize);
-
-            _positionsRectangles[Position.Top] = new Rectangle(center - halfUnitSize
-                - new Point(0, unitSize.Y), unitSize);
-            _positionsRectangles[Position.Bottom] = new Rectangle(center - halfUnitSize
-                + new Point(0, unitSize.Y), unitSize);
-            _positionsRectangles[Position.Left] = new Rectangle(center - halfUnitSize
-                - new Point(unitSize.X, 0), unitSize);
-            _positionsRectangles[Position.Right] = new Rectangle(center - halfUnitSize
-                + new Point(unitSize.X, 0), unitSize);
+                - halfUnitSize, unitTextureSize);
+            
+            _positionsRectangles[Position.TopLeft] = new Rectangle(center 
+                - unitTextureSize,
+                unitTextureSize);
+            _positionsRectangles[Position.TopRight] = new Rectangle(center 
+                - new Point(0, unitTextureSize.Y),
+                unitTextureSize);
+            _positionsRectangles[Position.BottomLeft] = new Rectangle(center
+                - new Point(unitTextureSize.X, 0),
+                unitTextureSize);
+            _positionsRectangles[Position.BottomRight] = new Rectangle(center,
+                unitTextureSize);
 
             _positionsRectangles[Position.TopBorder] = new Rectangle(topBorderCenter
-                - halfUnitSize, unitSize);
+                - halfUnitSize, unitTextureSize);
             _positionsRectangles[Position.BottomBorder] = new Rectangle(bottomBorderCenter
-                - halfUnitSize, unitSize);
+                - halfUnitSize, unitTextureSize);
             _positionsRectangles[Position.LeftTopBorder] = new Rectangle(leftTopBorderCenter
-                - halfUnitSize, unitSize);
+                - halfUnitSize, unitTextureSize);
             _positionsRectangles[Position.RightTopBorder] = new Rectangle(rightTopBorderCenter
-                - halfUnitSize, unitSize);
+                - halfUnitSize, unitTextureSize);
             _positionsRectangles[Position.LeftBottomBorder] = new Rectangle(leftBottomBorderCenter
-                - halfUnitSize, unitSize);
+                - halfUnitSize, unitTextureSize);
             _positionsRectangles[Position.RightBottomBorder] = new Rectangle(rightBottomBorderCenter
-                - halfUnitSize, unitSize);
+                - halfUnitSize, unitTextureSize);
 
         }
     }

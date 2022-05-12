@@ -34,7 +34,7 @@ namespace AttackOnTitan.Components
         public float Zoom
         {
             get => _zoom;
-            set => _zoom = value >= 1f ? 1f : value <= 0.7f ? 0.7f : value;
+            set => _zoom = value >= 1f ? 1f : value <= 0.6f ? 0.6f : value;
         }
         
         public Camera2D(int startPosX, int startPosY, 

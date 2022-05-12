@@ -15,6 +15,7 @@ namespace AttackOnTitan.Components
         public readonly int ID;
 
         private Rectangle _destRect;
+        private int _hitRadius;
         private float _opacity = 0.65f;
         private IScene _scene;
         private string _textureName;
@@ -34,13 +35,15 @@ namespace AttackOnTitan.Components
 
         private bool _isMove;
 
-        public UnitComponent(IScene scene, int id, string textureName, Rectangle destRect)
+        public UnitComponent(IScene scene, int id, string textureName, Rectangle destRect, int hitRadius)
         {
             ID = id;
 
             _scene = scene;
             _textureName = textureName;
             _destRect = destRect;
+
+            _hitRadius = hitRadius;
         }
 
         public void Update(GameTime gameTime, MouseState mouseState) {
@@ -105,7 +108,7 @@ namespace AttackOnTitan.Components
         public bool IsComponentOnPosition(Point point)
         {
             var dist = (point - _destRect.Center).ToVector2().Length();
-            return dist <= _destRect.Height / 2;
+            return dist <= _hitRadius;
         }
     }
 }

@@ -47,8 +47,8 @@ namespace AttackOnTitan.Scenes
         {
             var device = SceneManager.GraphicsMgr.GraphicsDevice;
 
-            _mapComponent = new MapComponent(this, 40, 35, 185, 160, 60, 60);
-
+            // _mapComponent = new MapComponent(this, 40, 35, 185, 160, 60, 60);
+            _mapComponent = new MapComponent(this, 40, 35, 222, 192, 60, 60);
             CommandsActions[OutputActionType.AddUnit] = _mapComponent.AddUnit;
             CommandsActions[OutputActionType.MoveUnit] = _mapComponent.MoveUnit;
             CommandsActions[OutputActionType.ChangeUnitOpacity] = _mapComponent.ChangeUnitOpacity;
@@ -74,7 +74,7 @@ namespace AttackOnTitan.Scenes
             Sprite = new SpriteBatch(Game.GraphicsDevice);
 
             var texturesName = new[] { "Hexagon", "Ball", "Scout", "Garrison", 
-                "Police", "Builder", "Cadet", "Titan" };
+                "Police", "Builder", "Cadet", "Titan", "Grass" };
 
             Fonts["Medium"] = TtfFontBaker.Bake(File.OpenRead("TTFFonts/OpenSans-Medium.ttf"),
                 30, 2048, 2048, _characterRanges).CreateSpriteFont(device);
@@ -122,13 +122,6 @@ namespace AttackOnTitan.Scenes
             var device = SceneManager.GraphicsMgr.GraphicsDevice;
 
             _mapComponent.Draw(Sprite);
-
-
-            //Sprite.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
-            //Sprite.Draw(Textures["Background"], device.ScissorRectangle, Color.White);
-            //foreach (var component in Components)
-            //    component.Draw(Sprite);
-            //Sprite.End();
 
             base.Draw(gameTime);
         }

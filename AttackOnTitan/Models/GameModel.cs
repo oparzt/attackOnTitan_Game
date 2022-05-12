@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Threading;
@@ -12,45 +11,40 @@ namespace AttackOnTitan.Models
 
         private bool _killThread;
 
-        public static ConcurrentQueue<InputAction> InputActions = new();
-        public static ConcurrentQueue<OutputAction> OutputActions = new();
+        public static readonly ConcurrentQueue<InputAction> InputActions = new();
+        public static readonly ConcurrentQueue<OutputAction> OutputActions = new();
 
-        private Dictionary<InputActionType, Action<InputAction>> _handlers = new();
+        private readonly Dictionary<InputActionType, Action<InputAction>> _handlers = new();
 
-        public MapModel Map;
-        public MapEventHandler MapEventHandler;
+        public readonly MapModel Map;
 
         public UnitModel PreselectedUnit;
         public UnitModel SelectedUnit;
-        public UnitPath UnitPath;
-        public Dictionary<int, UnitModel> Units = new();
+        public readonly UnitPath UnitPath;
+        public readonly Dictionary<int, UnitModel> Units = new();
 
-        public UnitEventHandler UnitEventHandler;
-
-        public KeyEventHandler KeyEventHandler;
+        private UnitEventHandler _unitEventHandler;
+        private MapEventHandler _mapEventHandler;
+        private KeyEventHandler _keyEventHandler;
 
         public GameModel(int columnsMapCount, int rowsMapCount)
         {
             Map = new MapModel(columnsMapCount, rowsMapCount);
-            UnitPath = new(this);
+            UnitPath = new UnitPath(this);
             var textures = new[]
             {
-                "Scout", 
-                "Garrison", "Police",
-                "Builder", "Cadet", 
-                "Titan", "Titan"
+                "Scout",  "Garrison", "Police", "Cadet",
+                "Titan", "Titan", "Titan", "Titan", "Titan", "Titan"
             };
             var positions = new[]
             {
-                Position.Center, 
+                Position.TopLeft, Position.TopRight, Position.BottomLeft, Position.BottomRight,
                 Position.LeftTopBorder, Position.RightTopBorder, 
                 Position.LeftBottomBorder, Position.RightBottomBorder,
                 Position.TopBorder, Position.BottomBorder,
             };
-            
-            
 
-            for (var i = 0; i < 7; i++)
+            for (var i = 0; i < 10; i++)
             {
                 Units[i] = new UnitModel(i, true);
                 Units[i].CurCell = Map[2, 2];
@@ -59,26 +53,28 @@ namespace AttackOnTitan.Models
                     null));
             }
 
-            InitializateHandlers();
+            InitializeHandlers();
         }
 
-        public void InitializateHandlers()
+        private void InitializeHandlers()
         {
-            MapEventHandler = new(this);
-            KeyEventHandler = new(this);
-            UnitEventHandler = new(this);
+            _mapEventHandler = new MapEventHandler(this);
+            _keyEventHandler = new KeyEventHandler(this);
+            _unitEventHandler = new UnitEventHandler(this);
 
-            _handlers[InputActionType.None] = action => { };
-            _handlers[InputActionType.KeyPressed] = KeyEventHandler.Handle;
-            _handlers[InputActionType.SelectMapCell] = MapEventHandler.HandleSelect;
-            _handlers[InputActionType.SelectUnit] = UnitEventHandler.HandleSelect;
-            _handlers[InputActionType.UnitStopMove] = UnitEventHandler.HandleStopMove;
+            _handlers[InputActionType.None] = _ => { };
+            _handlers[InputActionType.KeyPressed] = _keyEventHandler.Handle;
+            _handlers[InputActionType.SelectMapCell] = _mapEventHandler.HandleSelect;
+            _handlers[InputActionType.SelectUnit] = _unitEventHandler.HandleSelect;
+            _handlers[InputActionType.UnitStopMove] = _unitEventHandler.HandleStopMove;
         }
 
         public void Run()
         {
-            _modelThread = new Thread(Step);
-            _modelThread.IsBackground = true;
+            _modelThread = new Thread(Step)
+            {
+                IsBackground = true
+            };
             _modelThread.Start();
 
 
