@@ -118,10 +118,10 @@ namespace AttackOnTitan.Components
         public void MoveUnit(UnitInfo unitInfo, MapCellInfo mapCellInfo)
         {
             var unit = _units[unitInfo.ID];
-            var targetCell = _mapItems[unitInfo.X, unitInfo.Y];
+            var targetPosition = _mapItems[unitInfo.X, unitInfo.Y].GetPosition(unitInfo.Position);
 
             _movedUnits.Add(unit);
-            unit.Move(targetCell);
+            unit.Move(targetPosition);
         }
 
         public void StopUnit(UnitInfo unitInfo, MapCellInfo mapCellInfo)

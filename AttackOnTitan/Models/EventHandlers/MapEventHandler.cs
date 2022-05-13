@@ -54,7 +54,9 @@ namespace AttackOnTitan.Models
 
         private void HandleRightMouseSelect(InputAction action)
         {
-            if (GameModel.SelectedUnit is null || GameModel.SelectedUnit.Moved)
+            if (GameModel.SelectedUnit is null 
+                || GameModel.SelectedUnit.Enemy 
+                || GameModel.SelectedUnit.Moved)
             {
                 HandleNoMouseSelect(action);
                 return;

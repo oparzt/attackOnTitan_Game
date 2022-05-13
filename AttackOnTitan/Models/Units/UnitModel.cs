@@ -7,17 +7,18 @@ namespace AttackOnTitan.Models
         public readonly int ID;
         public MapCellModel CurCell;
 
-        public bool CanGo;
+        public bool CanGo = true;
         public bool IsFly;
         public bool Moved;
+        public bool Enemy;
 
         public int MaxEnergy = 10;
         public int Energy = 10;
 
-        public UnitModel(int id, bool canGo)
+        public UnitModel(int id, bool enemy = false)
         {
             ID = id;
-            CanGo = canGo;
+            Enemy = enemy;
         }
 
         public void SetOpacity(float opacity) =>

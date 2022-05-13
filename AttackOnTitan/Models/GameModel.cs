@@ -34,22 +34,36 @@ namespace AttackOnTitan.Models
             var textures = new[]
             {
                 "Scout",  "Garrison", "Police", "Cadet",
-                "Titan", "Titan", "Titan", "Titan", "Titan", "Titan"
+                "Titan", "Titan", "Titan", "Titan"
             };
             var positions = new[]
             {
-                Position.TopLeft, Position.TopRight, Position.BottomLeft, Position.BottomRight,
-                Position.LeftTopBorder, Position.RightTopBorder, 
-                Position.LeftBottomBorder, Position.RightBottomBorder,
-                Position.TopBorder, Position.BottomBorder,
+                Position.TopLeft, Position.TopRight, Position.BottomLeft, Position.BottomRight
             };
 
-            for (var i = 0; i < 10; i++)
+            for (var i = 0; i < 4; i++)
             {
-                Units[i] = new UnitModel(i, true);
-                Units[i].CurCell = Map[2, 2];
+                Units[i] = new UnitModel(i)
+                {
+                    CurCell = Map[2, 2]
+                };
+                Map[2, 2].UnitsInCell[positions[i]] = Units[i];
                 OutputActions.Enqueue(new(OutputActionType.AddUnit, 
                     new(i, 2, 2, positions[i], textures[i], null), 
+                    null));
+            }
+            
+            for (var i = 0; i < 4; i++)
+            {
+                Units[i + 4] = new UnitModel(i + 4, true)
+                {
+                    CurCell = Map[4, 2],
+                    Enemy = true
+                };
+                
+                Map[4, 2].UnitsInCell[positions[i]] = Units[i + 4];
+                OutputActions.Enqueue(new(OutputActionType.AddUnit, 
+                    new(i + 4, 4, 2, positions[i], textures[i + 4], null), 
                     null));
             }
 

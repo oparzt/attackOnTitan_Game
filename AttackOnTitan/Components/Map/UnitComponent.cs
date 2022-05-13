@@ -24,14 +24,15 @@ namespace AttackOnTitan.Components
         private float _speed = 0.25f;
 
         // Сколько пикселей пройдет за одну миллисекунду по осям;
-        private float _speedX = 0f;
-        private float _speedY = 0f;
+        private float _speedX;
+        private float _speedY;
 
         private Queue<MapCellComponent> _targetCells = new();
+        private Queue<Rectangle> _targetPositions = new();
         private Point _targetPoint;
 
-        private float _curX = 0f;
-        private float _curY = 0f;
+        private float _curX;
+        private float _curY;
 
         private bool _isMove;
 
@@ -51,13 +52,13 @@ namespace AttackOnTitan.Components
 
             if (!_isMove)
             {
-                if (_targetCells.TryDequeue(out var targetCell))
+                if (_targetPositions.TryDequeue(out var targetPosition))
                 {
-                    _targetPoint = targetCell.GetCenter() - new Point(_destRect.Width / 2, _destRect.Height / 2);
-
+                    _targetPoint = targetPosition.Location;
+                    
                     _curX = _destRect.Location.X;
                     _curY = _destRect.Location.Y;
-
+                    
                     var diffLengthInPoint = _targetPoint - _destRect.Location;
                     var diffLength = Math.Sqrt(diffLengthInPoint.X * diffLengthInPoint.X + diffLengthInPoint.Y * diffLengthInPoint.Y);
                     var time = diffLength / _speed;
@@ -80,7 +81,7 @@ namespace AttackOnTitan.Components
             var newLocation = new Point((int)_curX, (int)_curY);
             var diff = _targetPoint - newLocation;
 
-            if (Math.Sqrt(diff.X * diff.X + diff.Y * diff.Y) <= 2)
+            if (Math.Sqrt(diff.X * diff.X + diff.Y * diff.Y) <= 5)
             {
                 _destRect.Location = _targetPoint;
                 _isMove = false;
@@ -90,19 +91,17 @@ namespace AttackOnTitan.Components
             }
         }
 
-        public void Move(MapCellComponent mapCell)
-        {
-            _targetCells.Enqueue(mapCell);
-        }
+        public void Move(Rectangle position) =>
+            _targetPositions.Enqueue(position);
 
-        public void SetOpacity(float opacity)
-        {
+        public void SetOpacity(float opacity) =>
             _opacity = opacity;
-        }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(_scene.Textures[_textureName], _destRect, null, Color.White * _opacity, 0f, Vector2.Zero, SpriteEffects.None, 1f);
+            spriteBatch.Draw(_scene.Textures[_textureName], _destRect, null, 
+                Color.White * _opacity, 0f, Vector2.Zero, 
+                SpriteEffects.None, 1f);
         }
 
         public bool IsComponentOnPosition(Point point)

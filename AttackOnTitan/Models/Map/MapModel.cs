@@ -36,12 +36,12 @@ namespace AttackOnTitan.Models
 
             var nearCellsWeights = new Dictionary<NearCellsName, Weight>()
             {
-                [NearCellsName.LeftTop] = new(1, 1),
-                [NearCellsName.LeftBottom] = new(1, 1),
-                [NearCellsName.Top] = new(1, 1),
-                [NearCellsName.Bottom] = new(1, 1),
-                [NearCellsName.RightTop] = new(1, 1),
-                [NearCellsName.RightBottom] = new(1, 1)
+                [NearCellsName.LeftTop] = new(1, 1, NearCellsName.LeftTop),
+                [NearCellsName.LeftBottom] = new(1, 1, NearCellsName.LeftBottom),
+                [NearCellsName.Top] = new(1, 1, NearCellsName.Top),
+                [NearCellsName.Bottom] = new(1, 1, NearCellsName.Bottom),
+                [NearCellsName.RightTop] = new(1, 1, NearCellsName.RightTop),
+                [NearCellsName.RightBottom] = new(1, 1, NearCellsName.RightBottom)
             };
 
             for (var x = 0; x < _columnsCount; x++)
