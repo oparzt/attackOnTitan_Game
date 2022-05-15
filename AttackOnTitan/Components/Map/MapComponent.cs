@@ -16,21 +16,39 @@ namespace AttackOnTitan.Components
         private IScene _scene;
 
         private MapCellComponent[,] _mapItems;
+        private Rectangle[,] _grassRects;
         private Camera2D _camera;
 
-        private int _columnCount;
-        private int _rowCount;
+        private int _cellsColumnCount;
+        private int _cellsRowCount;
+
+        private int _grassColumnCount;
+        private int _grassRowCount;
 
         public float HexWidth => _hexWidth * _camera.Zoom;
         public float HexHeight => _hexHeight * _camera.Zoom;
 
+        public float GrassWidth => _grassWidth * _camera.Zoom;
+        public float GrassHeight => _grassHeight * _camera.Zoom;
+
         private int _hexWidth;
         private int _hexHeight;
 
-        private int _leftColumnIntoView;
-        private int _rightColumnIntoView;
-        private int _topRowIntoView;
-        private int _bottomRowIntoView;
+        private int _mapWidth;
+        private int _mapHeight;
+
+        private int _grassWidth = 200;
+        private int _grassHeight = 200;
+
+        private int _leftCellsBorder;
+        private int _rightCellsBorder;
+        private int _topCellsBorder;
+        private int _bottomCellsBorder;
+
+        private int _leftGrassBorder;
+        private int _rightGrassBorder;
+        private int _topGrassBorder;
+        private int _bottomGrassBorder;
 
         private Rectangle _unitTextureRect;
         private int _unitHitRadius;
@@ -38,12 +56,12 @@ namespace AttackOnTitan.Components
         private Dictionary<int, UnitComponent> _units = new();
         private HashSet<UnitComponent> _movedUnits = new();
 
-        public MapComponent(IScene parent, int columnCount, int rowCount,
+        public MapComponent(IScene parent, int cellsColumnCount, int cellsRowCount,
             int hexWidth, int hexHeight, int unitWidth, int unitHeight)
         {
-            _mapItems = new MapCellComponent[columnCount, rowCount];
-            _columnCount = columnCount;
-            _rowCount = rowCount;
+            _mapItems = new MapCellComponent[cellsColumnCount, cellsRowCount];
+            _cellsColumnCount = cellsColumnCount;
+            _cellsRowCount = cellsRowCount;
             _hexWidth = hexWidth;
             _hexHeight = hexHeight;
             _scene = parent;
@@ -52,20 +70,21 @@ namespace AttackOnTitan.Components
             _unitHitRadius = unitWidth / 6 * 5 / 2;
 
             InitializeMap();
+            InitializeGrass();
         }
 
         private void InitializeMap()
         {
-            var mapWidth = _columnCount * _hexWidth / 4 * 3 + _hexWidth / 4;
-            var mapHeight = _rowCount * _hexHeight + _hexHeight / 2;
+            _mapWidth = _cellsColumnCount * _hexWidth / 4 * 3 + _hexWidth / 4;
+            _mapHeight = _cellsRowCount * _hexHeight + _hexHeight / 2;
 
             var viewportWidth = SceneManager.GraphicsMgr.GraphicsDevice.Viewport.Width;
             var viewportHeight = SceneManager.GraphicsMgr.GraphicsDevice.Viewport.Height;
 
-            _camera = new Camera2D(0, 0, viewportWidth, viewportHeight, mapWidth, mapHeight);
+            _camera = new Camera2D(0, 0, viewportWidth, viewportHeight, _mapWidth, _mapHeight);
 
-            for (var row = 0; row < _rowCount; row++)
-                for (var column = 0; column < _columnCount; column++)
+            for (var row = 0; row < _cellsRowCount; row++)
+                for (var column = 0; column < _cellsColumnCount; column++)
                 {
                     _mapItems[column, row] = new MapCellComponent(_scene, "Hexagon", column, row,
                         new Rectangle(
@@ -74,6 +93,21 @@ namespace AttackOnTitan.Components
                             _hexWidth, _hexHeight));
                     _mapItems[column, row].CreatePositionsRectangles(_unitTextureRect.Size);
                 }
+        }
+
+        private void InitializeGrass()
+        {
+            var viewport = SceneManager.GraphicsMgr.GraphicsDevice.Viewport;
+
+            _grassColumnCount = _mapWidth / _grassWidth + 2;
+            _grassRowCount = _mapHeight / _grassHeight + 2;
+
+            _grassRects = new Rectangle[_grassColumnCount, _grassRowCount];
+            
+
+            for (var x = 0; x < _grassColumnCount; x++)
+            for (var y = 0; y < _grassColumnCount; y++)
+                _grassRects[x, y] = new Rectangle(x * _grassWidth, y * _grassHeight, _grassWidth, _grassHeight);
         }
 
         public void Update(GameTime gameTime, MouseState mouseState)
@@ -91,7 +125,8 @@ namespace AttackOnTitan.Components
             if (selectedUnitItem is not null)
                 InitiateSelectUnitAction(selectedUnitItem, mouseBtn);
 
-            SetItemRangeIntoViewport();
+            SetCellsRangeIntoViewport();
+            SetGrassRangeIntoViewport();
 
             foreach (var unit in _movedUnits)
                 unit.Update(gameTime, mouseState);
@@ -153,13 +188,19 @@ namespace AttackOnTitan.Components
         {
             spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend,
                 null, null, null, null, _camera.Transform);
-
-            for (var x = _leftColumnIntoView; x < _rightColumnIntoView; x++)
-            for (var y = _topRowIntoView; y < _bottomRowIntoView; y++)
+            
+            for (var x = _leftCellsBorder; x < _rightCellsBorder; x++)
+            for (var y = _topCellsBorder; y < _bottomCellsBorder; y++)
                 _mapItems[x, y].Draw(spriteBatch);
 
             foreach (var unit in _units.Values)
                 unit.Draw(spriteBatch);
+            
+            for (var i = _leftGrassBorder; i < _rightGrassBorder; i++)
+            for (var n = _topGrassBorder; n < _bottomGrassBorder; n++)
+                spriteBatch.Draw(_scene.Textures["Grass"], _grassRects[i, n], 
+                    null, Color.White, 0, Vector2.Zero, 
+                    SpriteEffects.None, 0);
 
             spriteBatch.End();
         }
@@ -172,8 +213,8 @@ namespace AttackOnTitan.Components
             intendedColumn = intendedColumn > 0 ? intendedColumn - 1 : 0;
             intendedRow = intendedRow > 0 ? intendedRow - 1 : 0;
 
-            for (var x = intendedColumn; x < intendedColumn + 2 && x < _columnCount; x++)
-            for (var y = intendedRow; y < intendedRow + 2 && y < _rowCount; y++)
+            for (var x = intendedColumn; x < intendedColumn + 2 && x < _cellsColumnCount; x++)
+            for (var y = intendedRow; y < intendedRow + 2 && y < _cellsRowCount; y++)
                 if (_mapItems[x, y].IsComponentOnPosition(_camera.MousePoint))
                     return _mapItems[x, y];
 
@@ -184,7 +225,7 @@ namespace AttackOnTitan.Components
             _units.Values
                 .FirstOrDefault(unit => unit.IsComponentOnPosition(_camera.MousePoint));
 
-        private void SetItemRangeIntoViewport()
+        private void SetCellsRangeIntoViewport()
         {
             var viewWidth = SceneManager.GraphicsMgr.GraphicsDevice.Viewport.Width;
             var viewHeight = SceneManager.GraphicsMgr.GraphicsDevice.Viewport.Height;
@@ -195,11 +236,29 @@ namespace AttackOnTitan.Components
             var intendedTopRow = (int)(-_camera.Pos.Y / HexHeight);
             var intendedBottomRow = (int)((-_camera.Pos.Y + viewHeight) / HexHeight);
             
-            _leftColumnIntoView = intendedLeftColumn > 0 ? intendedLeftColumn - 1 : 0;
-            _rightColumnIntoView = intendedRightColumn >= _columnCount ? _columnCount : intendedRightColumn + 1;
+            _leftCellsBorder = intendedLeftColumn > 0 ? intendedLeftColumn - 1 : 0;
+            _rightCellsBorder = intendedRightColumn >= _cellsColumnCount ? _cellsColumnCount : intendedRightColumn + 1;
             
-            _topRowIntoView = intendedTopRow > 0 ? intendedTopRow - 1 : 0;
-            _bottomRowIntoView = intendedBottomRow >= _rowCount ? _rowCount : intendedBottomRow + 1;
+            _topCellsBorder = intendedTopRow > 0 ? intendedTopRow - 1 : 0;
+            _bottomCellsBorder = intendedBottomRow >= _cellsRowCount ? _cellsRowCount : intendedBottomRow + 1;
+        }
+        
+        private void SetGrassRangeIntoViewport()
+        {
+            var viewWidth = SceneManager.GraphicsMgr.GraphicsDevice.Viewport.Width;
+            var viewHeight = SceneManager.GraphicsMgr.GraphicsDevice.Viewport.Height;
+
+            var intendedLeftColumn = (int)(-_camera.Pos.X / GrassWidth);
+            var intendedRightColumn = (int)((-_camera.Pos.X + viewWidth) / GrassWidth);
+            
+            var intendedTopRow = (int)(-_camera.Pos.Y / GrassHeight);
+            var intendedBottomRow = (int)((-_camera.Pos.Y + viewHeight) / GrassHeight);
+            
+            _leftGrassBorder = intendedLeftColumn > 0 ? intendedLeftColumn - 1 : 0;
+            _rightGrassBorder = intendedRightColumn >= _grassColumnCount ? _grassColumnCount : intendedRightColumn + 1;
+            
+            _topGrassBorder = intendedTopRow > 0 ? intendedTopRow - 1 : 0;
+            _bottomGrassBorder = intendedBottomRow >= _grassRowCount ? _grassRowCount : intendedBottomRow + 1;
         }
     }
 }
