@@ -22,8 +22,14 @@ namespace AttackOnTitan.Models
         }
 
         public void SetOpacity(float opacity) =>
-            GameModel.OutputActions.Enqueue(new(OutputActionType.ChangeUnitOpacity,
-                new(ID, opacity), null));
+            GameModel.OutputActions.Enqueue(new OutputAction()
+            {
+                ActionType = OutputActionType.ChangeUnitOpacity,
+                UnitInfo = new UnitInfo(ID)
+                {
+                    Opacity = opacity
+                }
+            });
 
         public void SetUnselectedOpacity() =>
             SetOpacity(0.65f);

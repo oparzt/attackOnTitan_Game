@@ -15,6 +15,9 @@ namespace AttackOnTitan.Models
         ChangeUnitOpacity,
 
         ChangeCellOpacity,
+        
+        AddResource,
+        UpdateResourceCount
 
         //ChangeUnitTexture,
         //ChangeUnitText,
@@ -23,66 +26,29 @@ namespace AttackOnTitan.Models
 
     public class OutputAction
     {
-        public readonly OutputActionType ActionType;
+        public OutputActionType ActionType;
 
-        public readonly UnitInfo UnitInfo;
-        public readonly MapCellInfo MapCellInfo;
-
-        public OutputAction(OutputActionType actionType, UnitInfo unitInfo, MapCellInfo mapCellInfo)
-        {
-            ActionType = actionType;
-            UnitInfo = unitInfo;
-            MapCellInfo = mapCellInfo;
-        }
+        public UnitInfo UnitInfo;
+        public MapCellInfo MapCellInfo;
+        public ResourceInfo ResourceInfo;
     }
 
     public class UnitInfo
     {
         public readonly int ID;
 
-        public readonly int X;
-        public readonly int Y;
-        public readonly Position Position;
+        public int X;
+        public int Y;
+        public Position Position;
 
-        public readonly float Opacity;
+        public float Opacity;
 
-        public readonly string TextureName;
-        public readonly string UnitText;
+        public string TextureName;
+        public string UnitText;
 
         public UnitInfo(int id)
         {
             ID = id;
-        }
-
-        public UnitInfo(int id, float opacity)
-        {
-            ID = id;
-            Opacity = opacity;
-        }
-
-        public UnitInfo(int id, int x, int y, Position position)
-        {
-            ID = id;
-            X = x;
-            Y = y;
-            Position = position;
-        }
-
-        public UnitInfo(int id, string textureName, string unitText)
-        {
-            ID = id;
-            TextureName = textureName;
-            UnitText = unitText;
-        }
-
-        public UnitInfo(int id, int x, int y, Position position, string textureName, string unitText)
-        {
-            ID = id;
-            X = x;
-            Y = y;
-            Position = position;
-            TextureName = textureName;
-            UnitText = unitText;
         }
     }
 
@@ -91,22 +57,27 @@ namespace AttackOnTitan.Models
         public readonly int X;
         public readonly int Y;
 
-        public readonly float Opacity;
+        public float Opacity;
+        public string TextureName;
 
-        public readonly string TextureName;
-
-        public MapCellInfo(int x, int y, float opacity)
+        public MapCellInfo(int x, int y)
         {
             X = x;
             Y = y;
-            Opacity = opacity;
         }
+    }
 
-        public MapCellInfo(int x, int y, string textureName)
+    public class ResourceInfo
+    {
+        public readonly ResourceType ResourceType;
+
+        public string TextureName;
+        public Point TextureSize;
+        public string Count;
+
+        public ResourceInfo(ResourceType resourceType)
         {
-            X = x;
-            Y = y;
-            TextureName = textureName;
+            ResourceType = resourceType;
         }
     }
 }

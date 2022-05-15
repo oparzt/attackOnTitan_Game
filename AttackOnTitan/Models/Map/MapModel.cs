@@ -50,8 +50,14 @@ namespace AttackOnTitan.Models
         }
 
         public void SetCellOpacity(MapCellModel mapCell, float opacity) =>
-            GameModel.OutputActions.Enqueue(new(OutputActionType.ChangeCellOpacity,
-                null, new(mapCell.X, mapCell.Y, opacity)));
+            GameModel.OutputActions.Enqueue(new OutputAction()
+            {
+                ActionType = OutputActionType.ChangeCellOpacity,
+                MapCellInfo = new MapCellInfo(mapCell.X, mapCell.Y)
+                {
+                    Opacity = opacity
+                }
+            });
 
         public void SetUnselectedOpacity(MapCellModel mapCell) =>
             SetCellOpacity(mapCell, 0.3f);

@@ -19,7 +19,11 @@ namespace AttackOnTitan.Models
 
         public void HandleStopMove(InputAction action)
         {
-            GameModel.OutputActions.Enqueue(new(OutputActionType.StopUnit, new(action.SelectedUnit.ID), null));
+            GameModel.OutputActions.Enqueue(new OutputAction()
+            {
+                ActionType = OutputActionType.StopUnit,
+                UnitInfo = new UnitInfo(action.SelectedUnit.ID)
+            });
             GameModel.Units[action.SelectedUnit.ID].Moved = false;
         }
 

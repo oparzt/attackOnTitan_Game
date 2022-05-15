@@ -108,14 +108,14 @@ namespace AttackOnTitan.Components
             GameModel.InputActions.Enqueue(new InputAction(new SelectedUnit(unitItem.ID), mouseBtn));
 
 
-        public void AddUnit(UnitInfo unitInfo, MapCellInfo mapCellInfo)
+        public void AddUnit(UnitInfo unitInfo)
         {
             _units[unitInfo.ID] = new UnitComponent(_scene, unitInfo.ID, unitInfo.TextureName,
                 _mapItems[unitInfo.X, unitInfo.Y].GetPosition(unitInfo.Position),
                 _unitHitRadius);
         }
 
-        public void MoveUnit(UnitInfo unitInfo, MapCellInfo mapCellInfo)
+        public void MoveUnit(UnitInfo unitInfo)
         {
             var unit = _units[unitInfo.ID];
             var targetPosition = _mapItems[unitInfo.X, unitInfo.Y].GetPosition(unitInfo.Position);
@@ -124,17 +124,17 @@ namespace AttackOnTitan.Components
             unit.Move(targetPosition);
         }
 
-        public void StopUnit(UnitInfo unitInfo, MapCellInfo mapCellInfo)
+        public void StopUnit(UnitInfo unitInfo)
         {
             _movedUnits.Remove(_units[unitInfo.ID]);
         }
 
-        public void ChangeUnitOpacity(UnitInfo unitInfo, MapCellInfo mapCellInfo)
+        public void ChangeUnitOpacity(UnitInfo unitInfo)
         {
             _units[unitInfo.ID].SetOpacity(unitInfo.Opacity);
         }
 
-        public void ChangeCellOpacity(UnitInfo unitInfo, MapCellInfo mapCellInfo)
+        public void ChangeCellOpacity(MapCellInfo mapCellInfo)
         {
             _mapItems[mapCellInfo.X, mapCellInfo.Y].SetOpacity(mapCellInfo.Opacity);
         }

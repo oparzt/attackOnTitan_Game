@@ -149,8 +149,16 @@ namespace AttackOnTitan.Models
             else
             {
                 var positionForUnitInCenter = GetEmptyPositionInCell();
-                GameModel.OutputActions.Enqueue(new(OutputActionType.MoveUnit,
-                    new(UnitInCenterOfCell.ID, X, Y, positionForUnitInCenter), null));
+                GameModel.OutputActions.Enqueue(new OutputAction()
+                {
+                    ActionType = OutputActionType.MoveUnit,
+                    UnitInfo = new UnitInfo(UnitInCenterOfCell.ID)
+                    {
+                        X = X,
+                        Y = Y,
+                        Position = positionForUnitInCenter
+                    }
+                });
                 UnitsInCell[positionForUnitInCenter] = UnitInCenterOfCell;
                 UnitInCenterOfCell = null;
             }

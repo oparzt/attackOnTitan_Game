@@ -2,9 +2,18 @@
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Threading;
+using AttackOnTitan.Scenes;
+using Microsoft.Xna.Framework;
 
 namespace AttackOnTitan.Models
 {
+    public enum ResourceType
+    {
+        Coin,
+        Log,
+        Stone
+    }
+    
     public class GameModel : IDisposable
     {
         private Thread _modelThread;
@@ -48,9 +57,17 @@ namespace AttackOnTitan.Models
                     CurCell = Map[2, 2]
                 };
                 Map[2, 2].UnitsInCell[positions[i]] = Units[i];
-                OutputActions.Enqueue(new(OutputActionType.AddUnit, 
-                    new(i, 2, 2, positions[i], textures[i], null), 
-                    null));
+                OutputActions.Enqueue(new OutputAction()
+                {
+                    ActionType = OutputActionType.AddUnit,
+                    UnitInfo = new UnitInfo(i)
+                    {
+                        X = 2,
+                        Y = 2,
+                        Position = positions[i],
+                        TextureName = textures[i]
+                    }
+                });
             }
             
             for (var i = 0; i < 4; i++)
@@ -62,10 +79,52 @@ namespace AttackOnTitan.Models
                 };
                 
                 Map[4, 2].UnitsInCell[positions[i]] = Units[i + 4];
-                OutputActions.Enqueue(new(OutputActionType.AddUnit, 
-                    new(i + 4, 4, 2, positions[i], textures[i + 4], null), 
-                    null));
+                
+                OutputActions.Enqueue(new OutputAction()
+                {
+                    ActionType = OutputActionType.AddUnit,
+                    UnitInfo = new UnitInfo(i + 4)
+                    {
+                        X = 4,
+                        Y = 2,
+                        Position = positions[i],
+                        TextureName = textures[i + 4]
+                    }
+                });
             }
+            
+            OutputActions.Enqueue(new OutputAction()
+            {
+                ActionType = OutputActionType.AddResource,
+                ResourceInfo = new ResourceInfo(ResourceType.Coin)
+                {
+                    Count = "100",
+                    TextureName = "Coin",
+                    TextureSize = new Point(29, 20)
+                }
+            });
+            
+            OutputActions.Enqueue(new OutputAction()
+            {
+                ActionType = OutputActionType.AddResource,
+                ResourceInfo = new ResourceInfo(ResourceType.Log)
+                {
+                    Count = "100",
+                    TextureName = "Log",
+                    TextureSize = new Point(48, 24)
+                }
+            });
+            
+            OutputActions.Enqueue(new OutputAction()
+            {
+                ActionType = OutputActionType.AddResource,
+                ResourceInfo = new ResourceInfo(ResourceType.Stone)
+                {
+                    Count = "100",
+                    TextureName = "Stone",
+                    TextureSize = new Point(52, 30)
+                }
+            });
 
             InitializeHandlers();
         }
@@ -90,8 +149,6 @@ namespace AttackOnTitan.Models
                 IsBackground = true
             };
             _modelThread.Start();
-
-
         }
 
         public void Dispose() => _killThread = true;

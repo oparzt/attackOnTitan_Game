@@ -3,7 +3,6 @@ using System.IO;
 using System.Collections.Generic;
 
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
@@ -21,15 +20,16 @@ namespace AttackOnTitan.Scenes
         public SpriteBatch Sprite { get; private set; }
         public List<IComponent> Components { get; }
 
-        public Dictionary<OutputActionType, Action<UnitInfo, MapCellInfo>> CommandsActions = new();
+        private readonly Dictionary<OutputActionType, Action<OutputAction>> _commandsActions = new();
 
-        public GameModel GameModel;
+        private GameModel _gameModel;
 
         private MapComponent _mapComponent;
+        private TopBarComponent _topBarComponent;
 
         private Keys _lastKey = Keys.None;
 
-        private CharacterRange[] _characterRanges = new []
+        private readonly CharacterRange[] _characterRanges =
         {
             CharacterRange.BasicLatin,
             CharacterRange.Cyrillic
@@ -45,25 +45,28 @@ namespace AttackOnTitan.Scenes
 
         public override void Initialize()
         {
-            var device = SceneManager.GraphicsMgr.GraphicsDevice;
-
-            // _mapComponent = new MapComponent(this, 40, 35, 185, 160, 60, 60);
-            _mapComponent = new MapComponent(this, 40, 35, 222, 192, 60, 60);
-            CommandsActions[OutputActionType.AddUnit] = _mapComponent.AddUnit;
-            CommandsActions[OutputActionType.MoveUnit] = _mapComponent.MoveUnit;
-            CommandsActions[OutputActionType.ChangeUnitOpacity] = _mapComponent.ChangeUnitOpacity;
-            CommandsActions[OutputActionType.ChangeCellOpacity] = _mapComponent.ChangeCellOpacity;
-            CommandsActions[OutputActionType.StopUnit] = _mapComponent.StopUnit;
-
-            GameModel = new(40, 35);
-            GameModel.Run();
+            var viewport = SceneManager.GraphicsMgr.GraphicsDevice.Viewport;
+            _mapComponent = new MapComponent(this, 40, 35, 
+                222, 192, 60, 60);
+            _topBarComponent = new TopBarComponent(this, viewport.Width, 35, 24);
+            
+            _commandsActions[OutputActionType.AddUnit] = action => _mapComponent.AddUnit(action.UnitInfo);
+            _commandsActions[OutputActionType.MoveUnit] = action => _mapComponent.MoveUnit(action.UnitInfo);
+            _commandsActions[OutputActionType.StopUnit] = action => _mapComponent.StopUnit(action.UnitInfo);
+            _commandsActions[OutputActionType.ChangeUnitOpacity] = action => _mapComponent.ChangeUnitOpacity(action.UnitInfo);
+            _commandsActions[OutputActionType.ChangeCellOpacity] = action => _mapComponent.ChangeCellOpacity(action.MapCellInfo);
+            _commandsActions[OutputActionType.AddResource] = action => _topBarComponent.AddResource(action.ResourceInfo);
+            _commandsActions[OutputActionType.UpdateResourceCount] = action => _topBarComponent.UpdateResourceCount(action.ResourceInfo);
+            
+            _gameModel = new GameModel(40, 35);
+            _gameModel.Run();
 
             base.Initialize();
         }
 
         protected override void Dispose(bool disposing)
         {
-            GameModel.Dispose();
+            _gameModel.Dispose();
             base.Dispose(disposing);
         }
 
@@ -73,14 +76,19 @@ namespace AttackOnTitan.Scenes
             var device = SceneManager.GraphicsMgr.GraphicsDevice;
             Sprite = new SpriteBatch(Game.GraphicsDevice);
 
-            var texturesName = new[] { "Hexagon", "Ball", "Scout", "Garrison", 
-                "Police", "Builder", "Cadet", "Titan", "Grass" };
+            var texturesName = new[] { "Hexagon", "Ball", 
+                "Scout", "Garrison", "Police", "Builder", "Cadet", "Titan", 
+                "Grass", 
+                "Coin", "Log", "Stone", "TopBarBackground" };
 
             Fonts["Medium"] = TtfFontBaker.Bake(File.OpenRead("TTFFonts/OpenSans-Medium.ttf"),
-                30, 2048, 2048, _characterRanges).CreateSpriteFont(device);
-
+                100, 2048, 2048, _characterRanges).CreateSpriteFont(device);
+            
             foreach (var textureName in texturesName)
                 Textures[textureName] = Game.Content.Load<Texture2D>("Textures/" + textureName);
+            
+            _topBarComponent.SetFont(Fonts["Medium"]);
+            _topBarComponent.SetBackgroundTexture(Textures["TopBarBackground"]);
             
             base.LoadContent();
         }
@@ -114,14 +122,13 @@ namespace AttackOnTitan.Scenes
         private void RunModelActions()
         {
             while (GameModel.OutputActions.TryDequeue(out var outputAction))
-                CommandsActions[outputAction.ActionType](outputAction.UnitInfo, outputAction.MapCellInfo);
+                _commandsActions[outputAction.ActionType](outputAction);
         }
 
         public override void Draw(GameTime gameTime)
         {
-            var device = SceneManager.GraphicsMgr.GraphicsDevice;
-
             _mapComponent.Draw(Sprite);
+            _topBarComponent.Draw(Sprite);
 
             base.Draw(gameTime);
         }

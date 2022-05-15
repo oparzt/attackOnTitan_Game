@@ -111,8 +111,16 @@ namespace AttackOnTitan.Models
                 while (_endPathStack.Count != 0)
                 {
                     prevMapCell = _endPathStack.Pop();
-                    GameModel.OutputActions.Enqueue(new(OutputActionType.MoveUnit,
-                        new(_unit.ID, prevMapCell.X, prevMapCell.Y, Position.Center), null));
+                    GameModel.OutputActions.Enqueue(new OutputAction()
+                    {
+                        ActionType = OutputActionType.MoveUnit,
+                        UnitInfo = new UnitInfo(_unit.ID)
+                        {
+                            X = prevMapCell.X,
+                            Y = prevMapCell.Y,
+                            Position = Position.Center
+                        }
+                    });
                 }
                 
                 var endPosition = _enemyCell is not null ? 
@@ -120,9 +128,17 @@ namespace AttackOnTitan.Models
                     lastCell.MoveUnitToTheCell(_unit);
                 if (_enemyCell is not null)
                     _unit.CanGo = false;
-
-                GameModel.OutputActions.Enqueue(new(OutputActionType.MoveUnit,
-                    new(_unit.ID, lastCell.X, lastCell.Y, endPosition), null));
+                
+                GameModel.OutputActions.Enqueue(new OutputAction()
+                {
+                    ActionType = OutputActionType.MoveUnit,
+                    UnitInfo = new UnitInfo(_unit.ID)
+                    {
+                        X = lastCell.X,
+                        Y = lastCell.Y,
+                        Position = endPosition
+                    }
+                });
             }
             
             _pathStack.Clear();
