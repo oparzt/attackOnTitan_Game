@@ -14,7 +14,8 @@ namespace AttackOnTitan.Models
         KeyPressed,
         SelectMapCell,
         SelectUnit,
-        UnitStopMove
+        UnitStopMove,
+        StepBtnPressed
     }
 
     public enum PressedMouseBtn

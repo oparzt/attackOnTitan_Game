@@ -17,7 +17,6 @@ namespace AttackOnTitan.Models
     public class GameModel : IDisposable
     {
         private Thread _modelThread;
-
         private bool _killThread;
 
         public static readonly ConcurrentQueue<InputAction> InputActions = new();
@@ -31,10 +30,13 @@ namespace AttackOnTitan.Models
         public UnitModel SelectedUnit;
         public readonly UnitPath UnitPath;
         public readonly Dictionary<int, UnitModel> Units = new();
+        public bool StepEnd = false;
+
 
         private UnitEventHandler _unitEventHandler;
         private MapEventHandler _mapEventHandler;
         private KeyEventHandler _keyEventHandler;
+        private StepEventHandler _stepEventHandler;
 
         public GameModel(int columnsMapCount, int rowsMapCount)
         {
@@ -134,12 +136,14 @@ namespace AttackOnTitan.Models
             _mapEventHandler = new MapEventHandler(this);
             _keyEventHandler = new KeyEventHandler(this);
             _unitEventHandler = new UnitEventHandler(this);
+            _stepEventHandler = new StepEventHandler(this);
 
             _handlers[InputActionType.None] = _ => { };
             _handlers[InputActionType.KeyPressed] = _keyEventHandler.Handle;
             _handlers[InputActionType.SelectMapCell] = _mapEventHandler.HandleSelect;
             _handlers[InputActionType.SelectUnit] = _unitEventHandler.HandleSelect;
             _handlers[InputActionType.UnitStopMove] = _unitEventHandler.HandleStopMove;
+            _handlers[InputActionType.StepBtnPressed] = _stepEventHandler.HandleStepBtnPressed;
         }
 
         public void Run()
@@ -160,7 +164,7 @@ namespace AttackOnTitan.Models
             {
                 while (InputActions.TryDequeue(out var action)) {
                     //stopwatch.Restart();
-                    _handlers[action.ActionType](action);
+                    if (!StepEnd) _handlers[action.ActionType](action);
                     //Console.WriteLine(stopwatch.ElapsedMilliseconds); 
                 }
                 Thread.Sleep(30);

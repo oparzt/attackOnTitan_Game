@@ -17,7 +17,8 @@ namespace AttackOnTitan.Models
         ChangeCellOpacity,
         
         AddResource,
-        UpdateResourceCount
+        UpdateResourceCount,
+        ChangeStepBtnState,
 
         //ChangeUnitTexture,
         //ChangeUnitText,

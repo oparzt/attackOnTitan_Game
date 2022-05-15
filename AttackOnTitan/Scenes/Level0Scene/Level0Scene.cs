@@ -26,6 +26,7 @@ namespace AttackOnTitan.Scenes
 
         private MapComponent _mapComponent;
         private TopBarComponent _topBarComponent;
+        private StepBtnComponent _stepBtnComponent;
 
         private Keys _lastKey = Keys.None;
 
@@ -49,6 +50,7 @@ namespace AttackOnTitan.Scenes
             _mapComponent = new MapComponent(this, 40, 35, 
                 222, 192, 60, 60);
             _topBarComponent = new TopBarComponent(this, viewport.Width, 35, 24);
+            _stepBtnComponent = new StepBtnComponent(this, viewport.Width, viewport.Height, 24);
             
             _commandsActions[OutputActionType.AddUnit] = action => _mapComponent.AddUnit(action.UnitInfo);
             _commandsActions[OutputActionType.MoveUnit] = action => _mapComponent.MoveUnit(action.UnitInfo);
@@ -57,6 +59,7 @@ namespace AttackOnTitan.Scenes
             _commandsActions[OutputActionType.ChangeCellOpacity] = action => _mapComponent.ChangeCellOpacity(action.MapCellInfo);
             _commandsActions[OutputActionType.AddResource] = action => _topBarComponent.AddResource(action.ResourceInfo);
             _commandsActions[OutputActionType.UpdateResourceCount] = action => _topBarComponent.UpdateResourceCount(action.ResourceInfo);
+            _commandsActions[OutputActionType.ChangeStepBtnState] = action => _stepBtnComponent.ChangeState();
             
             _gameModel = new GameModel(40, 35);
             _gameModel.Run();
@@ -79,7 +82,7 @@ namespace AttackOnTitan.Scenes
             var texturesName = new[] { "Hexagon", "Ball", 
                 "Scout", "Garrison", "Police", "Builder", "Cadet", "Titan", 
                 "Grass", 
-                "Coin", "Log", "Stone", "TopBarBackground" };
+                "Coin", "Log", "Stone", "TopBarBackground", "Step" };
 
             Fonts["Medium"] = TtfFontBaker.Bake(File.OpenRead("TTFFonts/OpenSans-Medium.ttf"),
                 100, 2048, 2048, _characterRanges).CreateSpriteFont(device);
@@ -88,7 +91,9 @@ namespace AttackOnTitan.Scenes
                 Textures[textureName] = Game.Content.Load<Texture2D>("Textures/" + textureName);
             
             _topBarComponent.SetFont(Fonts["Medium"]);
+            _stepBtnComponent.SetFont(Fonts["Medium"]);
             _topBarComponent.SetBackgroundTexture(Textures["TopBarBackground"]);
+            _stepBtnComponent.SetBackgroundTexture(Textures["Step"]);
             
             base.LoadContent();
         }
@@ -101,6 +106,7 @@ namespace AttackOnTitan.Scenes
             RunModelActions();
 
             _mapComponent.Update(gameTime, mouseState);
+            _stepBtnComponent.Update(gameTime, mouseState);
             foreach (var component in Components)
                 component.Update(gameTime, mouseState);
 
@@ -133,6 +139,7 @@ namespace AttackOnTitan.Scenes
         {
             _mapComponent.Draw(Sprite);
             _topBarComponent.Draw(Sprite);
+            _stepBtnComponent.Draw(Sprite);
 
             base.Draw(gameTime);
         }
