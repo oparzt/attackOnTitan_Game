@@ -70,8 +70,11 @@ namespace AttackOnTitan.Components
                 }
                 else
                 {
-                    GameModel.InputActions.Enqueue(new(InputActionType.UnitStopMove, Keys.None, PressedMouseBtn.None,
-                        null, new(ID)));
+                    GameModel.InputActions.Enqueue(new InputAction
+                    {
+                        ActionType = InputActionType.UnitStopMove,
+                        SelectedUnit = new SelectedUnit(ID)
+                    });
                     return;
                 };
             }

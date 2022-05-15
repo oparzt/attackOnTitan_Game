@@ -102,10 +102,20 @@ namespace AttackOnTitan.Components
             left == ButtonState.Pressed ?PressedMouseBtn.Left : PressedMouseBtn.None;
 
         private void InitiateSelectMapCellAction(MapCellComponent mapItem, PressedMouseBtn mouseBtn) =>
-            GameModel.InputActions.Enqueue(new InputAction(new SelectedCell(mapItem.X, mapItem.Y), mouseBtn));
+            GameModel.InputActions.Enqueue(new InputAction
+            {
+                ActionType = InputActionType.SelectMapCell,
+                SelectedCell = new SelectedCell(mapItem.X, mapItem.Y),
+                MouseBtn = mouseBtn
+            });
 
         private void InitiateSelectUnitAction(UnitComponent unitItem, PressedMouseBtn mouseBtn) =>
-            GameModel.InputActions.Enqueue(new InputAction(new SelectedUnit(unitItem.ID), mouseBtn));
+            GameModel.InputActions.Enqueue(new InputAction
+            {
+                ActionType = InputActionType.SelectUnit,
+                SelectedUnit = new SelectedUnit(unitItem.ID),
+                MouseBtn = mouseBtn
+            });
 
 
         public void AddUnit(UnitInfo unitInfo)
