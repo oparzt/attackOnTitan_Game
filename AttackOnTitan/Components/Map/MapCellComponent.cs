@@ -37,7 +37,8 @@ namespace AttackOnTitan.Components
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(_scene.Textures[_textureName], _destRect, Color.White * _opacity);
+            spriteBatch.Draw(_scene.Textures[_textureName], _destRect, 
+                null, Color.White * _opacity, 0f, Vector2.Zero, SpriteEffects.None, 0.5f);
         }
 
         public bool IsComponentOnPosition(Point point)
