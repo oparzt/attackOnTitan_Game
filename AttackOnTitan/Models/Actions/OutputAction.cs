@@ -11,6 +11,7 @@ namespace AttackOnTitan.Models
     {
         AddUnit,
         MoveUnit,
+        RemoveUnit,
         StopUnit,
         ChangeUnitOpacity,
 

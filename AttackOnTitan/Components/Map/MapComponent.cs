@@ -162,11 +162,16 @@ namespace AttackOnTitan.Components
 
         public void MoveUnit(UnitInfo unitInfo)
         {
-            var unit = _units[unitInfo.ID];
+            if (!_units.TryGetValue(unitInfo.ID, out var unit)) return;
             var targetPosition = _mapItems[unitInfo.X, unitInfo.Y].GetPosition(unitInfo.Position);
 
             _movedUnits.Add(unit);
             unit.Move(targetPosition);
+        }
+        
+        public void RemoveUnit(UnitInfo unitInfo)
+        {
+            _units.Remove(unitInfo.ID);
         }
 
         public void StopUnit(UnitInfo unitInfo)
@@ -176,7 +181,8 @@ namespace AttackOnTitan.Components
 
         public void ChangeUnitOpacity(UnitInfo unitInfo)
         {
-            _units[unitInfo.ID].SetOpacity(unitInfo.Opacity);
+            if (!_units.TryGetValue(unitInfo.ID, out var unit)) return;
+            unit.SetOpacity(unitInfo.Opacity);
         }
 
         public void ChangeCellOpacity(MapCellInfo mapCellInfo)

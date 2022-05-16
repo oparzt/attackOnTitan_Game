@@ -45,10 +45,13 @@ namespace AttackOnTitan.Components
                     if (!pressed)
                     {
                         _wasPressed = false;
-                        GameModel.InputActions.Enqueue(new InputAction()
+                        if (_endState)
                         {
-                            ActionType = InputActionType.StepBtnPressed
-                        });
+                            GameModel.InputActions.Enqueue(new InputAction()
+                            {
+                                ActionType = InputActionType.StepBtnPressed
+                            });
+                        }
                     }
                 }
                 else
@@ -62,7 +65,6 @@ namespace AttackOnTitan.Components
         public void SetBackgroundTexture(Texture2D texture) => _backgroundTexture = texture;
         public void ChangeState()
         {
-            Console.WriteLine("Было");
             _endState = !_endState;
             
         }

@@ -199,7 +199,17 @@ namespace AttackOnTitan.Models
         private Position GetEmptyPositionInCell() =>
             PossiblePositionsInCell.FirstOrDefault(position => 
                 !UnitsInCell.ContainsKey(position));
-        
+
+        public IEnumerable<UnitModel> GetAllUnitInCell(bool isEnemy)
+        {
+            if (UnitInCenterOfCell is not null && UnitInCenterOfCell.Enemy == isEnemy)
+                yield return UnitInCenterOfCell;
+
+            foreach (var unit in UnitsInCell.Values.Where(unit => unit.Enemy == isEnemy))
+                yield return unit;
+            foreach (var unit in UnitsOnBorder.Values.Where(unit => unit.Enemy == isEnemy))
+                yield return unit;
+        }
     }
 
     public struct Weight

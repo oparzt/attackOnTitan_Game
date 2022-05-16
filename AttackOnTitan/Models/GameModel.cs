@@ -32,7 +32,6 @@ namespace AttackOnTitan.Models
         public readonly Dictionary<int, UnitModel> Units = new();
         public bool StepEnd = false;
 
-
         private UnitEventHandler _unitEventHandler;
         private MapEventHandler _mapEventHandler;
         private KeyEventHandler _keyEventHandler;

@@ -6,8 +6,8 @@ namespace AttackOnTitan.Models
 {
     public class MapModel
     {
-        public readonly int _columnsCount;
-        public readonly int _rowsCount;
+        public readonly int ColumnsCount;
+        public readonly int RowsCount;
 
         public UnitModel SelectedUnit;
 
@@ -20,18 +20,18 @@ namespace AttackOnTitan.Models
 
         public MapModel(int columnsCount, int rowsCount)
         {
-            _columnsCount = columnsCount;
-            _rowsCount = rowsCount;
+            ColumnsCount = columnsCount;
+            RowsCount = rowsCount;
 
             InitializeMap();
         }
 
         private void InitializeMap()
         {
-            _mapCells = new MapCellModel[_columnsCount, _rowsCount];
+            _mapCells = new MapCellModel[ColumnsCount, RowsCount];
 
-            for (var x = 0; x < _columnsCount; x++)
-                for (var y = 0; y < _rowsCount; y++)
+            for (var x = 0; x < ColumnsCount; x++)
+                for (var y = 0; y < RowsCount; y++)
                     _mapCells[x, y] = new(x, y);
 
             var nearCellsWeights = new Dictionary<NearCellsName, Weight>()
@@ -44,9 +44,9 @@ namespace AttackOnTitan.Models
                 [NearCellsName.RightBottom] = new(1, 1, NearCellsName.RightBottom)
             };
 
-            for (var x = 0; x < _columnsCount; x++)
-                for (var y = 0; y < _rowsCount; y++)
-                    _mapCells[x, y].ConnectWithNearCells(_mapCells, _columnsCount, _rowsCount, nearCellsWeights);
+            for (var x = 0; x < ColumnsCount; x++)
+                for (var y = 0; y < RowsCount; y++)
+                    _mapCells[x, y].ConnectWithNearCells(_mapCells, ColumnsCount, RowsCount, nearCellsWeights);
         }
 
         public void SetCellOpacity(MapCellModel mapCell, float opacity) =>
