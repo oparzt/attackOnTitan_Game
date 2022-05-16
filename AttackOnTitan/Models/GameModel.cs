@@ -127,6 +127,50 @@ namespace AttackOnTitan.Models
                     TextureSize = new Point(52, 30)
                 }
             });
+            
+            OutputActions.Enqueue(new OutputAction()
+            {
+                ActionType = OutputActionType.AddCommand,
+                CommandInfo = new CommandInfo(CommandType.Attack)
+                {
+                    IsAvailable = true,
+                    AvailableTextureName = "AttackIcon",
+                    NotAvailableTextureName = "AttackIconHalf"
+                }
+            });
+            
+            OutputActions.Enqueue(new OutputAction()
+            {
+                ActionType = OutputActionType.AddCommand,
+                CommandInfo = new CommandInfo(CommandType.Build)
+                {
+                    IsAvailable = true,
+                    AvailableTextureName = "BuildingIcon",
+                    NotAvailableTextureName = "BuildingIconHalf"
+                }
+            });
+            
+            OutputActions.Enqueue(new OutputAction()
+            {
+                ActionType = OutputActionType.AddCommand,
+                CommandInfo = new CommandInfo(CommandType.Fly)
+                {
+                    IsAvailable = true,
+                    AvailableTextureName = "GasIcon",
+                    NotAvailableTextureName = "GasIconHalf"
+                }
+            });
+            
+            OutputActions.Enqueue(new OutputAction()
+            {
+                ActionType = OutputActionType.AddCommand,
+                CommandInfo = new CommandInfo(CommandType.Refuel)
+                {
+                    IsAvailable = true,
+                    AvailableTextureName = "RefuelingIcon",
+                    NotAvailableTextureName = "RefuelingIconHalf"
+                }
+            });
 
             InitializeHandlers();
         }

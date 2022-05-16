@@ -27,6 +27,7 @@ namespace AttackOnTitan.Scenes
         private MapComponent _mapComponent;
         private TopBarComponent _topBarComponent;
         private StepBtnComponent _stepBtnComponent;
+        private CommandBarComponent _commandBarComponent;
 
         private Keys _lastKey = Keys.None;
 
@@ -35,7 +36,6 @@ namespace AttackOnTitan.Scenes
             CharacterRange.BasicLatin,
             CharacterRange.Cyrillic
         };
-
 
         public Level0Scene(Game game) : base(game)
         {
@@ -51,6 +51,7 @@ namespace AttackOnTitan.Scenes
                 222, 192, 60, 60);
             _topBarComponent = new TopBarComponent(this, viewport.Width, 35, 24);
             _stepBtnComponent = new StepBtnComponent(this, viewport.Width, viewport.Height, 24);
+            _commandBarComponent = new CommandBarComponent(this, viewport.Width, viewport.Height);
             
             _commandsActions[OutputActionType.AddUnit] = action => _mapComponent.AddUnit(action.UnitInfo);
             _commandsActions[OutputActionType.MoveUnit] = action => _mapComponent.MoveUnit(action.UnitInfo);
@@ -60,6 +61,9 @@ namespace AttackOnTitan.Scenes
             _commandsActions[OutputActionType.AddResource] = action => _topBarComponent.AddResource(action.ResourceInfo);
             _commandsActions[OutputActionType.UpdateResourceCount] = action => _topBarComponent.UpdateResourceCount(action.ResourceInfo);
             _commandsActions[OutputActionType.ChangeStepBtnState] = action => _stepBtnComponent.ChangeState();
+            _commandsActions[OutputActionType.ClearCommands] = action => _commandBarComponent.ClearCommands();
+            _commandsActions[OutputActionType.AddCommand] = action => _commandBarComponent.AddCommand(action.CommandInfo);
+            _commandsActions[OutputActionType.UpdateCommandState] = action => _commandBarComponent.UpdateCommandState(action.CommandInfo);
             
             _gameModel = new GameModel(40, 35);
             _gameModel.Run();
@@ -79,10 +83,12 @@ namespace AttackOnTitan.Scenes
             var device = SceneManager.GraphicsMgr.GraphicsDevice;
             Sprite = new SpriteBatch(Game.GraphicsDevice);
 
-            var texturesName = new[] { "Hexagon", "Ball", 
-                "Scout", "Garrison", "Police", "Builder", "Cadet", "Titan", 
-                "Grass", 
-                "Coin", "Log", "Stone", "TopBarBackground", "Step" };
+            var texturesName = new[] { "Hexagon", "Ball", "Scout", "Garrison", 
+                "Police", "Builder", "Cadet", "Titan", "Grass", "Coin", 
+                "Log", "Stone", "TopBarBackground", "Step",
+                "AttackIcon", "AttackIconHalf", "BuildingIcon", "BuildingIconHalf",
+                "GasIcon", "GasIconHalf", "RefuelingIcon", "RefuelingIconHalf"
+            };
 
             Fonts["Medium"] = TtfFontBaker.Bake(File.OpenRead("TTFFonts/OpenSans-Medium.ttf"),
                 100, 2048, 2048, _characterRanges).CreateSpriteFont(device);
@@ -107,6 +113,7 @@ namespace AttackOnTitan.Scenes
 
             _mapComponent.Update(gameTime, mouseState);
             _stepBtnComponent.Update(gameTime, mouseState);
+            _commandBarComponent.Update(gameTime, mouseState);
             foreach (var component in Components)
                 component.Update(gameTime, mouseState);
 
@@ -140,6 +147,7 @@ namespace AttackOnTitan.Scenes
             _mapComponent.Draw(Sprite);
             _topBarComponent.Draw(Sprite);
             _stepBtnComponent.Draw(Sprite);
+            _commandBarComponent.Draw(Sprite);
 
             base.Draw(gameTime);
         }

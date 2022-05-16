@@ -2,6 +2,14 @@
 
 namespace AttackOnTitan.Models
 {
+    public enum CommandType
+    {
+        Attack,
+        Refuel,
+        Build,
+        Fly
+    }
+    
     public class UnitModel
     {
         public readonly int ID;
