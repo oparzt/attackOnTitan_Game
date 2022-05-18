@@ -41,59 +41,21 @@ namespace AttackOnTitan.Models
         {
             Map = new MapModel(columnsMapCount, rowsMapCount);
             UnitPath = new UnitPath(this);
-            var textures = new[]
+            var unitsTypes = new[]
             {
-                "Scout",  "Garrison", "Police", "Cadet",
-                "Titan", "Titan", "Titan", "Titan"
+                UnitType.Scout, UnitType.Builder, UnitType.Titan
             };
             var positions = new[]
             {
                 Position.TopLeft, Position.TopRight, Position.BottomLeft, Position.BottomRight
             };
 
-            for (var i = 0; i < 4; i++)
+            for (var i = 0; i < unitsTypes.Length; i++)
             {
-                Units[i] = new UnitModel(i)
-                {
-                    CurCell = Map[2, 2]
-                };
-                Map[2, 2].UnitsInCell[positions[i]] = Units[i];
-                OutputActions.Enqueue(new OutputAction()
-                {
-                    ActionType = OutputActionType.AddUnit,
-                    UnitInfo = new UnitInfo(i)
-                    {
-                        X = 2,
-                        Y = 2,
-                        Position = positions[i],
-                        TextureName = textures[i]
-                    }
-                });
+                Units[i] = new UnitModel(i, unitsTypes[i]);
+                Units[i].AddUnitToTheMap(Map[2, 2], positions[i]);
             }
-            
-            for (var i = 0; i < 4; i++)
-            {
-                Units[i + 4] = new UnitModel(i + 4, true)
-                {
-                    CurCell = Map[4, 2],
-                    Enemy = true
-                };
-                
-                Map[4, 2].UnitsInCell[positions[i]] = Units[i + 4];
-                
-                OutputActions.Enqueue(new OutputAction()
-                {
-                    ActionType = OutputActionType.AddUnit,
-                    UnitInfo = new UnitInfo(i + 4)
-                    {
-                        X = 4,
-                        Y = 2,
-                        Position = positions[i],
-                        TextureName = textures[i + 4]
-                    }
-                });
-            }
-            
+
             OutputActions.Enqueue(new OutputAction()
             {
                 ActionType = OutputActionType.AddResource,
@@ -126,50 +88,6 @@ namespace AttackOnTitan.Models
                     TextureSize = new Point(52, 30)
                 }
             });
-            
-            OutputActions.Enqueue(new OutputAction()
-            {
-                ActionType = OutputActionType.AddCommand,
-                CommandInfo = new CommandInfo(CommandType.Attack)
-                {
-                    IsAvailable = true,
-                    AvailableTextureName = "AttackIcon",
-                    NotAvailableTextureName = "AttackIconHalf"
-                }
-            });
-            
-            OutputActions.Enqueue(new OutputAction()
-            {
-                ActionType = OutputActionType.AddCommand,
-                CommandInfo = new CommandInfo(CommandType.Build)
-                {
-                    IsAvailable = true,
-                    AvailableTextureName = "BuildingIcon",
-                    NotAvailableTextureName = "BuildingIconHalf"
-                }
-            });
-            
-            OutputActions.Enqueue(new OutputAction()
-            {
-                ActionType = OutputActionType.AddCommand,
-                CommandInfo = new CommandInfo(CommandType.Fly)
-                {
-                    IsAvailable = true,
-                    AvailableTextureName = "GasIcon",
-                    NotAvailableTextureName = "GasIconHalf"
-                }
-            });
-            
-            OutputActions.Enqueue(new OutputAction()
-            {
-                ActionType = OutputActionType.AddCommand,
-                CommandInfo = new CommandInfo(CommandType.Refuel)
-                {
-                    IsAvailable = true,
-                    AvailableTextureName = "RefuelingIcon",
-                    NotAvailableTextureName = "RefuelingIconHalf"
-                }
-            });
 
             InitializeHandlers();
         }
@@ -186,6 +104,7 @@ namespace AttackOnTitan.Models
             _handlers[InputActionType.SelectMapCell] = _mapEventHandler.HandleSelect;
             _handlers[InputActionType.SelectUnit] = _unitEventHandler.HandleSelect;
             _handlers[InputActionType.UnitStopMove] = _unitEventHandler.HandleStopMove;
+            _handlers[InputActionType.UnitCommand] = _unitEventHandler.HandleCommand;
             _handlers[InputActionType.StepBtnPressed] = _stepEventHandler.HandleStepBtnPressed;
         }
 

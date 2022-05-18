@@ -15,6 +15,7 @@ namespace AttackOnTitan.Models
         SelectMapCell,
         SelectUnit,
         UnitStopMove,
+        UnitCommand,
         StepBtnPressed
     }
 
@@ -34,6 +35,7 @@ namespace AttackOnTitan.Models
 
         public SelectedCell SelectedCell;
         public SelectedUnit SelectedUnit;
+        public UnitCommandInfo UnitCommandInfo;
     }
 
     public class SelectedCell
@@ -53,5 +55,13 @@ namespace AttackOnTitan.Models
         public int ID;
 
         public SelectedUnit(int id) => ID = id;
+    }
+    
+    public class UnitCommandInfo
+    {
+        public readonly CommandType CommandType;
+
+        public UnitCommandInfo(CommandType commandType) =>
+            CommandType = commandType;
     }
 }

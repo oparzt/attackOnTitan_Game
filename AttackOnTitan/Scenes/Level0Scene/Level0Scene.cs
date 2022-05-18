@@ -62,9 +62,7 @@ namespace AttackOnTitan.Scenes
             _commandsActions[OutputActionType.AddResource] = action => _topBarComponent.AddResource(action.ResourceInfo);
             _commandsActions[OutputActionType.UpdateResourceCount] = action => _topBarComponent.UpdateResourceCount(action.ResourceInfo);
             _commandsActions[OutputActionType.ChangeStepBtnState] = action => _stepBtnComponent.ChangeState();
-            _commandsActions[OutputActionType.ClearCommands] = action => _commandBarComponent.ClearCommands();
-            _commandsActions[OutputActionType.AddCommand] = action => _commandBarComponent.AddCommand(action.CommandInfo);
-            _commandsActions[OutputActionType.UpdateCommandState] = action => _commandBarComponent.UpdateCommandState(action.CommandInfo);
+            _commandsActions[OutputActionType.UpdateCommandsBar] = action => _commandBarComponent.UpdateCommands(action.CommandInfos);
             
             _gameModel = new GameModel(40, 35);
             _gameModel.Run();

@@ -43,16 +43,6 @@ namespace AttackOnTitan.Models
             {
                 ActionType = OutputActionType.ChangeStepBtnState
             });
-            
-            foreach (var unit in units)
-                Console.WriteLine($"Unit-{unit.ID} Cell-{unit.CurCell.X}:{unit.CurCell.Y}");
-            foreach (var enemy in enemies)
-                Console.WriteLine($"Enemy-{enemy.ID} Cell-{enemy.CurCell.X}:{enemy.CurCell.Y}");
-        }
-
-        public void BattleHandler(InputAction action)
-        {
-            
         }
 
         public void BattleInCell(MapCellModel mapCellModel, List<UnitModel> units, 

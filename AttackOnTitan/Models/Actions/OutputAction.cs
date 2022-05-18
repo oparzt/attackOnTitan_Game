@@ -21,9 +21,7 @@ namespace AttackOnTitan.Models
         UpdateResourceCount,
         ChangeStepBtnState,
         
-        ClearCommands,
-        AddCommand,
-        UpdateCommandState
+        UpdateCommandsBar,
 
         //ChangeUnitTexture,
         //ChangeUnitText,
@@ -37,7 +35,7 @@ namespace AttackOnTitan.Models
         public UnitInfo UnitInfo;
         public MapCellInfo MapCellInfo;
         public ResourceInfo ResourceInfo;
-        public CommandInfo CommandInfo;
+        public CommandInfo[] CommandInfos;
     }
 
     public class UnitInfo
@@ -91,13 +89,14 @@ namespace AttackOnTitan.Models
     public class CommandInfo
     {
         public readonly CommandType CommandType;
-        public bool IsAvailable;
-        public string AvailableTextureName;
-        public string NotAvailableTextureName;
+        public readonly bool IsAvailable;
+        public readonly string TextureName;
 
-        public CommandInfo(CommandType commandType)
+        public CommandInfo(CommandType commandType, bool isAvailable, string textureName)
         {
             CommandType = commandType;
+            IsAvailable = isAvailable;
+            TextureName = textureName;
         }
     }
 }

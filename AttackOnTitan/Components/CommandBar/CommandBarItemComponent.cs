@@ -7,19 +7,19 @@ namespace AttackOnTitan.Components
 {
     public class CommandBarItemComponent
     {
-        private readonly Texture2D _availableTexture;
+        private readonly Texture2D _texture;
         private readonly CommandType _commandType;
         private Rectangle _textureRect;
         private bool _wasPressed;
-        private bool _isAvailable;
-        private readonly Texture2D _notAvailableTexture;
+        public readonly bool IsAvailable;
 
-        public CommandBarItemComponent(CommandType commandType, Texture2D availableTexture, 
-            Texture2D notAvailableTexture)
+        public CommandBarItemComponent(CommandType commandType, bool isAvailable, 
+            Texture2D texture, Rectangle textureRect)
         {
             _commandType = commandType;
-            _availableTexture = availableTexture;
-            _notAvailableTexture = notAvailableTexture;
+            IsAvailable = isAvailable;
+            _texture = texture;
+            _textureRect = textureRect;
         }
 
         public void Update(GameTime gameTime, MouseState mouseState)
@@ -31,14 +31,14 @@ namespace AttackOnTitan.Components
             {
                 if (contains)
                 {
-                    if (!pressed)
+                    if (pressed) return;
+                    
+                    _wasPressed = false;
+                    GameModel.InputActions.Enqueue(new InputAction()
                     {
-                        _wasPressed = false;
-                        GameModel.InputActions.Enqueue(new InputAction()
-                        {
-                            ActionType = InputActionType.StepBtnPressed
-                        });
-                    }
+                        ActionType = InputActionType.UnitCommand,
+                        UnitCommandInfo = new UnitCommandInfo(_commandType)
+                    });
                 }
                 else
                     _wasPressed = false;
@@ -47,11 +47,8 @@ namespace AttackOnTitan.Components
                 _wasPressed = pressed && contains;
         }
 
-        public void UpdateTextureRect(Rectangle textureRect) => _textureRect = textureRect;
-        public void UpdateCommandState(bool isAvailable) => _isAvailable = isAvailable;
 
         public void Draw(SpriteBatch spriteBatch) =>
-            spriteBatch.Draw(_isAvailable ? _availableTexture : _notAvailableTexture, 
-                _textureRect, Color.White);
+            spriteBatch.Draw(_texture, _textureRect, Color.White);
     }
 }

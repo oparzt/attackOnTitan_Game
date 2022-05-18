@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using AttackOnTitan.Models;
 using AttackOnTitan.Scenes;
 using Microsoft.Xna.Framework;
@@ -23,39 +24,29 @@ namespace AttackOnTitan.Components
             _viewportHeight = viewportHeight;
         }
 
-        public void ClearCommands() => _commandBarItems.Clear();
-
-        public void AddCommand(CommandInfo commandInfo)
+        public void UpdateCommands(CommandInfo[] commandInfos)
         {
-            var commandBarItem = new CommandBarItemComponent(commandInfo.CommandType,
-                _scene.Textures[commandInfo.AvailableTextureName],
-                _scene.Textures[commandInfo.NotAvailableTextureName]);
-            
-            commandBarItem.UpdateCommandState(commandInfo.IsAvailable);
-            _commandBarItems[commandInfo.CommandType] = commandBarItem;
-
             var startX = _viewportWidth / 2
-                - (_commandBarItems.Count % 2 == 1 ? 30 : -8)
-                - _commandBarItems.Count / 2 * 76;
+                         - (commandInfos.Length % 2 == 1 ? 30 : -8)
+                         - commandInfos.Length / 2 * 76;
             var i = 0;
             
-            foreach (var commandBarItem2 in _commandBarItems.Values)
+            _commandBarItems.Clear();
+            
+            foreach (var commandInfo in commandInfos)
             {
-                commandBarItem2.UpdateTextureRect(new Rectangle(startX + i * 76,
-                    _viewportHeight - 70, 60, 60));
+                _commandBarItems[commandInfo.CommandType] = new CommandBarItemComponent(commandInfo.CommandType,
+                    commandInfo.IsAvailable,
+                    _scene.Textures[commandInfo.TextureName],
+                    new Rectangle(startX + i * 76,
+                        _viewportHeight - 70, 60, 60));
                 i++;
             }
         }
-
-        public void UpdateCommandState(CommandInfo commandInfo)
-        {
-            if (_commandBarItems.TryGetValue(commandInfo.CommandType, out var commandBarItem))
-                commandBarItem.UpdateCommandState(commandInfo.IsAvailable);
-        }
-
+        
         public void Update(GameTime gameTime, MouseState mouseState)
         {
-            foreach (var commandBarItem in _commandBarItems.Values)
+            foreach (var commandBarItem in _commandBarItems.Values.Where(commandBarItem => commandBarItem.IsAvailable))
                 commandBarItem.Update(gameTime, mouseState); 
         }
 

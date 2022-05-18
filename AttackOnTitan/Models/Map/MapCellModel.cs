@@ -87,16 +87,6 @@ namespace AttackOnTitan.Models
             Y = y;
         }
 
-        // public void ConnectWithCell(MapCellModel mapCell, int weightForRun, int weightForFly)
-        // {
-        //     NearCells[mapCell] = new(weightForRun, weightForFly);
-        // }
-        //
-        // public void ConnectWithCell(MapCellModel mapCell, Weight weight)
-        // {
-        //     NearCells[mapCell] = weight;
-        // }
-
         public void ConnectWithNearCells(MapCellModel[,] mapCells,
             int columnsCount, int rowsCount,
             Dictionary<NearCellsName, Weight> nearCellsWeights)
@@ -131,7 +121,7 @@ namespace AttackOnTitan.Models
         public bool IsExistEmptyPositionInCell() => UnitsInCell.Count != 4;
         
         public bool IsEnemyInCell() => UnitsInCell.Values
-            .FirstOrDefault(unit => unit.Enemy) is not null || UnitInCenterOfCell?.Enemy is true;
+            .FirstOrDefault(unit => unit.UnitType == UnitType.Titan) is not null || UnitInCenterOfCell?.IsEnemy is true;
 
         public bool IsExistEmptyPositionOnBorder(MapCellModel mapCell) => NearCells.TryGetValue(mapCell, out var weight) 
             && !UnitsOnBorder.ContainsKey(NearCellsNameToPosition[weight.NearCellsName]);
@@ -202,12 +192,12 @@ namespace AttackOnTitan.Models
 
         public IEnumerable<UnitModel> GetAllUnitInCell(bool isEnemy)
         {
-            if (UnitInCenterOfCell is not null && UnitInCenterOfCell.Enemy == isEnemy)
+            if (UnitInCenterOfCell is not null && UnitInCenterOfCell.IsEnemy)
                 yield return UnitInCenterOfCell;
 
-            foreach (var unit in UnitsInCell.Values.Where(unit => unit.Enemy == isEnemy))
+            foreach (var unit in UnitsInCell.Values.Where(unit => unit.IsEnemy))
                 yield return unit;
-            foreach (var unit in UnitsOnBorder.Values.Where(unit => unit.Enemy == isEnemy))
+            foreach (var unit in UnitsOnBorder.Values.Where(unit => unit.IsEnemy))
                 yield return unit;
         }
     }

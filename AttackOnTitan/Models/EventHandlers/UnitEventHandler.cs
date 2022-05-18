@@ -7,6 +7,7 @@ namespace AttackOnTitan.Models
     {
         public readonly GameModel GameModel;
         private readonly Dictionary<PressedMouseBtn, Action<InputAction>> _selectHandlers = new();
+        private readonly Dictionary<CommandType, Action<InputAction>> _commandHandlers = new();
 
         public UnitEventHandler(GameModel gameModel)
         {
@@ -14,6 +15,8 @@ namespace AttackOnTitan.Models
             InitializeHandlers();
         }
 
+        public void HandleCommand(InputAction action) =>
+            _commandHandlers[action.UnitCommandInfo.CommandType](action);
         public void HandleSelect(InputAction action) =>
             _selectHandlers[action.MouseBtn](action);
 
@@ -32,6 +35,10 @@ namespace AttackOnTitan.Models
             _selectHandlers[PressedMouseBtn.None] = HandleNoMouseSelect;
             _selectHandlers[PressedMouseBtn.Left] = HandleLeftMouseSelect;
             _selectHandlers[PressedMouseBtn.Right] = HandleRightMouseSelect;
+            _commandHandlers[CommandType.Attack] = HandleAttackCommand;
+            _commandHandlers[CommandType.OpenBuildMenu] = HandleBuildCommand;
+            _commandHandlers[CommandType.Fly] = HandleFlyOrWalkCommand;
+            _commandHandlers[CommandType.Refuel] = HandleRefuelCommand;
         }
 
         private void HandleNoMouseSelect(InputAction action)
@@ -55,10 +62,31 @@ namespace AttackOnTitan.Models
                 GameModel.SelectedUnit = target;
                 GameModel.UnitPath.SetUnit(target);
             }
-
+            
+            GameModel.SelectedUnit.UpdateCommandsBar();
             GameModel.SelectedUnit.SetSelectedOpacity();
         }
 
         private void HandleRightMouseSelect(InputAction action) {}
+        
+        private void HandleAttackCommand(InputAction action)
+        {
+            
+        }
+
+        private void HandleBuildCommand(InputAction action)
+        {
+            
+        }
+
+        private void HandleFlyOrWalkCommand(InputAction action)
+        {
+            
+        }
+
+        private void HandleRefuelCommand(InputAction action)
+        {
+            
+        }
     }
 }

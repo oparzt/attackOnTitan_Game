@@ -48,6 +48,11 @@ namespace AttackOnTitan.Models
             if (GameModel.SelectedUnit is not null) {
                 GameModel.SelectedUnit.SetUnselectedOpacity();
                 GameModel.UnitPath.SetUnit(null);
+                GameModel.OutputActions.Enqueue(new OutputAction
+                {
+                    ActionType = OutputActionType.UpdateCommandsBar,
+                    CommandInfos = new CommandInfo[] {}
+                });
             }
             GameModel.SelectedUnit = null;
         }
@@ -55,7 +60,7 @@ namespace AttackOnTitan.Models
         private void HandleRightMouseSelect(InputAction action)
         {
             if (GameModel.SelectedUnit is null 
-                || GameModel.SelectedUnit.Enemy 
+                || GameModel.SelectedUnit.UnitType == UnitType.Titan 
                 || GameModel.SelectedUnit.Moved)
             {
                 HandleNoMouseSelect(action);
