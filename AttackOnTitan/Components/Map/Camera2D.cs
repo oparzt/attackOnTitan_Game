@@ -36,6 +36,8 @@ namespace AttackOnTitan.Components
             get => _zoom;
             set => _zoom = value >= 1f ? 1f : value <= 0.6f ? 0.6f : value;
         }
+
+        public bool MatrixWasUpdated;
         
         public Camera2D(int startPosX, int startPosY, 
             int viewportWidth, int viewportHeight,
@@ -102,6 +104,7 @@ namespace AttackOnTitan.Components
 
         private void UpdateTransformMatrix()
         {
+            MatrixWasUpdated = true;
             Transform = Matrix.Identity *
                         Matrix.CreateScale(Zoom, Zoom, 0) *
                         Matrix.CreateTranslation(Pos);

@@ -6,7 +6,7 @@ namespace AttackOnTitan.Models
     public class MapEventHandler
     {
         public readonly GameModel GameModel;
-        private readonly Dictionary<PressedMouseBtn, Action<InputAction>> _selectHandlers = new();
+        private readonly Dictionary<MouseBtn, Action<InputAction>> _selectHandlers = new();
 
         private MapCellModel _lastNoMouseSelected;
 
@@ -22,9 +22,9 @@ namespace AttackOnTitan.Models
 
         private void InitializeHandlers()
         {
-            _selectHandlers[PressedMouseBtn.None] = HandleNoMouseSelect;
-            _selectHandlers[PressedMouseBtn.Left] = HandleLeftMouseSelect;
-            _selectHandlers[PressedMouseBtn.Right] = HandleRightMouseSelect;
+            _selectHandlers[MouseBtn.None] = HandleNoMouseSelect;
+            _selectHandlers[MouseBtn.Left] = HandleLeftMouseSelect;
+            _selectHandlers[MouseBtn.Right] = HandleRightMouseSelect;
         }
 
         private void HandleNoMouseSelect(InputAction action)
@@ -35,8 +35,6 @@ namespace AttackOnTitan.Models
                 GameModel.UnitPath.ExecutePath();
             if (_lastNoMouseSelected is not null)
                 GameModel.Map.SetUnselectedOpacity(_lastNoMouseSelected);
-            if (GameModel.PreselectedUnit is not null)
-                GameModel.PreselectedUnit.SetUnselectedOpacity();
 
             GameModel.Map.SetPreselectedOpacity(targetCell);
 

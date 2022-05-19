@@ -107,6 +107,7 @@ namespace AttackOnTitan.Models
             _handlers[InputActionType.SelectUnit] = _unitEventHandler.HandleSelect;
             _handlers[InputActionType.UnitStopMove] = _unitEventHandler.HandleStopMove;
             _handlers[InputActionType.UnitCommand] = _unitEventHandler.HandleCommand;
+            _handlers[InputActionType.UnselectUnit] = _unitEventHandler.HandleUnselect;
             _handlers[InputActionType.StepBtnPressed] = _stepEventHandler.HandleStepBtnPressed;
             _handlers[InputActionType.UpdateWasEnd] = action => BlockClickEvents = false;
             _handlers[InputActionType.UpdateNoServicedZones] = action =>

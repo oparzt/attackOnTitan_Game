@@ -14,18 +14,12 @@ namespace AttackOnTitan.Models
         KeyPressed,
         SelectMapCell,
         SelectUnit,
+        UnselectUnit,
         UnitStopMove,
         UnitCommand,
         StepBtnPressed,
         UpdateWasEnd,
         UpdateNoServicedZones,
-    }
-
-    public enum PressedMouseBtn
-    {
-        None,
-        Left,
-        Right
     }
 
     public enum NoServicedZoneLocation
@@ -40,7 +34,7 @@ namespace AttackOnTitan.Models
         public InputActionType ActionType;
 
         public Keys Key;
-        public PressedMouseBtn MouseBtn;
+        public MouseBtn MouseBtn;
 
         public SelectedCell SelectedCell;
         public SelectedUnit SelectedUnit;
