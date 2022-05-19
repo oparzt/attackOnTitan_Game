@@ -31,8 +31,6 @@ namespace AttackOnTitan.Components
             _destRect = destRect;
         }
 
-        public void Update(GameTime gameTime, MouseState mouseState) {}
-
         public void SetOpacity(float opacity) => _opacity = opacity;
 
         public void Draw(SpriteBatch spriteBatch)

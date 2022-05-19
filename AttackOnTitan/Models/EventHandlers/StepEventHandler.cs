@@ -16,6 +16,7 @@ namespace AttackOnTitan.Models
         public void HandleStepBtnPressed(InputAction action)
         {
             GameModel.StepEnd = true;
+            GameModel.BlockClickEvents = true;
             GameModel.OutputActions.Enqueue(new OutputAction
             {
                 ActionType = OutputActionType.ChangeStepBtnState

@@ -30,7 +30,9 @@ namespace AttackOnTitan.Models
         public UnitModel SelectedUnit;
         public readonly UnitPath UnitPath;
         public readonly Dictionary<int, UnitModel> Units = new();
+        
         public bool StepEnd = false;
+        public bool BlockClickEvents = false;
 
         private UnitEventHandler _unitEventHandler;
         private MapEventHandler _mapEventHandler;
@@ -106,6 +108,13 @@ namespace AttackOnTitan.Models
             _handlers[InputActionType.UnitStopMove] = _unitEventHandler.HandleStopMove;
             _handlers[InputActionType.UnitCommand] = _unitEventHandler.HandleCommand;
             _handlers[InputActionType.StepBtnPressed] = _stepEventHandler.HandleStepBtnPressed;
+            _handlers[InputActionType.UpdateWasEnd] = action => BlockClickEvents = false;
+            _handlers[InputActionType.UpdateNoServicedZones] = action =>
+                OutputActions.Enqueue(new OutputAction
+                {
+                    ActionType = OutputActionType.UpdateNoServicedZoneForMap,
+                    NoServicedZone = action.NoServicedZone
+                });
         }
 
         public void Run()
@@ -121,13 +130,10 @@ namespace AttackOnTitan.Models
 
         private void Step()
         {
-            //var stopwatch = new Stopwatch();
             while (!_killThread)
             {
                 while (InputActions.TryDequeue(out var action)) {
-                    //stopwatch.Restart();
-                    if (!StepEnd) _handlers[action.ActionType](action);
-                    //Console.WriteLine(stopwatch.ElapsedMilliseconds); 
+                    _handlers[action.ActionType](action);
                 }
                 Thread.Sleep(30);
             }

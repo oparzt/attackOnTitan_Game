@@ -17,8 +17,8 @@ namespace AttackOnTitan.Components
 
         private const string EndText = "Конец хода";
         private const string WaitText = "Подождите";
-        private readonly Rectangle _backgroundRect;
         private readonly Vector2 _textPosition;
+        private Rectangle _backgroundRect;
 
         private bool _endState = true;
         private bool _wasPressed = false;
@@ -31,6 +31,15 @@ namespace AttackOnTitan.Components
             _backgroundRect = new Rectangle(viewportWidth - 250, viewportHeight - 40, 
                 250, 40);
             _textPosition = new Vector2(viewportWidth - 250 + 70, viewportHeight - 40 + 8);
+            
+            GameModel.InputActions.Enqueue(new InputAction
+            {
+                ActionType = InputActionType.UpdateNoServicedZones,
+                NoServicedZone = new NoServicedZone(NoServicedZoneLocation.StepBtn)
+                {
+                    Zones = new [] {_backgroundRect}
+                }
+            });
         }
 
         public void Update(GameTime gameTime, MouseState mouseState)

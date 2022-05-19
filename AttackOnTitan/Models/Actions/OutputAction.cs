@@ -22,6 +22,8 @@ namespace AttackOnTitan.Models
         ChangeStepBtnState,
         
         UpdateCommandsBar,
+        
+        UpdateNoServicedZoneForMap,
 
         //ChangeUnitTexture,
         //ChangeUnitText,
@@ -36,6 +38,7 @@ namespace AttackOnTitan.Models
         public MapCellInfo MapCellInfo;
         public ResourceInfo ResourceInfo;
         public CommandInfo[] CommandInfos;
+        public NoServicedZone NoServicedZone;
     }
 
     public class UnitInfo

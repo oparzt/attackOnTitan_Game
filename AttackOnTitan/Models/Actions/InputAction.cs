@@ -16,7 +16,9 @@ namespace AttackOnTitan.Models
         SelectUnit,
         UnitStopMove,
         UnitCommand,
-        StepBtnPressed
+        StepBtnPressed,
+        UpdateWasEnd,
+        UpdateNoServicedZones,
     }
 
     public enum PressedMouseBtn
@@ -24,6 +26,13 @@ namespace AttackOnTitan.Models
         None,
         Left,
         Right
+    }
+
+    public enum NoServicedZoneLocation
+    {
+        TopBar,
+        CommandBar,
+        StepBtn
     }
 
     public class InputAction
@@ -36,12 +45,13 @@ namespace AttackOnTitan.Models
         public SelectedCell SelectedCell;
         public SelectedUnit SelectedUnit;
         public UnitCommandInfo UnitCommandInfo;
+        public NoServicedZone NoServicedZone;
     }
 
     public class SelectedCell
     {
-        public int X;
-        public int Y;
+        public readonly int X;
+        public readonly int Y;
 
         public SelectedCell(int x, int y)
         {
@@ -52,7 +62,7 @@ namespace AttackOnTitan.Models
 
     public class SelectedUnit
     {
-        public int ID;
+        public readonly int ID;
 
         public SelectedUnit(int id) => ID = id;
     }
@@ -63,5 +73,16 @@ namespace AttackOnTitan.Models
 
         public UnitCommandInfo(CommandType commandType) =>
             CommandType = commandType;
+    }
+
+    public class NoServicedZone
+    {
+        public readonly NoServicedZoneLocation Location;
+        public Rectangle[] Zones;
+
+        public NoServicedZone(NoServicedZoneLocation location)
+        {
+            Location = location;
+        }
     }
 }

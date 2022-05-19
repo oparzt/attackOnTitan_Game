@@ -9,7 +9,7 @@ namespace AttackOnTitan.Components
     {
         private readonly Texture2D _texture;
         private readonly CommandType _commandType;
-        private Rectangle _textureRect;
+        public Rectangle TextureRect;
         private bool _wasPressed;
         public readonly bool IsAvailable;
 
@@ -19,12 +19,12 @@ namespace AttackOnTitan.Components
             _commandType = commandType;
             IsAvailable = isAvailable;
             _texture = texture;
-            _textureRect = textureRect;
+            TextureRect = textureRect;
         }
 
         public void Update(GameTime gameTime, MouseState mouseState)
         {
-            var contains = _textureRect.Contains(mouseState.Position);
+            var contains = TextureRect.Contains(mouseState.Position);
             var pressed = mouseState.LeftButton == ButtonState.Pressed;
             
             if (_wasPressed)
@@ -49,6 +49,6 @@ namespace AttackOnTitan.Components
 
 
         public void Draw(SpriteBatch spriteBatch) =>
-            spriteBatch.Draw(_texture, _textureRect, Color.White);
+            spriteBatch.Draw(_texture, TextureRect, Color.White);
     }
 }

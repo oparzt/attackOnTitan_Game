@@ -28,6 +28,15 @@ namespace AttackOnTitan.Components
             _width = width;
             _height = height;
             _fontSize = fontSize;
+            
+            GameModel.InputActions.Enqueue(new InputAction
+            {
+                ActionType = InputActionType.UpdateNoServicedZones,
+                NoServicedZone = new NoServicedZone(NoServicedZoneLocation.TopBar)
+                {
+                    Zones = new [] {new Rectangle(0, 0, width, height)}
+                }
+            });
         }
 
         public void SetFont(SpriteFont spriteFont) => _font = spriteFont;

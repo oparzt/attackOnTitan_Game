@@ -56,6 +56,8 @@ namespace AttackOnTitan.Components
         private Dictionary<int, UnitComponent> _units = new();
         private HashSet<UnitComponent> _movedUnits = new();
 
+        private Dictionary<NoServicedZoneLocation, Rectangle[]> _noServicedZones = new();
+
         public MapComponent(IScene parent, int cellsColumnCount, int cellsRowCount,
             int hexWidth, int hexHeight, int unitWidth, int unitHeight)
         {
@@ -97,13 +99,10 @@ namespace AttackOnTitan.Components
 
         private void InitializeGrass()
         {
-            var viewport = SceneManager.GraphicsMgr.GraphicsDevice.Viewport;
-
             _grassColumnCount = _mapWidth / _grassWidth + 2;
             _grassRowCount = _mapHeight / _grassHeight + 2;
 
             _grassRects = new Rectangle[_grassColumnCount, _grassRowCount];
-            
 
             for (var x = 0; x < _grassColumnCount; x++)
             for (var y = 0; y < _grassColumnCount; y++)
@@ -116,20 +115,27 @@ namespace AttackOnTitan.Components
 
             var mouseBtn = GetPressedBtn(mouseState.LeftButton, mouseState.RightButton);
 
-            var selectedMapItem = FindMapItemUnderCursor();
-            var selectedUnitItem = FindUnitItemUnderCursor();
-
-            if (selectedMapItem is not null)
-                InitiateSelectMapCellAction(selectedMapItem, mouseBtn);
-
-            if (selectedUnitItem is not null)
-                InitiateSelectUnitAction(selectedUnitItem, mouseBtn);
-
             SetCellsRangeIntoViewport();
             SetGrassRangeIntoViewport();
 
             foreach (var unit in _movedUnits)
                 unit.Update(gameTime, mouseState);
+
+            if (_noServicedZones.Values
+                .SelectMany(noServicedZone => noServicedZone)
+                .Any(noServicedRect => noServicedRect.Contains(mouseState.Position)))
+            {
+                return;
+            }
+            
+            var selectedMapItem = FindMapItemUnderCursor();
+            var selectedUnitItem = FindUnitItemUnderCursor();
+            
+            if (selectedUnitItem is not null)
+                InitiateSelectUnitAction(selectedUnitItem, mouseBtn);
+
+            if (selectedMapItem is not null)
+                InitiateSelectMapCellAction(selectedMapItem, mouseBtn);
         }
 
         private PressedMouseBtn GetPressedBtn(ButtonState left, ButtonState right) =>
@@ -188,6 +194,11 @@ namespace AttackOnTitan.Components
         public void ChangeCellOpacity(MapCellInfo mapCellInfo)
         {
             _mapItems[mapCellInfo.X, mapCellInfo.Y].SetOpacity(mapCellInfo.Opacity);
+        }
+
+        public void UpdateNoServicedZone(NoServicedZone noServicedZone)
+        {
+            _noServicedZones[noServicedZone.Location] = noServicedZone.Zones;
         }
 
         public void Draw(SpriteBatch spriteBatch)

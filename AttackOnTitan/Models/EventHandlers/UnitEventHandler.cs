@@ -54,39 +54,44 @@ namespace AttackOnTitan.Models
 
         private void HandleLeftMouseSelect(InputAction action)
         {
+            if (GameModel.StepEnd || GameModel.BlockClickEvents) return;
+            GameModel.BlockClickEvents = true;
             var target = GameModel.Units[action.SelectedUnit.ID];
             GameModel.PreselectedUnit = null;
 
             if (target != GameModel.SelectedUnit)
             {
+                GameModel.SelectedUnit?.SetUnselectedOpacity();
                 GameModel.SelectedUnit = target;
                 GameModel.UnitPath.SetUnit(target);
+                target.UpdateCommandsBar();
             }
             
             GameModel.SelectedUnit.UpdateCommandsBar();
             GameModel.SelectedUnit.SetSelectedOpacity();
+            GameModel.BlockClickEvents = true;
         }
 
         private void HandleRightMouseSelect(InputAction action) {}
         
         private void HandleAttackCommand(InputAction action)
         {
-            
+            GameModel.BlockClickEvents = true;
         }
 
         private void HandleBuildCommand(InputAction action)
         {
-            
+            GameModel.BlockClickEvents = true;
         }
 
         private void HandleFlyOrWalkCommand(InputAction action)
         {
-            
+            GameModel.BlockClickEvents = true;
         }
 
         private void HandleRefuelCommand(InputAction action)
         {
-            
+            GameModel.BlockClickEvents = true;
         }
     }
 }

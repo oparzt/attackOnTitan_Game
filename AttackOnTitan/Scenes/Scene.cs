@@ -12,7 +12,5 @@ namespace AttackOnTitan.Scenes
     {
         public Dictionary<string, Texture2D> Textures { get; }
         public Dictionary<string, SpriteFont> Fonts { get; }
-        public SpriteBatch Sprite { get; }
-        public List<IComponent> Components { get; }
     }
 }

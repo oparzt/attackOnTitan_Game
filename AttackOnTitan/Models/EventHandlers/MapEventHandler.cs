@@ -45,15 +45,15 @@ namespace AttackOnTitan.Models
 
         private void HandleLeftMouseSelect(InputAction action)
         {
-            if (GameModel.SelectedUnit is not null) {
-                GameModel.SelectedUnit.SetUnselectedOpacity();
-                GameModel.UnitPath.SetUnit(null);
-                GameModel.OutputActions.Enqueue(new OutputAction
-                {
-                    ActionType = OutputActionType.UpdateCommandsBar,
-                    CommandInfos = new CommandInfo[] {}
-                });
-            }
+            if (GameModel.StepEnd || GameModel.BlockClickEvents) return;
+            GameModel.BlockClickEvents = true;
+            GameModel.SelectedUnit?.SetUnselectedOpacity();
+            GameModel.UnitPath.SetUnit(null);
+            GameModel.OutputActions.Enqueue(new OutputAction
+            {
+                ActionType = OutputActionType.UpdateCommandsBar,
+                CommandInfos = new CommandInfo[] {}
+            });
             GameModel.SelectedUnit = null;
         }
 

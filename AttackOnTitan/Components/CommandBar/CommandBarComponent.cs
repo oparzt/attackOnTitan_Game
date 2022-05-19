@@ -42,6 +42,17 @@ namespace AttackOnTitan.Components
                         _viewportHeight - 70, 60, 60));
                 i++;
             }
+            
+            GameModel.InputActions.Enqueue(new InputAction
+            {
+                ActionType = InputActionType.UpdateNoServicedZones,
+                NoServicedZone = new NoServicedZone(NoServicedZoneLocation.CommandBar)
+                {
+                    Zones = _commandBarItems.Count == 0 ? 
+                        new []{Rectangle.Empty} :
+                        _commandBarItems.Values.Select(commandBarItem => commandBarItem.TextureRect).ToArray()
+                }
+            });
         }
         
         public void Update(GameTime gameTime, MouseState mouseState)

@@ -18,7 +18,6 @@ namespace AttackOnTitan.Scenes
         public Dictionary<string, Texture2D> Textures { get; }
         public Dictionary<string, SpriteFont> Fonts { get; }
         public SpriteBatch Sprite { get; private set; }
-        public List<IComponent> Components { get; }
 
         private readonly Dictionary<OutputActionType, Action<OutputAction>> _commandsActions = new();
 
@@ -41,7 +40,6 @@ namespace AttackOnTitan.Scenes
         {
             Textures = new();
             Fonts = new();
-            Components = new();
         }
 
         public override void Initialize()
@@ -59,6 +57,7 @@ namespace AttackOnTitan.Scenes
             _commandsActions[OutputActionType.StopUnit] = action => _mapComponent.StopUnit(action.UnitInfo);
             _commandsActions[OutputActionType.ChangeUnitOpacity] = action => _mapComponent.ChangeUnitOpacity(action.UnitInfo);
             _commandsActions[OutputActionType.ChangeCellOpacity] = action => _mapComponent.ChangeCellOpacity(action.MapCellInfo);
+            _commandsActions[OutputActionType.UpdateNoServicedZoneForMap] = action => _mapComponent.UpdateNoServicedZone(action.NoServicedZone);
             _commandsActions[OutputActionType.AddResource] = action => _topBarComponent.AddResource(action.ResourceInfo);
             _commandsActions[OutputActionType.UpdateResourceCount] = action => _topBarComponent.UpdateResourceCount(action.ResourceInfo);
             _commandsActions[OutputActionType.ChangeStepBtnState] = action => _stepBtnComponent.ChangeState();
@@ -110,11 +109,14 @@ namespace AttackOnTitan.Scenes
             UpdateKeyBoardState();
             RunModelActions();
 
-            _mapComponent.Update(gameTime, mouseState);
             _stepBtnComponent.Update(gameTime, mouseState);
             _commandBarComponent.Update(gameTime, mouseState);
-            foreach (var component in Components)
-                component.Update(gameTime, mouseState);
+            _mapComponent.Update(gameTime, mouseState);
+            
+            GameModel.InputActions.Enqueue(new InputAction
+            {
+                ActionType = InputActionType.UpdateWasEnd
+            });
 
             base.Update(gameTime);
         }
