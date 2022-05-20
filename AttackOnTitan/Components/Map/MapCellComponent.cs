@@ -14,46 +14,52 @@ namespace AttackOnTitan.Components
         public readonly int X;
         public readonly int Y;
 
-        private Rectangle _destRect;
+        private readonly Texture2D _hexagonTexture;
+        private readonly Rectangle _hexagonRect;
+        private Texture2D _houseTexture;
+        private Rectangle _houseRect;
         private float _opacity = 0.3f;
-        private IScene _scene;
-        private string _textureName;
 
-        private Dictionary<Position, Rectangle> _positionsRectangles = new();
+        private readonly Dictionary<Position, Rectangle> _positionsRectangles = new();
 
-        public MapCellComponent(IScene scene, string textureName, int x, int y, Rectangle destRect)
+        public MapCellComponent(int x, int y, Texture2D hexagonTexture, Rectangle hexagonRect)
         {
             X = x;
             Y = y;
 
-            _scene = scene;
-            _textureName = textureName;
-            _destRect = destRect;
+            _hexagonTexture = hexagonTexture;
+            _hexagonRect = hexagonRect;
         }
 
         public void SetOpacity(float opacity) => _opacity = opacity;
 
+        public void UpdateHouseTexture(Texture2D houseTexture)
+        {
+            _houseTexture = houseTexture;
+            _houseRect = new Rectangle(_hexagonRect.Center 
+                - new Point(houseTexture.Width / 2, houseTexture.Height / 2), 
+                houseTexture.Bounds.Size);
+        }
+
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(_scene.Textures[_textureName], _destRect, 
-                null, Color.White * _opacity, 0f, Vector2.Zero, SpriteEffects.None, 0.5f);
+            spriteBatch.Draw(_hexagonTexture, _hexagonRect, 
+                null, Color.White * _opacity, 0f, 
+                Vector2.Zero, SpriteEffects.None, 0.5f);
+            
+            if (_houseTexture is not null)
+                spriteBatch.Draw(_houseTexture, _houseRect, 
+                    null, Color.White, 0f, 
+                    Vector2.Zero, SpriteEffects.None, 0.5f);
         }
 
         public bool IsComponentOnPosition(Point point)
         {
-            var dist = (point - _destRect.Center).ToVector2().Length();
-            return dist <= _destRect.Height / 2;
+            var dist = (point - _hexagonRect.Center).ToVector2().Length();
+            return dist <= _hexagonRect.Height / 2f;
         }
-
-        public Point GetCenter()
-        {
-            return _destRect.Center;
-        }
-
-        public Rectangle GetPosition(Position position)
-        {
-            return _positionsRectangles[position];
-        }
+        
+        public Rectangle GetPosition(Position position) => _positionsRectangles[position];
 
         public void CreatePositionsRectangles(Point unitTextureSize)
         {
@@ -61,14 +67,14 @@ namespace AttackOnTitan.Components
             var halfUnitHeight = new Point(0, unitTextureSize.Y / 2);
             var halfUnitSize = halfUnitWidth + halfUnitHeight;
 
-            var halfRectWidth = new Point(_destRect.Width / 2, 0);
-            var halfRectHeight = new Point(0, _destRect.Height / 2);
+            var halfRectWidth = new Point(_hexagonRect.Width / 2, 0);
+            var halfRectHeight = new Point(0, _hexagonRect.Height / 2);
             var halfRectSize = halfRectWidth + halfRectHeight;
 
-            var quarterRectWidth = new Point(_destRect.Width / 4, 0);
-            var quarterRectHeight = new Point(0, _destRect.Height / 4);
+            var quarterRectWidth = new Point(_hexagonRect.Width / 4, 0);
+            var quarterRectHeight = new Point(0, _hexagonRect.Height / 4);
 
-            var center = _destRect.Center;
+            var center = _hexagonRect.Center;
 
             var topBorderCenter = center - halfRectHeight;
             var bottomBorderCenter = center + halfRectHeight;

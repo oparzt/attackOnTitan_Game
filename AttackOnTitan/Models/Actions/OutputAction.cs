@@ -15,6 +15,7 @@ namespace AttackOnTitan.Models
         StopUnit,
         ChangeUnitOpacity,
 
+        InitializeMap,
         ChangeCellOpacity,
         
         AddResource,

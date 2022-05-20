@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Concurrent;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -13,29 +11,26 @@ namespace AttackOnTitan.Components
 {
     public class MapComponent
     {
-        private IScene _scene;
+        private readonly IScene _scene;
 
-        private readonly MapCellComponent[,] _mapItems;
+        private MapCellComponent[,] _mapItems;
         private Rectangle[,] _grassRects;
         private Camera2D _camera;
 
-        private readonly int _cellsColumnCount;
-        private readonly int _cellsRowCount;
+        private int _cellsColumnCount;
+        private int _cellsRowCount;
 
         private int _grassColumnCount;
         private int _grassRowCount;
 
-        public float HexWidth => _hexWidth * _camera.Zoom;
-        public float HexHeight => _hexHeight * _camera.Zoom;
+        private float HexWidth => _hexWidth * _camera.Zoom;
+        private float HexHeight => _hexHeight * _camera.Zoom;
 
-        public float GrassWidth => _grassWidth * _camera.Zoom;
-        public float GrassHeight => _grassHeight * _camera.Zoom;
+        private float GrassWidth => _grassWidth * _camera.Zoom;
+        private float GrassHeight => _grassHeight * _camera.Zoom;
 
         private readonly int _hexWidth;
         private readonly int _hexHeight;
-
-        private int _mapWidth;
-        private int _mapHeight;
 
         private readonly int _grassWidth = 200;
         private readonly int _grassHeight = 200;
@@ -51,51 +46,47 @@ namespace AttackOnTitan.Components
 
         private readonly Dictionary<NoServicedZoneLocation, Rectangle[]> _noServicedZones = new();
 
-        public MapComponent(IScene parent, int cellsColumnCount, int cellsRowCount,
-            int hexWidth, int hexHeight, int unitWidth, int unitHeight)
+        public MapComponent(IScene parent, int hexWidth, int hexHeight, int unitWidth, int unitHeight)
         {
-            _mapItems = new MapCellComponent[cellsColumnCount, cellsRowCount];
-            _cellsColumnCount = cellsColumnCount;
-            _cellsRowCount = cellsRowCount;
             _hexWidth = hexWidth;
             _hexHeight = hexHeight;
             _scene = parent;
 
             _unitTextureRect = new Rectangle(0, 0, unitWidth, unitHeight);
             _unitHitRadius = unitWidth / 6 * 5 / 2;
-
-            InitializeMap();
-            InitializeGrass();
         }
 
         #region InitializationMethods
 
         private void InitializeMap()
         {
-            _mapWidth = _cellsColumnCount * _hexWidth / 4 * 3 + _hexWidth / 4;
-            _mapHeight = _cellsRowCount * _hexHeight + _hexHeight / 2;
+            var mapWidth = _cellsColumnCount * _hexWidth / 4 * 3 + _hexWidth / 4;
+            var mapHeight = _cellsRowCount * _hexHeight + _hexHeight / 2;
 
             var viewportWidth = SceneManager.GraphicsMgr.GraphicsDevice.Viewport.Width;
             var viewportHeight = SceneManager.GraphicsMgr.GraphicsDevice.Viewport.Height;
 
-            _camera = new Camera2D(0, 0, viewportWidth, viewportHeight, _mapWidth, _mapHeight);
-
+            _camera = new Camera2D(0, 0, viewportWidth, viewportHeight, mapWidth, mapHeight);
+            _mapItems = new MapCellComponent[_cellsColumnCount, _cellsRowCount];
+            
             for (var row = 0; row < _cellsRowCount; row++)
                 for (var column = 0; column < _cellsColumnCount; column++)
                 {
-                    _mapItems[column, row] = new MapCellComponent(_scene, "Hexagon", column, row,
+                    _mapItems[column, row] = new MapCellComponent(column, row, _scene.Textures["Hexagon"],
                         new Rectangle(
                             column * _hexWidth / 4 * 3,
                             row * _hexHeight + (column % 2 == 1 ? _hexHeight / 2 : 0),
                             _hexWidth, _hexHeight));
                     _mapItems[column, row].CreatePositionsRectangles(_unitTextureRect.Size);
                 }
+            
+            InitializeGrass(mapWidth, mapHeight);
         }
 
-        private void InitializeGrass()
+        private void InitializeGrass(int mapWidth, int mapHeight)
         {
-            _grassColumnCount = _mapWidth / _grassWidth + 2;
-            _grassRowCount = _mapHeight / _grassHeight + 2;
+            _grassColumnCount = mapWidth / _grassWidth + 2;
+            _grassRowCount = mapHeight / _grassHeight + 2;
 
             _grassRects = new Rectangle[_grassColumnCount, _grassRowCount];
 
@@ -167,6 +158,13 @@ namespace AttackOnTitan.Components
 
         #region OutputActionHandlers
 
+        public void InitializeMap(MapCellInfo mapCellInfo)
+        {
+            _cellsColumnCount = mapCellInfo.X;
+            _cellsRowCount = mapCellInfo.Y;
+            InitializeMap();
+        }
+        
         public void AddUnit(UnitInfo unitInfo)
         {
             _units[unitInfo.ID] = new UnitComponent(_scene, unitInfo.ID, unitInfo.TextureName,

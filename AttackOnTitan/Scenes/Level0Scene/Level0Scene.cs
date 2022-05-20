@@ -45,8 +45,7 @@ namespace AttackOnTitan.Scenes
         public override void Initialize()
         {
             var viewport = SceneManager.GraphicsMgr.GraphicsDevice.Viewport;
-            _mapComponent = new MapComponent(this, 40, 35, 
-                222, 192, 60, 60);
+            _mapComponent = new MapComponent(this,222, 192, 60, 60);
             _topBarComponent = new TopBarComponent(this, viewport.Width, 35, 24);
             _stepBtnComponent = new StepBtnComponent(this, viewport.Width, viewport.Height, 24);
             _commandBarComponent = new CommandBarComponent(this, viewport.Width, viewport.Height);
@@ -56,6 +55,7 @@ namespace AttackOnTitan.Scenes
             _commandsActions[OutputActionType.RemoveUnit] = action => _mapComponent.RemoveUnit(action.UnitInfo);
             _commandsActions[OutputActionType.StopUnit] = action => _mapComponent.StopUnit(action.UnitInfo);
             _commandsActions[OutputActionType.ChangeUnitOpacity] = action => _mapComponent.ChangeUnitOpacity(action.UnitInfo);
+            _commandsActions[OutputActionType.InitializeMap] = action => _mapComponent.InitializeMap(action.MapCellInfo);
             _commandsActions[OutputActionType.ChangeCellOpacity] = action => _mapComponent.ChangeCellOpacity(action.MapCellInfo);
             _commandsActions[OutputActionType.UpdateNoServicedZoneForMap] = action => _mapComponent.UpdateNoServicedZone(action.NoServicedZone);
             _commandsActions[OutputActionType.AddResource] = action => _topBarComponent.AddResource(action.ResourceInfo);
@@ -85,7 +85,8 @@ namespace AttackOnTitan.Scenes
                 "Police", "Builder", "Cadet", "Titan", "Grass", "Coin", 
                 "Log", "Stone", "TopBarBackground", "Step",
                 "AttackIcon", "AttackIconHalf", "BuildingIcon", "BuildingIconHalf",
-                "GasIcon", "GasIconHalf", "RefuelingIcon", "RefuelingIconHalf"
+                "GasIcon", "GasIconHalf", "RefuelingIcon", "RefuelingIconHalf",
+                "Barracks", "Centre", "House1", "House2", "House3", "Warehouse"
             };
 
             Fonts["Medium"] = TtfFontBaker.Bake(File.OpenRead("TTFFonts/OpenSans-Medium.ttf"),
