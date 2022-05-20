@@ -90,6 +90,60 @@ namespace AttackOnTitan.Models
                     TextureSize = new Point(52, 30)
                 }
             });
+            
+            OutputActions.Enqueue(new OutputAction
+            {
+                ActionType = OutputActionType.ChangeTextureIntoCell,
+                MapCellInfo = new MapCellInfo(2, 3)
+                {
+                    TextureName = "House1"
+                }
+            });
+            
+            OutputActions.Enqueue(new OutputAction
+            {
+                ActionType = OutputActionType.ChangeTextureIntoCell,
+                MapCellInfo = new MapCellInfo(3, 3)
+                {
+                    TextureName = "House2"
+                }
+            });
+            
+            OutputActions.Enqueue(new OutputAction
+            {
+                ActionType = OutputActionType.ChangeTextureIntoCell,
+                MapCellInfo = new MapCellInfo(4, 3)
+                {
+                    TextureName = "House3"
+                }
+            });
+            
+            OutputActions.Enqueue(new OutputAction
+            {
+                ActionType = OutputActionType.ChangeTextureIntoCell,
+                MapCellInfo = new MapCellInfo(2, 4)
+                {
+                    TextureName = "Centre"
+                }
+            });
+            
+            OutputActions.Enqueue(new OutputAction
+            {
+                ActionType = OutputActionType.ChangeTextureIntoCell,
+                MapCellInfo = new MapCellInfo(3, 4)
+                {
+                    TextureName = "Barracks"
+                }
+            });
+            
+            OutputActions.Enqueue(new OutputAction
+            {
+                ActionType = OutputActionType.ChangeTextureIntoCell,
+                MapCellInfo = new MapCellInfo(4, 4)
+                {
+                    TextureName = "Warehouse"
+                }
+            });
 
             InitializeHandlers();
         }

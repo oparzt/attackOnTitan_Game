@@ -197,6 +197,11 @@ namespace AttackOnTitan.Components
             unit.SetOpacity(unitInfo.Opacity);
         }
 
+        public void ChangeTextureIntoCell(MapCellInfo mapCellInfo)
+        {
+            _mapItems[mapCellInfo.X, mapCellInfo.Y].UpdateHouseTexture(_scene.Textures[mapCellInfo.TextureName]);
+        }
+
         public void ChangeCellOpacity(MapCellInfo mapCellInfo)
         {
             _mapItems[mapCellInfo.X, mapCellInfo.Y].SetOpacity(mapCellInfo.Opacity);
@@ -214,9 +219,6 @@ namespace AttackOnTitan.Components
             spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend,
                 null, null, null, null, _camera.Transform);
             
-            // for (var x = _leftCellsBorder; x < _rightCellsBorder; x++)
-            // for (var y = _topCellsBorder; y < _bottomCellsBorder; y++)
-            //     _mapItems[x, y].Draw(spriteBatch);
             for (var x = _cellsInViewport.Left; x < _cellsInViewport.Right; x++)
             for (var y = _cellsInViewport.Top; y < _cellsInViewport.Bottom; y++)
                 _mapItems[x, y].Draw(spriteBatch);

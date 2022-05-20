@@ -56,6 +56,7 @@ namespace AttackOnTitan.Scenes
             _commandsActions[OutputActionType.StopUnit] = action => _mapComponent.StopUnit(action.UnitInfo);
             _commandsActions[OutputActionType.ChangeUnitOpacity] = action => _mapComponent.ChangeUnitOpacity(action.UnitInfo);
             _commandsActions[OutputActionType.InitializeMap] = action => _mapComponent.InitializeMap(action.MapCellInfo);
+            _commandsActions[OutputActionType.ChangeTextureIntoCell] = action => _mapComponent.ChangeTextureIntoCell(action.MapCellInfo);
             _commandsActions[OutputActionType.ChangeCellOpacity] = action => _mapComponent.ChangeCellOpacity(action.MapCellInfo);
             _commandsActions[OutputActionType.UpdateNoServicedZoneForMap] = action => _mapComponent.UpdateNoServicedZone(action.NoServicedZone);
             _commandsActions[OutputActionType.AddResource] = action => _topBarComponent.AddResource(action.ResourceInfo);
@@ -99,6 +100,8 @@ namespace AttackOnTitan.Scenes
             _stepBtnComponent.SetFont(Fonts["Medium"]);
             _topBarComponent.SetBackgroundTexture(Textures["TopBarBackground"]);
             _stepBtnComponent.SetBackgroundTexture(Textures["Step"]);
+            
+            RunModelActions();
             
             base.LoadContent();
         }

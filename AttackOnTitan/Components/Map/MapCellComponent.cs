@@ -37,7 +37,7 @@ namespace AttackOnTitan.Components
         {
             _houseTexture = houseTexture;
             _houseRect = new Rectangle(_hexagonRect.Center 
-                - new Point(houseTexture.Width / 2, houseTexture.Height / 2), 
+                - new Point(houseTexture.Width / 10 * 6, houseTexture.Height / 10 * 6), 
                 houseTexture.Bounds.Size);
         }
 
