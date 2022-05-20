@@ -8,15 +8,15 @@ namespace AttackOnTitan.Components
     public class CommandBarItemComponent
     {
         private readonly Texture2D _texture;
-        private readonly CommandType _commandType;
+        private readonly UnitCommandType _unitCommandType;
         public Rectangle TextureRect;
         private bool _wasPressed;
         public readonly bool IsAvailable;
 
-        public CommandBarItemComponent(CommandType commandType, bool isAvailable, 
+        public CommandBarItemComponent(UnitCommandType unitCommandType, bool isAvailable, 
             Texture2D texture, Rectangle textureRect)
         {
-            _commandType = commandType;
+            _unitCommandType = unitCommandType;
             IsAvailable = isAvailable;
             _texture = texture;
             TextureRect = textureRect;
@@ -37,7 +37,7 @@ namespace AttackOnTitan.Components
                     GameModel.InputActions.Enqueue(new InputAction()
                     {
                         ActionType = InputActionType.UnitCommand,
-                        UnitCommandInfo = new UnitCommandInfo(_commandType)
+                        UnitCommandInfo = new UnitCommandInfo(_unitCommandType)
                     });
                 }
                 else

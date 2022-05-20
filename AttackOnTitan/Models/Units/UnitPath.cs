@@ -146,6 +146,7 @@ namespace AttackOnTitan.Models
             _pathCosts.Clear();
             _pathCost = 0;
             _enemyCell = null;
+            _unit.UpdateCommandsBar();
         }
     }
 }

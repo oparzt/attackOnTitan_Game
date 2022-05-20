@@ -17,7 +17,7 @@ namespace AttackOnTitan.Scenes
     {
         public Dictionary<string, Texture2D> Textures { get; }
         public Dictionary<string, SpriteFont> Fonts { get; }
-        public SpriteBatch Sprite { get; private set; }
+        private SpriteBatch Sprite { get; set; }
 
         private readonly Dictionary<OutputActionType, Action<OutputAction>> _commandsActions = new();
 
@@ -27,6 +27,7 @@ namespace AttackOnTitan.Scenes
         private TopBarComponent _topBarComponent;
         private StepBtnComponent _stepBtnComponent;
         private CommandBarComponent _commandBarComponent;
+        private BuilderChooseComponent _builderChooseComponent;
 
         private Keys _lastKey = Keys.None;
 
@@ -35,6 +36,7 @@ namespace AttackOnTitan.Scenes
             CharacterRange.BasicLatin,
             CharacterRange.Cyrillic
         };
+
 
         public Level0Scene(Game game) : base(game)
         {
@@ -49,6 +51,7 @@ namespace AttackOnTitan.Scenes
             _topBarComponent = new TopBarComponent(this, viewport.Width, 35, 24);
             _stepBtnComponent = new StepBtnComponent(this, viewport.Width, viewport.Height, 24);
             _commandBarComponent = new CommandBarComponent(this, viewport.Width, viewport.Height);
+            _builderChooseComponent = new BuilderChooseComponent(this, viewport.Width, viewport.Height);
             
             _commandsActions[OutputActionType.AddUnit] = action => _mapComponent.AddUnit(action.UnitInfo);
             _commandsActions[OutputActionType.MoveUnit] = action => _mapComponent.MoveUnit(action.UnitInfo);
@@ -57,12 +60,14 @@ namespace AttackOnTitan.Scenes
             _commandsActions[OutputActionType.ChangeUnitOpacity] = action => _mapComponent.ChangeUnitOpacity(action.UnitInfo);
             _commandsActions[OutputActionType.InitializeMap] = action => _mapComponent.InitializeMap(action.MapCellInfo);
             _commandsActions[OutputActionType.ChangeTextureIntoCell] = action => _mapComponent.ChangeTextureIntoCell(action.MapCellInfo);
+            _commandsActions[OutputActionType.ClearTextureIntoCell] = action => _mapComponent.ClearTextureIntoCell(action.MapCellInfo);
             _commandsActions[OutputActionType.ChangeCellOpacity] = action => _mapComponent.ChangeCellOpacity(action.MapCellInfo);
             _commandsActions[OutputActionType.UpdateNoServicedZoneForMap] = action => _mapComponent.UpdateNoServicedZone(action.NoServicedZone);
             _commandsActions[OutputActionType.AddResource] = action => _topBarComponent.AddResource(action.ResourceInfo);
             _commandsActions[OutputActionType.UpdateResourceCount] = action => _topBarComponent.UpdateResourceCount(action.ResourceInfo);
-            _commandsActions[OutputActionType.ChangeStepBtnState] = action => _stepBtnComponent.ChangeState();
+            _commandsActions[OutputActionType.ChangeStepBtnState] = _ => _stepBtnComponent.ChangeState();
             _commandsActions[OutputActionType.UpdateCommandsBar] = action => _commandBarComponent.UpdateCommands(action.CommandInfos);
+            _commandsActions[OutputActionType.UpdateBuilderChoose] = action => _builderChooseComponent.UpdateBuildings(action.OutputBuildingInfo); 
             
             _gameModel = new GameModel(40, 35);
             _gameModel.Run();
@@ -87,12 +92,12 @@ namespace AttackOnTitan.Scenes
                 "Log", "Stone", "TopBarBackground", "Step",
                 "AttackIcon", "AttackIconHalf", "BuildingIcon", "BuildingIconHalf",
                 "GasIcon", "GasIconHalf", "RefuelingIcon", "RefuelingIconHalf",
-                "Barracks", "Centre", "House1", "House2", "House3", "Warehouse"
+                "Barracks", "Centre", "House1", "House2", "House3", "Warehouse",
+                "BuilderCard", "ExitIcon", "ExitIconHalf"
             };
 
             Fonts["Medium"] = TtfFontBaker.Bake(File.OpenRead("TTFFonts/OpenSans-Medium.ttf"),
                 100, 2048, 2048, _characterRanges).CreateSpriteFont(device);
-            
             foreach (var textureName in texturesName)
                 Textures[textureName] = Game.Content.Load<Texture2D>("Textures/" + textureName);
             
@@ -115,6 +120,7 @@ namespace AttackOnTitan.Scenes
 
             _stepBtnComponent.Update(gameTime, mouseState);
             _commandBarComponent.Update(gameTime, mouseState);
+            _builderChooseComponent.Update(gameTime, mouseState);
             _mapComponent.Update(gameTime, mouseState);
             
             GameModel.InputActions.Enqueue(new InputAction
@@ -153,6 +159,7 @@ namespace AttackOnTitan.Scenes
             _topBarComponent.Draw(Sprite);
             _stepBtnComponent.Draw(Sprite);
             _commandBarComponent.Draw(Sprite);
+            _builderChooseComponent.Draw(Sprite);
 
             base.Draw(gameTime);
         }

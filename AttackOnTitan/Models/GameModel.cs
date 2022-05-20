@@ -22,6 +22,20 @@ namespace AttackOnTitan.Models
         public static readonly ConcurrentQueue<InputAction> InputActions = new();
         public static readonly ConcurrentQueue<OutputAction> OutputActions = new();
 
+        public static readonly Dictionary<ResourceType, string> ResourceTexturesName = new()
+        {
+            [ResourceType.Coin] = "Coin",
+            [ResourceType.Log] = "Log",
+            [ResourceType.Stone] = "Stone"
+        };
+        
+        public readonly Dictionary<ResourceType, int> ResourceCount = new()
+        {
+            [ResourceType.Coin] = 100,
+            [ResourceType.Log] = 100,
+            [ResourceType.Stone] = 100
+        };
+
         private readonly Dictionary<InputActionType, Action<InputAction>> _handlers = new();
 
         public readonly MapModel Map;
@@ -58,93 +72,27 @@ namespace AttackOnTitan.Models
                 Units[i].AddUnitToTheMap(Map[2, 2], positions[i]);
             }
 
-            OutputActions.Enqueue(new OutputAction()
+            foreach (var resourceCountPair in ResourceCount)
             {
-                ActionType = OutputActionType.AddResource,
-                ResourceInfo = new ResourceInfo(ResourceType.Coin)
+                OutputActions.Enqueue(new OutputAction()
                 {
-                    Count = "100",
-                    TextureName = "Coin",
-                    TextureSize = new Point(29, 20)
-                }
-            });
+                    ActionType = OutputActionType.AddResource,
+                    ResourceInfo = new ResourceInfo(resourceCountPair.Key)
+                    {
+                        Count = resourceCountPair.Value.ToString(),
+                        TextureName = ResourceTexturesName[resourceCountPair.Key],
+                    }
+                });
+            }
             
-            OutputActions.Enqueue(new OutputAction()
-            {
-                ActionType = OutputActionType.AddResource,
-                ResourceInfo = new ResourceInfo(ResourceType.Log)
-                {
-                    Count = "100",
-                    TextureName = "Log",
-                    TextureSize = new Point(48, 24)
-                }
-            });
             
-            OutputActions.Enqueue(new OutputAction()
-            {
-                ActionType = OutputActionType.AddResource,
-                ResourceInfo = new ResourceInfo(ResourceType.Stone)
-                {
-                    Count = "100",
-                    TextureName = "Stone",
-                    TextureSize = new Point(52, 30)
-                }
-            });
+            for (var i = 2; i < 10; i++)
+                Map[i, 3].UpdateBuildingType(BuildingType.House);
             
-            OutputActions.Enqueue(new OutputAction
-            {
-                ActionType = OutputActionType.ChangeTextureIntoCell,
-                MapCellInfo = new MapCellInfo(2, 3)
-                {
-                    TextureName = "House1"
-                }
-            });
+            Map[2, 4].UpdateBuildingType(BuildingType.Centre);
+            Map[3, 4].UpdateBuildingType(BuildingType.Barracks);
+            Map[4, 4].UpdateBuildingType(BuildingType.Warehouse);
             
-            OutputActions.Enqueue(new OutputAction
-            {
-                ActionType = OutputActionType.ChangeTextureIntoCell,
-                MapCellInfo = new MapCellInfo(3, 3)
-                {
-                    TextureName = "House2"
-                }
-            });
-            
-            OutputActions.Enqueue(new OutputAction
-            {
-                ActionType = OutputActionType.ChangeTextureIntoCell,
-                MapCellInfo = new MapCellInfo(4, 3)
-                {
-                    TextureName = "House3"
-                }
-            });
-            
-            OutputActions.Enqueue(new OutputAction
-            {
-                ActionType = OutputActionType.ChangeTextureIntoCell,
-                MapCellInfo = new MapCellInfo(2, 4)
-                {
-                    TextureName = "Centre"
-                }
-            });
-            
-            OutputActions.Enqueue(new OutputAction
-            {
-                ActionType = OutputActionType.ChangeTextureIntoCell,
-                MapCellInfo = new MapCellInfo(3, 4)
-                {
-                    TextureName = "Barracks"
-                }
-            });
-            
-            OutputActions.Enqueue(new OutputAction
-            {
-                ActionType = OutputActionType.ChangeTextureIntoCell,
-                MapCellInfo = new MapCellInfo(4, 4)
-                {
-                    TextureName = "Warehouse"
-                }
-            });
-
             InitializeHandlers();
         }
 
@@ -182,6 +130,22 @@ namespace AttackOnTitan.Models
         }
 
         public void Dispose() => _killThread = true;
+
+        public void UpdateResourceCount()
+        {
+            foreach (var resCountPair in ResourceCount)
+            {
+                OutputActions.Enqueue(new OutputAction
+                {
+                    ActionType = OutputActionType.UpdateResourceCount,
+                    ResourceInfo = new ResourceInfo(resCountPair.Key)
+                    {
+                        Count = resCountPair.Value.ToString()
+                    }
+                }); 
+            }
+            
+        }
 
         private void Step()
         {

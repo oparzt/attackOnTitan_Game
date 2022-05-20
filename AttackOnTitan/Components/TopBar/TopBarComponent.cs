@@ -44,17 +44,18 @@ namespace AttackOnTitan.Components
 
         public void AddResource(ResourceInfo resInfo)
         {
-            var resComponent = new TopBarResourceComponent(_scene.Textures[resInfo.TextureName], _font, _fontSize / 100f);
+            var resTexture = _scene.Textures[resInfo.TextureName];
+            var resComponent = new TopBarResourceComponent(resTexture, _font, _fontSize / 100f);
             
             _resComponents[resInfo.ResourceType] = resComponent;
             
-            resComponent.UpdateTextureRect(new Rectangle(new Point(_nextResX, Math.Abs(_height - resInfo.TextureSize.Y) / 2),
-                resInfo.TextureSize));
-            resComponent.UpdateTextPosition(new Vector2(_nextResX + resInfo.TextureSize.X + 15,
+            resComponent.UpdateTextureRect(new Rectangle(new Point(_nextResX, (_height - resTexture.Height) / 2),
+                resTexture.Bounds.Size));
+            resComponent.UpdateTextPosition(new Vector2(_nextResX + resTexture.Width + 15,
                 (_height - _fontSize) / 2f));
             if (resInfo.Count is not null) resComponent.UpdateResourceCount(resInfo.Count);
 
-            _nextResX += resInfo.TextureSize.X + 100;
+            _nextResX += resTexture.Bounds.Size.X + 100;
         }
 
         public void UpdateResourceCount(ResourceInfo resInfo) => 

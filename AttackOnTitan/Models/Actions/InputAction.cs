@@ -26,7 +26,8 @@ namespace AttackOnTitan.Models
     {
         TopBar,
         CommandBar,
-        StepBtn
+        StepBtn,
+        BuilderChoose
     }
 
     public class InputAction
@@ -63,10 +64,12 @@ namespace AttackOnTitan.Models
     
     public class UnitCommandInfo
     {
-        public readonly CommandType CommandType;
+        public readonly UnitCommandType UnitCommandType;
+        public BuildingInfo BuildingInfo;
+        public string BuildingTextureName;
 
-        public UnitCommandInfo(CommandType commandType) =>
-            CommandType = commandType;
+        public UnitCommandInfo(UnitCommandType unitCommandType) =>
+            UnitCommandType = unitCommandType;
     }
 
     public class NoServicedZone

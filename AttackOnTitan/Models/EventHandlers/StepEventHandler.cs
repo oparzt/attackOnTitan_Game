@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using Microsoft.Xna.Framework.Input;
 
 namespace AttackOnTitan.Models
 {
@@ -17,9 +15,26 @@ namespace AttackOnTitan.Models
         {
             GameModel.StepEnd = true;
             GameModel.BlockClickEvents = true;
+            GameModel.SelectedUnit?.SetUnselectedOpacity();
+            GameModel.SelectedUnit = null;
+            GameModel.UnitPath.SetUnit(null);
             GameModel.OutputActions.Enqueue(new OutputAction
             {
                 ActionType = OutputActionType.ChangeStepBtnState
+            });
+            GameModel.OutputActions.Enqueue(new OutputAction
+            {
+                ActionType = OutputActionType.UpdateCommandsBar,
+                CommandInfos = new CommandInfo[] {}
+            });
+            GameModel.OutputActions.Enqueue(new OutputAction
+            {
+                ActionType = OutputActionType.UpdateBuilderChoose,
+                OutputBuildingInfo = new OutputBuildingInfo
+                {
+                    BackgroundTextureName = "BuilderCard",
+                    BuildingInfos = new BuildingInfo[] {}
+                }
             });
 
             var units = new List<UnitModel>();

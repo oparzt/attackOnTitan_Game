@@ -7,7 +7,7 @@ namespace AttackOnTitan.Models
     {
         public readonly GameModel GameModel;
         private readonly Dictionary<MouseBtn, Action<InputAction>> _selectHandlers = new();
-        private readonly Dictionary<CommandType, Action<InputAction>> _commandHandlers = new();
+        private readonly Dictionary<UnitCommandType, Action<InputAction>> _commandHandlers = new();
 
         public UnitEventHandler(GameModel gameModel)
         {
@@ -16,7 +16,7 @@ namespace AttackOnTitan.Models
         }
 
         public void HandleCommand(InputAction action) =>
-            _commandHandlers[action.UnitCommandInfo.CommandType](action);
+            _commandHandlers[action.UnitCommandInfo.UnitCommandType](action);
         public void HandleSelect(InputAction action) =>
             _selectHandlers[action.MouseBtn](action);
 
@@ -38,10 +38,12 @@ namespace AttackOnTitan.Models
             _selectHandlers[MouseBtn.None] = HandleNoMouseSelect;
             _selectHandlers[MouseBtn.Left] = HandleLeftMouseSelect;
             _selectHandlers[MouseBtn.Right] = HandleRightMouseSelect;
-            _commandHandlers[CommandType.Attack] = HandleAttackCommand;
-            _commandHandlers[CommandType.OpenBuildMenu] = HandleBuildCommand;
-            _commandHandlers[CommandType.Fly] = HandleFlyOrWalkCommand;
-            _commandHandlers[CommandType.Refuel] = HandleRefuelCommand;
+            _commandHandlers[UnitCommandType.Attack] = HandleAttackCommand;
+            _commandHandlers[UnitCommandType.Fly] = HandleFlyOrWalkCommand;
+            _commandHandlers[UnitCommandType.Refuel] = HandleRefuelCommand;
+            _commandHandlers[UnitCommandType.OpenBuildMenu] = HandleOpenBuildMenuCommand;
+            _commandHandlers[UnitCommandType.Build] = HandleBuildCommand;
+            _commandHandlers[UnitCommandType.ExitBuildMenu] = HandleExitCommand;
         }
 
         private void HandleNoMouseSelect(InputAction action)
@@ -82,11 +84,6 @@ namespace AttackOnTitan.Models
             GameModel.BlockClickEvents = true;
         }
 
-        private void HandleBuildCommand(InputAction action)
-        {
-            GameModel.BlockClickEvents = true;
-        }
-
         private void HandleFlyOrWalkCommand(InputAction action)
         {
             GameModel.BlockClickEvents = true;
@@ -95,6 +92,32 @@ namespace AttackOnTitan.Models
         private void HandleRefuelCommand(InputAction action)
         {
             GameModel.BlockClickEvents = true;
+        }
+        
+        private void HandleOpenBuildMenuCommand(InputAction action)
+        {
+            GameModel.BlockClickEvents = true;
+            GameModel.SelectedUnit?.OpenBuildMenu(GameModel.ResourceCount);
+        }
+
+        private void HandleBuildCommand(InputAction action)
+        {
+            GameModel.BlockClickEvents = true;
+
+            foreach (var pricePair in action.UnitCommandInfo.BuildingInfo.Price)
+                GameModel.ResourceCount[pricePair.Key] -= pricePair.Value;
+            GameModel.UpdateResourceCount();
+            
+            GameModel.SelectedUnit?.CurCell.UpdateBuildingType(
+                action.UnitCommandInfo.BuildingInfo.BuildingType,
+                action.UnitCommandInfo.BuildingTextureName);
+            GameModel.SelectedUnit?.CloseBuildMenu();
+        }
+        
+        private void HandleExitCommand(InputAction action)
+        {
+            GameModel.BlockClickEvents = true;
+            GameModel.SelectedUnit?.CloseBuildMenu();
         }
     }
 }

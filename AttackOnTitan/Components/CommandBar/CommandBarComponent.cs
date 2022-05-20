@@ -15,7 +15,7 @@ namespace AttackOnTitan.Components
         private readonly int _viewportWidth;
         private readonly int _viewportHeight;
 
-        private readonly Dictionary<CommandType, CommandBarItemComponent> _commandBarItems = new();
+        private readonly Dictionary<UnitCommandType, CommandBarItemComponent> _commandBarItems = new();
 
         public CommandBarComponent(IScene parent, int viewportWidth, int viewportHeight)
         {
@@ -35,7 +35,7 @@ namespace AttackOnTitan.Components
             
             foreach (var commandInfo in commandInfos)
             {
-                _commandBarItems[commandInfo.CommandType] = new CommandBarItemComponent(commandInfo.CommandType,
+                _commandBarItems[commandInfo.UnitCommandType] = new CommandBarItemComponent(commandInfo.UnitCommandType,
                     commandInfo.IsAvailable,
                     _scene.Textures[commandInfo.TextureName],
                     new Rectangle(startX + i * 76,

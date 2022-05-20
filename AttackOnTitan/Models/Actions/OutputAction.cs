@@ -1,9 +1,5 @@
-﻿using System;
-
+﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 
 namespace AttackOnTitan.Models
 {
@@ -17,6 +13,7 @@ namespace AttackOnTitan.Models
 
         InitializeMap,
         ChangeTextureIntoCell,
+        ClearTextureIntoCell,
         ChangeCellOpacity,
         
         AddResource,
@@ -26,6 +23,8 @@ namespace AttackOnTitan.Models
         UpdateCommandsBar,
         
         UpdateNoServicedZoneForMap,
+        
+        UpdateBuilderChoose
 
         //ChangeUnitTexture,
         //ChangeUnitText,
@@ -41,6 +40,7 @@ namespace AttackOnTitan.Models
         public ResourceInfo ResourceInfo;
         public CommandInfo[] CommandInfos;
         public NoServicedZone NoServicedZone;
+        public OutputBuildingInfo OutputBuildingInfo;
     }
 
     public class UnitInfo
@@ -93,15 +93,23 @@ namespace AttackOnTitan.Models
 
     public class CommandInfo
     {
-        public readonly CommandType CommandType;
+        public readonly UnitCommandType UnitCommandType;
         public readonly bool IsAvailable;
         public readonly string TextureName;
 
-        public CommandInfo(CommandType commandType, bool isAvailable, string textureName)
+        public CommandInfo(UnitCommandType unitCommandType, bool isAvailable, string textureName)
         {
-            CommandType = commandType;
+            UnitCommandType = unitCommandType;
             IsAvailable = isAvailable;
             TextureName = textureName;
         }
+    }
+
+    public class OutputBuildingInfo
+    {
+        public BuildingInfo[] BuildingInfos;
+        public string[] BuildingTexturesName;
+        public string BackgroundTextureName;
+        public HashSet<ResourceType>[] NotAvailableResource;
     }
 }

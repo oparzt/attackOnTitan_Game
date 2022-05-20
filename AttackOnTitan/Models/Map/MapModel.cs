@@ -29,6 +29,12 @@ namespace AttackOnTitan.Models
         private void InitializeMap()
         {
             _mapCells = new MapCellModel[ColumnsCount, RowsCount];
+            
+            GameModel.OutputActions.Enqueue(new OutputAction
+            {
+                ActionType = OutputActionType.InitializeMap,
+                MapCellInfo = new MapCellInfo(ColumnsCount, RowsCount)
+            });
 
             for (var x = 0; x < ColumnsCount; x++)
                 for (var y = 0; y < RowsCount; y++)
@@ -47,12 +53,6 @@ namespace AttackOnTitan.Models
             for (var x = 0; x < ColumnsCount; x++)
                 for (var y = 0; y < RowsCount; y++)
                     _mapCells[x, y].ConnectWithNearCells(_mapCells, ColumnsCount, RowsCount, nearCellsWeights);
-            
-            GameModel.OutputActions.Enqueue(new OutputAction
-            {
-                ActionType = OutputActionType.InitializeMap,
-                MapCellInfo = new MapCellInfo(ColumnsCount, RowsCount)
-            });
         }
 
         public void SetCellOpacity(MapCellModel mapCell, float opacity) =>

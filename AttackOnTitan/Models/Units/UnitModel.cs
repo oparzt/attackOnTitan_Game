@@ -4,13 +4,15 @@ using System.Linq;
 
 namespace AttackOnTitan.Models
 {
-    public enum CommandType
+    public enum UnitCommandType
     {
         Attack,
         Refuel,
-        OpenBuildMenu,
         Fly,
-        Walk
+        Walk,
+        OpenBuildMenu,
+        Build,
+        ExitBuildMenu,
     }
 
     public enum UnitType
@@ -31,6 +33,7 @@ namespace AttackOnTitan.Models
         public bool CanGo = true;
         public bool IsFly;
         public bool Moved;
+        public bool OpenMenu;
         public bool IsEnemy => UnitType == UnitType.Titan;
 
         public int MaxEnergy = 10;
@@ -38,32 +41,37 @@ namespace AttackOnTitan.Models
 
         public readonly UnitType UnitType;
 
-        private static readonly Dictionary<CommandType, Dictionary<bool, CommandInfo>> CommandInfoByTypes = new()
+        private static readonly Dictionary<UnitCommandType, Dictionary<bool, CommandInfo>> CommandInfoByTypes = new()
         {
-            [CommandType.Attack] = new Dictionary<bool, CommandInfo>
+            [UnitCommandType.Attack] = new Dictionary<bool, CommandInfo>
             {
-                [true] = new(CommandType.Attack, true, "AttackIcon"),
-                [false] = new(CommandType.Attack, false, "AttackIconHalf")
+                [true] = new(UnitCommandType.Attack, true, "AttackIcon"),
+                [false] = new(UnitCommandType.Attack, false, "AttackIconHalf")
             },
-            [CommandType.Refuel] = new Dictionary<bool, CommandInfo>
+            [UnitCommandType.Refuel] = new Dictionary<bool, CommandInfo>
             {
-                [true] = new(CommandType.Refuel, true, "RefuelingIcon"),
-                [false] = new(CommandType.Refuel, false, "RefuelingIconHalf")
+                [true] = new(UnitCommandType.Refuel, true, "RefuelingIcon"),
+                [false] = new(UnitCommandType.Refuel, false, "RefuelingIconHalf")
             },
-            [CommandType.Fly] = new Dictionary<bool, CommandInfo>
+            [UnitCommandType.Fly] = new Dictionary<bool, CommandInfo>
             {
-                [true] = new(CommandType.Fly, true, "GasIcon"),
-                [false] = new(CommandType.Fly, false, "GasIconHalf")
+                [true] = new(UnitCommandType.Fly, true, "GasIcon"),
+                [false] = new(UnitCommandType.Fly, false, "GasIconHalf")
             },
-            [CommandType.Walk] = new Dictionary<bool, CommandInfo>
+            [UnitCommandType.Walk] = new Dictionary<bool, CommandInfo>
             {
-                [true] = new(CommandType.Walk, true, "WalkIcon"),
-                [false] = new(CommandType.Walk, false, "WalkIconHalf")
+                [true] = new(UnitCommandType.Walk, true, "WalkIcon"),
+                [false] = new(UnitCommandType.Walk, false, "WalkIconHalf")
             },
-            [CommandType.OpenBuildMenu] = new Dictionary<bool, CommandInfo>
+            [UnitCommandType.OpenBuildMenu] = new Dictionary<bool, CommandInfo>
             {
-                [true] = new(CommandType.OpenBuildMenu, true, "BuildingIcon"),
-                [false] = new(CommandType.OpenBuildMenu, false, "BuildingIconHalf")
+                [true] = new(UnitCommandType.OpenBuildMenu, true, "BuildingIcon"),
+                [false] = new(UnitCommandType.OpenBuildMenu, false, "BuildingIconHalf")
+            },
+            [UnitCommandType.ExitBuildMenu] = new Dictionary<bool, CommandInfo>
+            {
+                [true] = new(UnitCommandType.ExitBuildMenu, true, "ExitIcon"),
+                [false] = new(UnitCommandType.ExitBuildMenu, false, "ExitIconHalf")
             }
         };
 
@@ -118,6 +126,53 @@ namespace AttackOnTitan.Models
                 CommandInfos = GetCommandInfos().ToArray()
             });
         }
+
+        public void OpenBuildMenu(Dictionary<ResourceType, int> resourceCount)
+        {
+            var possibleBuildingOnCell = CurCell.GetPossibleBuildingInCell();
+            
+            GameModel.OutputActions.Enqueue(new OutputAction
+            {
+                ActionType = OutputActionType.UpdateBuilderChoose,
+                OutputBuildingInfo = new OutputBuildingInfo
+                {
+                    BackgroundTextureName = "BuilderCard",
+                    BuildingInfos = possibleBuildingOnCell,
+                    BuildingTexturesName = possibleBuildingOnCell
+                        .Select(buildingInfo => CurCell.GetBuildingTextureName(buildingInfo.BuildingType))
+                        .ToArray(),
+                    NotAvailableResource = possibleBuildingOnCell
+                        .Select(buildingInfo => GetNotAvailableResourceForBuildingType(buildingInfo, resourceCount))
+                        .ToArray()
+                }
+            });
+
+            OpenMenu = true;
+            UpdateCommandsBar();
+        }
+
+        public void CloseBuildMenu()
+        {
+            GameModel.OutputActions.Enqueue(new OutputAction
+            {
+                ActionType = OutputActionType.UpdateBuilderChoose,
+                OutputBuildingInfo = new OutputBuildingInfo
+                {
+                    BackgroundTextureName = "BuilderCard",
+                    BuildingInfos = new BuildingInfo[] {}
+                }
+            });
+            OpenMenu = false;
+            UpdateCommandsBar();
+        }
+
+        private HashSet<ResourceType> GetNotAvailableResourceForBuildingType(BuildingInfo buildingInfo, Dictionary<ResourceType, int> resourceCount)
+        {
+            return buildingInfo.Price
+                .Where(pair => pair.Value > resourceCount[pair.Key])
+                .Select(pair => pair.Key)
+                .ToHashSet();
+        }
         
         private void SetOpacity(float opacity) =>
             GameModel.OutputActions.Enqueue(new OutputAction()
@@ -131,18 +186,24 @@ namespace AttackOnTitan.Models
         
         private IEnumerable<CommandInfo> GetCommandInfos()
         {
+            if (OpenMenu)
+            {
+                yield return CommandInfoByTypes[UnitCommandType.ExitBuildMenu][true];
+                yield break;
+            }
+            
             switch (UnitType)
             {
                 case UnitType.Scout:
                 case UnitType.Garrison:
                 case UnitType.Police:
                 case UnitType.Cadet:
-                    yield return CommandInfoByTypes[CommandType.Attack][CurCell.IsEnemyInCell()];
-                    yield return CommandInfoByTypes[IsFly ? CommandType.Walk : CommandType.Fly][true];
-                    yield return CommandInfoByTypes[CommandType.Refuel][false];
+                    yield return CommandInfoByTypes[UnitCommandType.Attack][CurCell.IsEnemyInCell()];
+                    yield return CommandInfoByTypes[IsFly ? UnitCommandType.Walk : UnitCommandType.Fly][true];
+                    yield return CommandInfoByTypes[UnitCommandType.Refuel][false];
                     break;
                 case UnitType.Builder:
-                    yield return CommandInfoByTypes[CommandType.OpenBuildMenu][false];
+                    yield return CommandInfoByTypes[UnitCommandType.OpenBuildMenu][CurCell.GetPossibleBuildingTypesInCell().Any()];
                     break;
                 case UnitType.Titan:
                     break;

@@ -29,12 +29,25 @@ namespace AttackOnTitan.Models
         RightTopBorder,
         LeftBottomBorder,
         RightBottomBorder
+    } 
+    
+    public enum BuildingType
+    {
+        None,
+        House,
+        Barracks,
+        Warehouse,
+        Centre,
+        Wall,
+        OpenedGates,
+        ClosedGates
     }
 
     public class MapCellModel
     {
         public readonly int X;
         public readonly int Y;
+        public BuildingType BuildingType;
 
         public readonly Dictionary<MapCellModel, Weight> NearCells = new();
 
@@ -81,10 +94,65 @@ namespace AttackOnTitan.Models
             PossibleNearCellsDiffsFromOdd;
         #endregion
 
-        public MapCellModel(int x, int y)
+        #region Buildings
+
+        private static readonly Dictionary<BuildingType, string[]> TextureNamesByBuildingType = new()
+        {
+            [BuildingType.None] = null,
+            [BuildingType.House] = new[] {"House1", "House2", "House3"},
+            [BuildingType.Barracks] = new[] {"Barracks"},
+            [BuildingType.Warehouse] = new[] {"Warehouse"},
+            [BuildingType.Centre] = new[] {"Centre"},
+            [BuildingType.Wall] = null,
+            [BuildingType.OpenedGates] = null,
+            [BuildingType.ClosedGates] = null
+        };
+
+        private static readonly Dictionary<BuildingType, BuildingInfo> BuildingInfoByBuildingType = new()
+        {
+            [BuildingType.None] = null,
+            [BuildingType.House] = new BuildingInfo("Дом", BuildingType.House, 
+                new Dictionary<ResourceType, int>
+            {
+                [ResourceType.Coin] = 10,
+                [ResourceType.Log] = 10,
+                [ResourceType.Stone] = 10
+            }),
+            [BuildingType.Barracks] = new BuildingInfo("Казармы", BuildingType.Barracks, 
+                new Dictionary<ResourceType, int>
+            {
+                [ResourceType.Coin] = 10,
+                [ResourceType.Log] = 10,
+                [ResourceType.Stone] = 10
+            }),
+            [BuildingType.Warehouse] = new BuildingInfo("Склад", BuildingType.Warehouse, 
+                new Dictionary<ResourceType, int>
+            {
+                [ResourceType.Coin] = 10,
+                [ResourceType.Log] = 10,
+                [ResourceType.Stone] = 10
+            }),
+            [BuildingType.Centre] = new BuildingInfo("Администрация", BuildingType.Centre, 
+                new Dictionary<ResourceType, int>
+            {
+                [ResourceType.Coin] = 10,
+                [ResourceType.Log] = 10,
+                [ResourceType.Stone] = 10
+            }),
+            [BuildingType.Wall] = null,
+            [BuildingType.OpenedGates] = null,
+            [BuildingType.ClosedGates] = null
+        };
+
+        #endregion
+
+        private static readonly Random Random = new();
+        
+        public MapCellModel(int x, int y, BuildingType buildingType = BuildingType.None)
         {
             X = x;
             Y = y;
+            UpdateBuildingType(buildingType);
         }
 
         public void ConnectWithNearCells(MapCellModel[,] mapCells,
@@ -192,13 +260,91 @@ namespace AttackOnTitan.Models
 
         public IEnumerable<UnitModel> GetAllUnitInCell(bool isEnemy)
         {
-            if (UnitInCenterOfCell is not null && UnitInCenterOfCell.IsEnemy)
+            if (UnitInCenterOfCell is not null && UnitInCenterOfCell.IsEnemy == isEnemy)
                 yield return UnitInCenterOfCell;
 
-            foreach (var unit in UnitsInCell.Values.Where(unit => unit.IsEnemy))
+            foreach (var unit in UnitsInCell.Values.Where(unit => unit.IsEnemy == isEnemy))
                 yield return unit;
-            foreach (var unit in UnitsOnBorder.Values.Where(unit => unit.IsEnemy))
+            foreach (var unit in UnitsOnBorder.Values.Where(unit => unit.IsEnemy == isEnemy))
                 yield return unit;
+        }
+        
+        public void UpdateBuildingType(BuildingType buildingType, string buildingTextureNames = null)
+        {
+            BuildingType = buildingType;
+            var buildingTextureVariants = TextureNamesByBuildingType[buildingType];
+            
+            if (buildingTextureVariants is null)
+                GameModel.OutputActions.Enqueue(new OutputAction
+                {
+                    ActionType = OutputActionType.ClearTextureIntoCell,
+                    MapCellInfo = new MapCellInfo(X, Y)
+                });
+            else
+                GameModel.OutputActions.Enqueue(new OutputAction
+                {
+                    ActionType = OutputActionType.ChangeTextureIntoCell,
+                    MapCellInfo = new MapCellInfo(X, Y)
+                    {
+                        TextureName = buildingTextureNames ?? 
+                            GetBuildingTextureName(buildingType)
+                    }
+                });
+        }
+
+        public BuildingInfo[] GetPossibleBuildingInCell()
+        {
+            return GetPossibleBuildingTypesInCell()
+                .Select(buildingType => BuildingInfoByBuildingType[buildingType])
+                .ToArray();
+        }
+
+        public string GetBuildingTextureName(BuildingType buildingType)
+        {
+            var buildingTextureVariants = TextureNamesByBuildingType[buildingType];
+            return buildingTextureVariants[Random.Next(0, buildingTextureVariants.Length)];
+        }
+
+        public IEnumerable<BuildingType> GetPossibleBuildingTypesInCell()
+        {
+            switch (BuildingType)
+            {
+                case BuildingType.None:
+                    yield return BuildingType.Centre;
+                    yield return BuildingType.House;
+                    yield return BuildingType.Barracks;
+                    yield return BuildingType.Warehouse;
+                    break;
+                case BuildingType.House:
+                case BuildingType.Barracks:
+                case BuildingType.Warehouse:
+                case BuildingType.Centre:
+                case BuildingType.Wall:
+                case BuildingType.OpenedGates:
+                case BuildingType.ClosedGates:
+                default:
+                    break;
+            }
+        }
+    }
+
+    public class BuildingInfo
+    {
+        public readonly string BuildingName;
+        public readonly BuildingType BuildingType;
+        public readonly Dictionary<ResourceType, int> Price;
+        public readonly Dictionary<ResourceType, string> PriceText = new();
+
+        public BuildingInfo(string buildingName, BuildingType buildingType, Dictionary<ResourceType, int> price)
+        {
+            BuildingType = buildingType;
+            Price = price;
+            BuildingName = buildingName;
+            
+            foreach (var priceKeyValue in price)
+            {
+                PriceText[priceKeyValue.Key] = priceKeyValue.Value.ToString();
+            }
         }
     }
 

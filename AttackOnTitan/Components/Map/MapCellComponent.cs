@@ -17,7 +17,6 @@ namespace AttackOnTitan.Components
         private readonly Texture2D _hexagonTexture;
         private readonly Rectangle _hexagonRect;
         private Texture2D _houseTexture;
-        private Rectangle _houseRect;
         private float _opacity = 0.3f;
 
         private readonly Dictionary<Position, Rectangle> _positionsRectangles = new();
@@ -36,9 +35,11 @@ namespace AttackOnTitan.Components
         public void UpdateHouseTexture(Texture2D houseTexture)
         {
             _houseTexture = houseTexture;
-            _houseRect = new Rectangle(_hexagonRect.Center 
-                - new Point(houseTexture.Width / 10 * 6, houseTexture.Height / 10 * 6), 
-                houseTexture.Bounds.Size);
+        }
+        
+        public void ClearHouseTexture()
+        {
+            _houseTexture = null;
         }
 
         public void Draw(SpriteBatch spriteBatch)
@@ -48,7 +49,7 @@ namespace AttackOnTitan.Components
                 Vector2.Zero, SpriteEffects.None, 0.5f);
             
             if (_houseTexture is not null)
-                spriteBatch.Draw(_houseTexture, _houseRect, 
+                spriteBatch.Draw(_houseTexture, _hexagonRect, 
                     null, Color.White, 0f, 
                     Vector2.Zero, SpriteEffects.None, 0.5f);
         }

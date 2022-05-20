@@ -99,6 +99,11 @@ namespace AttackOnTitan.Components
 
         public void Update(GameTime gameTime, MouseState mouseState)
         {
+            if (_noServicedZones.Values
+                .SelectMany(noServicedZone => noServicedZone)
+                .Any(noServicedRect => noServicedRect.Contains(mouseState.Position)))
+                return;
+            
             _camera.Update(gameTime, mouseState);
 
             var mouseBtn = mouseState.GetPressedMouseBtn();
@@ -113,13 +118,6 @@ namespace AttackOnTitan.Components
                 unit.Update(gameTime, mouseState);
 
             _camera.MatrixWasUpdated = false;
-
-            if (_noServicedZones.Values
-                .SelectMany(noServicedZone => noServicedZone)
-                .Any(noServicedRect => noServicedRect.Contains(mouseState.Position)))
-            {
-                return;
-            }
             
             var selectedMapItem = FindMapItemUnderCursor();
             var selectedUnitItem = FindUnitItemUnderCursor();
@@ -200,6 +198,11 @@ namespace AttackOnTitan.Components
         public void ChangeTextureIntoCell(MapCellInfo mapCellInfo)
         {
             _mapItems[mapCellInfo.X, mapCellInfo.Y].UpdateHouseTexture(_scene.Textures[mapCellInfo.TextureName]);
+        }
+
+        public void ClearTextureIntoCell(MapCellInfo mapCellInfo)
+        {
+            _mapItems[mapCellInfo.X, mapCellInfo.Y].ClearHouseTexture();
         }
 
         public void ChangeCellOpacity(MapCellInfo mapCellInfo)
