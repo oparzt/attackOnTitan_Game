@@ -25,15 +25,15 @@ namespace AttackOnTitan.Models
             GameModel.OutputActions.Enqueue(new OutputAction
             {
                 ActionType = OutputActionType.UpdateCommandsBar,
-                CommandInfos = new CommandInfo[] {}
+                CommandInfos = new OutputCommandInfo[] {}
             });
             GameModel.OutputActions.Enqueue(new OutputAction
             {
-                ActionType = OutputActionType.UpdateBuilderChoose,
-                OutputBuildingInfo = new OutputBuildingInfo
+                ActionType = OutputActionType.UpdateCreatingChoose,
+                OutputCreatingInfo = new OutputCreatingInfo
                 {
                     BackgroundTextureName = "BuilderCard",
-                    BuildingInfos = new BuildingInfo[] {}
+                    CreatingInfos = new CreatingInfo[] {}
                 }
             });
 

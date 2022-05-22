@@ -43,6 +43,7 @@ namespace AttackOnTitan.Models
         public UnitModel PreselectedUnit;
         public UnitModel SelectedUnit;
         public readonly UnitPath UnitPath;
+        public readonly CommandModel CommandModel;
         public readonly Dictionary<int, UnitModel> Units = new();
         
         public bool StepEnd = false;
@@ -52,11 +53,13 @@ namespace AttackOnTitan.Models
         private MapEventHandler _mapEventHandler;
         private KeyEventHandler _keyEventHandler;
         private StepEventHandler _stepEventHandler;
+        private CommandEventHandler _commandEventHandler;
 
         public GameModel(int columnsMapCount, int rowsMapCount)
         {
             Map = new MapModel(columnsMapCount, rowsMapCount);
             UnitPath = new UnitPath(this);
+            CommandModel = new CommandModel(this);
             var unitsTypes = new[]
             {
                 UnitType.Scout, UnitType.Builder, UnitType.Titan
@@ -102,13 +105,13 @@ namespace AttackOnTitan.Models
             _keyEventHandler = new KeyEventHandler(this);
             _unitEventHandler = new UnitEventHandler(this);
             _stepEventHandler = new StepEventHandler(this);
+            _commandEventHandler = new CommandEventHandler(this);
 
             _handlers[InputActionType.None] = _ => { };
             _handlers[InputActionType.KeyPressed] = _keyEventHandler.Handle;
             _handlers[InputActionType.SelectMapCell] = _mapEventHandler.HandleSelect;
             _handlers[InputActionType.SelectUnit] = _unitEventHandler.HandleSelect;
             _handlers[InputActionType.UnitStopMove] = _unitEventHandler.HandleStopMove;
-            _handlers[InputActionType.UnitCommand] = _unitEventHandler.HandleCommand;
             _handlers[InputActionType.UnselectUnit] = _unitEventHandler.HandleUnselect;
             _handlers[InputActionType.StepBtnPressed] = _stepEventHandler.HandleStepBtnPressed;
             _handlers[InputActionType.UpdateWasEnd] = action => BlockClickEvents = false;
@@ -118,6 +121,7 @@ namespace AttackOnTitan.Models
                     ActionType = OutputActionType.UpdateNoServicedZoneForMap,
                     NoServicedZone = action.NoServicedZone
                 });
+            _handlers[InputActionType.ExecCommand] = _commandEventHandler.HandleCommand;
         }
 
         public void Run()

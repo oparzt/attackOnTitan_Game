@@ -16,10 +16,10 @@ namespace AttackOnTitan.Models
         SelectUnit,
         UnselectUnit,
         UnitStopMove,
-        UnitCommand,
         StepBtnPressed,
         UpdateWasEnd,
         UpdateNoServicedZones,
+        ExecCommand,
     }
 
     public enum NoServicedZoneLocation
@@ -37,39 +37,39 @@ namespace AttackOnTitan.Models
         public Keys Key;
         public MouseBtn MouseBtn;
 
-        public SelectedCell SelectedCell;
-        public SelectedUnit SelectedUnit;
-        public UnitCommandInfo UnitCommandInfo;
+        public InputCellInfo InputCellInfo;
+        public InputUnitInfo InputUnitInfo;
+        public InputCommandInfo InputCommandInfo;
         public NoServicedZone NoServicedZone;
     }
 
-    public class SelectedCell
+    public class InputCellInfo
     {
         public readonly int X;
         public readonly int Y;
 
-        public SelectedCell(int x, int y)
+        public InputCellInfo(int x, int y)
         {
             X = x;
             Y = y;
         }
     }
 
-    public class SelectedUnit
+    public class InputUnitInfo
     {
         public readonly int ID;
 
-        public SelectedUnit(int id) => ID = id;
+        public InputUnitInfo(int id) => ID = id;
     }
     
-    public class UnitCommandInfo
+    public class InputCommandInfo
     {
-        public readonly UnitCommandType UnitCommandType;
-        public BuildingInfo BuildingInfo;
+        public readonly CommandType CommandType;
+        public CreatingInfo CreatingInfo;
         public string BuildingTextureName;
 
-        public UnitCommandInfo(UnitCommandType unitCommandType) =>
-            UnitCommandType = unitCommandType;
+        public InputCommandInfo(CommandType commandType) =>
+            CommandType = commandType;
     }
 
     public class NoServicedZone

@@ -51,6 +51,7 @@ namespace AttackOnTitan.Components
             _mapHeight = mapHeight;
             _lastScroll = Mouse.GetState().ScrollWheelValue;
 
+            MatrixWasUpdated = true;
             UpdateTransformMatrix();
         }
 
@@ -86,13 +87,19 @@ namespace AttackOnTitan.Components
             
             if (Pos.Y < BottomBorder) Pos.Y = BottomBorder;
             if (Pos.X < RightBorder) Pos.X = RightBorder;
-            
+
+            MatrixWasUpdated = true;
             UpdateTransformMatrix();
         }
 
         private void UpdateMove(Vector3 mousePos)
         {
-            Pos = mousePos - InitMouseDragPos + InitDragPos;
+            var prePos = mousePos - InitMouseDragPos + InitDragPos;
+            
+            if ((prePos - Pos).Length() > 3)
+                MatrixWasUpdated = true;
+            
+            Pos = prePos;
 
             if (Pos.Y < BottomBorder) Pos.Y = BottomBorder;
             if (Pos.X < RightBorder) Pos.X = RightBorder;
@@ -104,7 +111,6 @@ namespace AttackOnTitan.Components
 
         private void UpdateTransformMatrix()
         {
-            MatrixWasUpdated = true;
             Transform = Matrix.Identity *
                         Matrix.CreateScale(Zoom, Zoom, 0) *
                         Matrix.CreateTranslation(Pos);

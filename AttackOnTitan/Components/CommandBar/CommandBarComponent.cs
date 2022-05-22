@@ -15,7 +15,7 @@ namespace AttackOnTitan.Components
         private readonly int _viewportWidth;
         private readonly int _viewportHeight;
 
-        private readonly Dictionary<UnitCommandType, CommandBarItemComponent> _commandBarItems = new();
+        private readonly Dictionary<CommandType, CommandBarItemComponent> _commandBarItems = new();
 
         public CommandBarComponent(IScene parent, int viewportWidth, int viewportHeight)
         {
@@ -24,8 +24,9 @@ namespace AttackOnTitan.Components
             _viewportHeight = viewportHeight;
         }
 
-        public void UpdateCommands(CommandInfo[] commandInfos)
+        public void UpdateCommands(OutputAction action)
         {
+            var commandInfos = action.CommandInfos;
             var startX = _viewportWidth / 2
                          - (commandInfos.Length % 2 == 1 ? 30 : -8)
                          - commandInfos.Length / 2 * 76;
@@ -35,11 +36,17 @@ namespace AttackOnTitan.Components
             
             foreach (var commandInfo in commandInfos)
             {
-                _commandBarItems[commandInfo.UnitCommandType] = new CommandBarItemComponent(commandInfo.UnitCommandType,
-                    commandInfo.IsAvailable,
-                    _scene.Textures[commandInfo.TextureName],
-                    new Rectangle(startX + i * 76,
-                        _viewportHeight - 70, 60, 60));
+                _commandBarItems[commandInfo.CommandType] = new CommandBarItemComponent
+                {
+                    CommandType = commandInfo.CommandType,
+                    UnitInfo = action.UnitInfo,
+                    MapCellInfo = action.MapCellInfo,
+                    IsAvailable = commandInfo.IsAvailable,
+                    
+                    Texture = _scene.Textures[commandInfo.TextureName],
+                    TextureRect = new Rectangle(startX + i * 76,
+                        _viewportHeight - 70, 60, 60)
+                };
                 i++;
             }
             

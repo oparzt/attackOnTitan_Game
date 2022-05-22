@@ -6,20 +6,29 @@ using Microsoft.Xna.Framework.Input;
 
 namespace AttackOnTitan.Components
 {
-    public class BuilderChooseItemComponent
+    public class CreatingChooseItemComponent
     {
-        public BuildingInfo BuildingInfo;
-        public HashSet<ResourceType> NotAvailableResources;
-        public string BuildingName;
+        public CommandType CommandType;
+        public CreatingInfo CreatingInfo;
+        public UnitInfo UnitInfo;
+        public MapCellInfo MapCellInfo;
+        
         public SpriteFont Font;
         public float FontScale;
+        
+        public string ObjectName;
+        public Vector2 ObjectNamePosition;
+        
+        public Texture2D ObjectTexture;
+        public string ObjectTextureName;
+        public Rectangle ObjectTextureRect;
+
         public Texture2D BackgroundTexture;
-        public Texture2D BuildingTexture;
-        public string BuildingTextureName;
-        public Dictionary<ResourceType, Texture2D> NeededResourceTexture;
-        public Vector2 BuildingNamePosition;
         public Rectangle BackgroundTextureRect;
-        public Rectangle BuildingTextureRect;
+
+        
+        public HashSet<ResourceType> NotAvailableResources;
+        public Dictionary<ResourceType, Texture2D> NeededResourceTexture;
         public Dictionary<ResourceType, (Rectangle, Vector2)> NeededResourcePositions;
 
         private bool _wasPressed;
@@ -28,7 +37,7 @@ namespace AttackOnTitan.Components
         {
             if (NotAvailableResources.Count != 0) return;
             
-            var contains = BuildingTextureRect.Contains(mouseState.Position);
+            var contains = ObjectTextureRect.Contains(mouseState.Position);
             var pressed = mouseState.LeftButton == ButtonState.Pressed;
 
             if (_wasPressed)
@@ -40,11 +49,13 @@ namespace AttackOnTitan.Components
                     _wasPressed = false;
                     GameModel.InputActions.Enqueue(new InputAction()
                     {
-                        ActionType = InputActionType.UnitCommand,
-                        UnitCommandInfo = new UnitCommandInfo(UnitCommandType.Build)
+                        ActionType = InputActionType.ExecCommand,
+                        InputUnitInfo = new InputUnitInfo(UnitInfo.ID),
+                        InputCellInfo = new InputCellInfo(MapCellInfo.X, MapCellInfo.Y),
+                        InputCommandInfo = new InputCommandInfo(CommandType)
                         {
-                            BuildingInfo = BuildingInfo,
-                            BuildingTextureName = BuildingTextureName
+                            CreatingInfo = CreatingInfo,
+                            BuildingTextureName = ObjectTextureName
                         }
                     });
                 }
@@ -63,19 +74,19 @@ namespace AttackOnTitan.Components
             spriteBatch.Draw(BackgroundTexture, BackgroundTextureRect, null,
                 Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0);
             
-            spriteBatch.DrawString(Font, BuildingName, BuildingNamePosition, 
+            spriteBatch.DrawString(Font, ObjectName, ObjectNamePosition, 
                 Color.White, 0, Vector2.Zero, FontScale, SpriteEffects.None, 1);
             
-            spriteBatch.Draw(BuildingTexture, BuildingTextureRect, null,
+            spriteBatch.Draw(ObjectTexture, ObjectTextureRect, null,
                 Color.White, 0f, Vector2.Zero, SpriteEffects.None, 1);
 
-            foreach (var price in BuildingInfo.Price)
+            foreach (var price in CreatingInfo.Price)
             {
                 spriteBatch.Draw(NeededResourceTexture[price.Key], NeededResourcePositions[price.Key].Item1, 
                     null, Color.White, 0, Vector2.Zero, 
                     SpriteEffects.None, 1);
             
-                spriteBatch.DrawString(Font, BuildingInfo.PriceText[price.Key], 
+                spriteBatch.DrawString(Font, CreatingInfo.PriceText[price.Key], 
                     NeededResourcePositions[price.Key].Item2, 
                     NotAvailableResources.Contains(price.Key) ? Color.Red : Color.White, 0, 
                     Vector2.Zero, FontScale, SpriteEffects.None, 1);

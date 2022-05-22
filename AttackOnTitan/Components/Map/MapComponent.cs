@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -45,6 +46,10 @@ namespace AttackOnTitan.Components
         private readonly HashSet<UnitComponent> _movedUnits = new();
 
         private readonly Dictionary<NoServicedZoneLocation, Rectangle[]> _noServicedZones = new();
+
+        private MouseBtn _lastMouseBtn;
+        private bool _unitWasPressed;
+        private bool _mapCellWasPressed;
 
         public MapComponent(IScene parent, int hexWidth, int hexHeight, int unitWidth, int unitHeight)
         {
@@ -117,25 +122,81 @@ namespace AttackOnTitan.Components
             foreach (var unit in _movedUnits)
                 unit.Update(gameTime, mouseState);
 
-            _camera.MatrixWasUpdated = false;
+            if (_camera.MatrixWasUpdated)
+            {
+                _unitWasPressed = false;
+                _mapCellWasPressed = false;
+                _lastMouseBtn = MouseBtn.None;
+                _camera.MatrixWasUpdated = false;
+                return;
+            }
+            
             
             var selectedMapItem = FindMapItemUnderCursor();
             var selectedUnitItem = FindUnitItemUnderCursor();
-            
+
             if (selectedUnitItem is not null)
-                InitiateSelectUnitAction(selectedUnitItem, mouseBtn);
+                HandleMouseOnUnit(selectedUnitItem, mouseBtn);
             else
                 InitiateUnselectUnitAction();
 
             if (selectedMapItem is not null)
-                InitiateSelectMapCellAction(selectedMapItem, mouseBtn);
+                HandleMouseBtnClickOnMapCell(selectedMapItem, mouseBtn);
+
+            if (mouseBtn == MouseBtn.None) _lastMouseBtn = MouseBtn.None;
+        }
+
+        private void HandleMouseOnUnit(UnitComponent unitItem, MouseBtn mouseBtn)
+        {
+            if (_unitWasPressed)
+            {
+                if ((mouseBtn == MouseBtn.None && _lastMouseBtn != MouseBtn.None) ||
+                    (mouseBtn != MouseBtn.None && _lastMouseBtn != mouseBtn))
+                {
+                    InitiateSelectUnitAction(unitItem, _lastMouseBtn);
+                    _unitWasPressed = false;
+                }
+            }
+            else
+            {
+                if (mouseBtn == MouseBtn.None)
+                    InitiateSelectUnitAction(unitItem, mouseBtn);
+                else
+                {
+                    _unitWasPressed = true;
+                    _lastMouseBtn = mouseBtn;
+                }
+            }
+        }
+
+        private void HandleMouseBtnClickOnMapCell(MapCellComponent mapItem, MouseBtn mouseBtn)
+        {
+            if (_mapCellWasPressed)
+            {
+                if ((mouseBtn == MouseBtn.None && _lastMouseBtn != MouseBtn.None) ||
+                    (mouseBtn != MouseBtn.None && _lastMouseBtn != mouseBtn))
+                {
+                    InitiateSelectMapCellAction(mapItem, _lastMouseBtn);
+                    _mapCellWasPressed = false;
+                }
+            }
+            else
+            {
+                if (mouseBtn != MouseBtn.Left)
+                    InitiateSelectMapCellAction(mapItem, mouseBtn);
+                else
+                {
+                    _mapCellWasPressed = true;
+                    _lastMouseBtn = mouseBtn;
+                }
+            }
         }
 
         private void InitiateSelectMapCellAction(MapCellComponent mapItem, MouseBtn mouseBtn) =>
             GameModel.InputActions.Enqueue(new InputAction
             {
                 ActionType = InputActionType.SelectMapCell,
-                SelectedCell = new SelectedCell(mapItem.X, mapItem.Y),
+                InputCellInfo = new InputCellInfo(mapItem.X, mapItem.Y),
                 MouseBtn = mouseBtn
             });
 
@@ -143,7 +204,7 @@ namespace AttackOnTitan.Components
             GameModel.InputActions.Enqueue(new InputAction
             {
                 ActionType = InputActionType.SelectUnit,
-                SelectedUnit = new SelectedUnit(unitItem.ID),
+                InputUnitInfo = new InputUnitInfo(unitItem.ID),
                 MouseBtn = mouseBtn
             });
         

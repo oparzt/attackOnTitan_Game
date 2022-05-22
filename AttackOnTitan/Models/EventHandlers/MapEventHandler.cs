@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace AttackOnTitan.Models
 {
@@ -29,7 +30,7 @@ namespace AttackOnTitan.Models
 
         private void HandleNoMouseSelect(InputAction action)
         {
-            var targetCell = GameModel.Map[action.SelectedCell.X, action.SelectedCell.Y];
+            var targetCell = GameModel.Map[action.InputCellInfo.X, action.InputCellInfo.Y];
 
             if (GameModel.UnitPath.Count != 0)
                 GameModel.UnitPath.ExecutePath();
@@ -46,13 +47,21 @@ namespace AttackOnTitan.Models
             if (GameModel.StepEnd || GameModel.BlockClickEvents) return;
             GameModel.BlockClickEvents = true;
             GameModel.SelectedUnit?.SetUnselectedOpacity();
-            GameModel.UnitPath.SetUnit(null);
-            GameModel.OutputActions.Enqueue(new OutputAction
-            {
-                ActionType = OutputActionType.UpdateCommandsBar,
-                CommandInfos = new CommandInfo[] {}
-            });
             GameModel.SelectedUnit = null;
+            GameModel.UnitPath.SetUnit(null);
+            GameModel.CommandModel.ClearCommandBar();
+            var mapCell = GameModel.Map[action.InputCellInfo.X, action.InputCellInfo.Y];
+            if (mapCell.GetPossibleCreatingUnitTypes().Any())
+            {
+                GameModel.InputActions.Enqueue(new InputAction
+                {
+                    ActionType = InputActionType.ExecCommand,
+                    InputCellInfo = action.InputCellInfo,
+                    InputUnitInfo = new InputUnitInfo(-1),
+                    InputCommandInfo = new InputCommandInfo(CommandType.OpenCreatingUnitMenu)
+                });
+            }
+            
         }
 
         private void HandleRightMouseSelect(InputAction action)
@@ -64,7 +73,7 @@ namespace AttackOnTitan.Models
                 HandleNoMouseSelect(action);
                 return;
             }
-            var targetCell = GameModel.Map[action.SelectedCell.X, action.SelectedCell.Y];
+            var targetCell = GameModel.Map[action.InputCellInfo.X, action.InputCellInfo.Y];
             GameModel.Map.SetUnselectedOpacity(targetCell);
             GameModel.UnitPath.Add(targetCell);
         }

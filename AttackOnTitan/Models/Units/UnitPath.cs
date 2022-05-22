@@ -139,6 +139,8 @@ namespace AttackOnTitan.Models
                         Position = endPosition
                     }
                 });
+                
+                GameModel.CommandModel.UpdateCommandBar(_unit);
             }
             
             _pathStack.Clear();
@@ -146,7 +148,6 @@ namespace AttackOnTitan.Models
             _pathCosts.Clear();
             _pathCost = 0;
             _enemyCell = null;
-            _unit.UpdateCommandsBar();
         }
     }
 }

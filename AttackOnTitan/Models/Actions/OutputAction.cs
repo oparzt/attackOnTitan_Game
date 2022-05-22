@@ -24,7 +24,7 @@ namespace AttackOnTitan.Models
         
         UpdateNoServicedZoneForMap,
         
-        UpdateBuilderChoose
+        UpdateCreatingChoose
 
         //ChangeUnitTexture,
         //ChangeUnitText,
@@ -38,9 +38,9 @@ namespace AttackOnTitan.Models
         public UnitInfo UnitInfo;
         public MapCellInfo MapCellInfo;
         public ResourceInfo ResourceInfo;
-        public CommandInfo[] CommandInfos;
+        public OutputCommandInfo[] CommandInfos;
         public NoServicedZone NoServicedZone;
-        public OutputBuildingInfo OutputBuildingInfo;
+        public OutputCreatingInfo OutputCreatingInfo;
     }
 
     public class UnitInfo
@@ -91,24 +91,25 @@ namespace AttackOnTitan.Models
         }
     }
 
-    public class CommandInfo
+    public class OutputCommandInfo
     {
-        public readonly UnitCommandType UnitCommandType;
+        public readonly CommandType CommandType;
         public readonly bool IsAvailable;
         public readonly string TextureName;
 
-        public CommandInfo(UnitCommandType unitCommandType, bool isAvailable, string textureName)
+        public OutputCommandInfo(CommandType commandType, bool isAvailable, string textureName)
         {
-            UnitCommandType = unitCommandType;
+            CommandType = commandType;
             IsAvailable = isAvailable;
             TextureName = textureName;
         }
     }
 
-    public class OutputBuildingInfo
+    public class OutputCreatingInfo
     {
-        public BuildingInfo[] BuildingInfos;
-        public string[] BuildingTexturesName;
+        public CommandType CommandType;
+        public Point ObjectsTextureSize;
+        public CreatingInfo[] CreatingInfos;
         public string BackgroundTextureName;
         public HashSet<ResourceType>[] NotAvailableResource;
     }

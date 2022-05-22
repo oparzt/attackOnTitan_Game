@@ -7,20 +7,15 @@ namespace AttackOnTitan.Components
 {
     public class CommandBarItemComponent
     {
-        private readonly Texture2D _texture;
-        private readonly UnitCommandType _unitCommandType;
+        public CommandType CommandType;
+        public UnitInfo UnitInfo;
+        public MapCellInfo MapCellInfo;
+        public bool IsAvailable;
+        
+        public Texture2D Texture;
         public Rectangle TextureRect;
-        private bool _wasPressed;
-        public readonly bool IsAvailable;
 
-        public CommandBarItemComponent(UnitCommandType unitCommandType, bool isAvailable, 
-            Texture2D texture, Rectangle textureRect)
-        {
-            _unitCommandType = unitCommandType;
-            IsAvailable = isAvailable;
-            _texture = texture;
-            TextureRect = textureRect;
-        }
+        private bool _wasPressed;
 
         public void Update(GameTime gameTime, MouseState mouseState)
         {
@@ -36,8 +31,10 @@ namespace AttackOnTitan.Components
                     _wasPressed = false;
                     GameModel.InputActions.Enqueue(new InputAction()
                     {
-                        ActionType = InputActionType.UnitCommand,
-                        UnitCommandInfo = new UnitCommandInfo(_unitCommandType)
+                        ActionType = InputActionType.ExecCommand,
+                        InputUnitInfo = new InputUnitInfo(UnitInfo.ID),
+                        InputCellInfo = new InputCellInfo(MapCellInfo.X, MapCellInfo.Y),
+                        InputCommandInfo = new InputCommandInfo(CommandType)
                     });
                 }
                 else
@@ -49,6 +46,6 @@ namespace AttackOnTitan.Components
 
 
         public void Draw(SpriteBatch spriteBatch) =>
-            spriteBatch.Draw(_texture, TextureRect, Color.White);
+            spriteBatch.Draw(Texture, TextureRect, Color.White);
     }
 }
