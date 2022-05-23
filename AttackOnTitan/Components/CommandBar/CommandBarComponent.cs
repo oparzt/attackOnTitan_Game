@@ -55,9 +55,23 @@ namespace AttackOnTitan.Components
                 ActionType = InputActionType.UpdateNoServicedZones,
                 NoServicedZone = new NoServicedZone(NoServicedZoneLocation.CommandBar)
                 {
-                    Zones = _commandBarItems.Count == 0 ? 
-                        new []{Rectangle.Empty} :
-                        _commandBarItems.Values.Select(commandBarItem => commandBarItem.TextureRect).ToArray()
+                    Zones = _commandBarItems.Values
+                        .Select(commandBarItem => commandBarItem.TextureRect)
+                        .ToArray()
+                }
+            });
+        }
+        
+        public void ClearCommands(OutputAction action)
+        {
+            _commandBarItems.Clear();
+
+            GameModel.InputActions.Enqueue(new InputAction
+            {
+                ActionType = InputActionType.UpdateNoServicedZones,
+                NoServicedZone = new NoServicedZone(NoServicedZoneLocation.CommandBar)
+                {
+                    Zones = new []{Rectangle.Empty}
                 }
             });
         }
@@ -75,6 +89,7 @@ namespace AttackOnTitan.Components
                 commandBarItem.Draw(spriteBatch);            
             spriteBatch.End();
         }
+
         
     }
 }

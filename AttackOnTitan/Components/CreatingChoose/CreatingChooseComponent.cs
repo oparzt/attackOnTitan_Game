@@ -17,8 +17,9 @@ namespace AttackOnTitan.Components
         private readonly int _viewportHeight;
 
         private readonly List<CreatingChooseItemComponent> _builderChooseItems = new();
-
-        private readonly Random _random = new();
+        private Dictionary<ResourceType, Texture2D> _resourceTextures;
+        private Texture2D _backgroundTexture;
+        private SpriteFont _font;
 
         public CreatingChooseComponent(IScene parent, int viewportWidth, int viewportHeight)
         {
@@ -27,65 +28,66 @@ namespace AttackOnTitan.Components
             _viewportHeight = viewportHeight;
         }
 
+        public void InitializeCreatingChoose(OutputAction action)
+        {
+            var creatingInfo = action.OutputCreatingInfo;
+            _resourceTextures = creatingInfo.ResourceTexturesName
+                .Select(pair => new KeyValuePair<ResourceType, Texture2D>(pair.Key, _scene.Textures[pair.Value]))
+                .ToDictionary(pair => pair.Key, pair => pair.Value);
+            _backgroundTexture = _scene.Textures[creatingInfo.BackgroundTextureName];
+            _font = _scene.Fonts["Medium"];
+        }
+
         public void UpdateBuildings(OutputAction action)
         {
             var creatingInfo = action.OutputCreatingInfo;
-            var backgroundTexture = _scene.Textures[creatingInfo.BackgroundTextureName];
-            var (backgroundWidth, backgroundHeight) = (backgroundTexture.Width, backgroundTexture.Height);
+            var creatingInfos = creatingInfo.CreatingInfos;
+            var backgroundWidth = _backgroundTexture.Width;
 
             var startX = _viewportWidth / 2
-                 - (creatingInfo.CreatingInfos.Length % 2 == 1 ? backgroundWidth / 2 : -8)
-                 - creatingInfo.CreatingInfos.Length / 2 * (backgroundWidth + 16);
-
-            var startY = _viewportHeight / 2 - backgroundHeight;
-
+                 - (creatingInfos.Length % 2 == 1 ? backgroundWidth / 2 : -8)
+                 - creatingInfos.Length / 2 * (backgroundWidth + 16);
+            var startY = _viewportHeight / 2;
             var objectDiffX = (backgroundWidth - creatingInfo.ObjectsTextureSize.X) / 2;
 
-            var font = _scene.Fonts["Medium"];
-            
-            _builderChooseItems.Clear();
-
-            for (var i = 0; i < creatingInfo.CreatingInfos.Length; i++)
+            for (var i = 0; i < creatingInfos.Length; i++)
             {
-                var curX = startX + i * (backgroundTexture.Width + 16);
-                var objectTextureName = creatingInfo.CreatingInfos[i].PossibleTextures[
-                    _random.Next(0, creatingInfo.CreatingInfos[i].PossibleTextures.Length)
-                ];
-                var objectTextureRect = new Rectangle(new Point(curX + objectDiffX, startY), 
+                var cardHeight = creatingInfos[i].ObjectResourceDescription.Length * 35 + 202;
+
+                var curX = startX + i * (backgroundWidth + 16);
+                var curY = startY - cardHeight / 2;
+                
+                var objectTextureRect = new Rectangle(new Point(curX + objectDiffX, curY), 
                     creatingInfo.ObjectsTextureSize);
                 
                 _builderChooseItems.Add(new CreatingChooseItemComponent
                 {
-                    CreatingInfo = creatingInfo.CreatingInfos[i],
                     CommandType = creatingInfo.CommandType,
                     UnitInfo = action.UnitInfo,
                     MapCellInfo = action.MapCellInfo,
+                    CreatingInfo = creatingInfos[i],
                     
-                    Font = font,
+                    Font = _font,
                     FontScale = 0.24f,
                     
-                    ObjectName = creatingInfo.CreatingInfos[i].ObjectName,
-                    ObjectNamePosition = new Vector2(curX + 10, startY + 160),
+                    ObjectName = creatingInfos[i].ObjectName,
+                    ObjectNamePosition = new Vector2(curX + 10, curY + 160),
                     
-                    ObjectTexture = _scene.Textures[objectTextureName],
+                    ObjectTexture = _scene.Textures[creatingInfos[i].ObjectTextureName],
                     ObjectTextureRect = objectTextureRect,
-                    ObjectTextureName = objectTextureName,
                     
-                    BackgroundTexture = backgroundTexture,
+                    BackgroundTexture = _backgroundTexture,
                     BackgroundTextureRect = new Rectangle(
-                        new Point(curX, startY), 
-                        backgroundTexture.Bounds.Size),
+                        new Point(curX, curY), 
+                        new Point(backgroundWidth, cardHeight)),
                     
-                    NeededResourceTexture = creatingInfo.CreatingInfos[i].Price
-                        .Select(pair => (pair.Key, 
-                            _scene.Textures[GameModel.ResourceTexturesName[pair.Key]]))
-                        .ToDictionary(tuple => tuple.Item1, tuple => tuple.Item2),
-                    NeededResourcePositions = creatingInfo.CreatingInfos[i].Price
-                        .Select((pair, pairIndex) => 
-                            (pair.Key, new Rectangle(curX + 10, startY + 202 + 35 * pairIndex, 30, 30), 
-                            new Vector2(curX + 50, startY + 205 + 35 * pairIndex)))
-                        .ToDictionary(tuple => tuple.Item1, tuple => (tuple.Item2, tuple.Item3)),
-                    NotAvailableResources = creatingInfo.NotAvailableResource[i]
+                    ObjectResources = creatingInfos[i].ObjectResourceDescription
+                        .Select((pair, pairIndex) => (pair.Item1,
+                            _resourceTextures[pair.Item1], pair.Item2, 
+                            new Rectangle(curX + 10, curY + 200 + 35 * pairIndex, 30, 30),
+                            new Vector2(curX + 50, curY + 203 + 35 * pairIndex)))
+                        .ToArray(),
+                    NotAvailableResources = creatingInfos[i].NotAvailableResource
                 });
             }
 
@@ -94,9 +96,20 @@ namespace AttackOnTitan.Components
                 ActionType = InputActionType.UpdateNoServicedZones,
                 NoServicedZone = new NoServicedZone(NoServicedZoneLocation.BuilderChoose)
                 {
-                    Zones = new [] { _builderChooseItems.Count == 0 ? 
-                        Rectangle.Empty : 
-                        new Rectangle(0,0, _viewportWidth, _viewportHeight)}
+                    Zones = new [] { new Rectangle(0,0, _viewportWidth, _viewportHeight) }
+                }
+            });
+        }
+
+        public void ClearCreatingChoose(OutputAction action)
+        {
+            _builderChooseItems.Clear();
+            GameModel.InputActions.Enqueue(new InputAction
+            {
+                ActionType = InputActionType.UpdateNoServicedZones,
+                NoServicedZone = new NoServicedZone(NoServicedZoneLocation.BuilderChoose)
+                {
+                    Zones = new [] { Rectangle.Empty }
                 }
             });
         }

@@ -34,7 +34,9 @@ namespace AttackOnTitan.Models
     public enum BuildingType
     {
         None,
-        House,
+        House1,
+        House2,
+        House3,
         Barracks,
         Warehouse,
         Centre,
@@ -94,80 +96,33 @@ namespace AttackOnTitan.Models
             PossibleNearCellsDiffsFromOdd;
         #endregion
 
-        #region BuildingsCreating
-
-        private static readonly Dictionary<BuildingType, CreatingInfo> CreatingInfoByBuildingType = new()
+        public static readonly Dictionary<BuildingType, string> BuildingTextureNames = new()
         {
             [BuildingType.None] = null,
-            [BuildingType.House] = new CreatingInfo("Дом", BuildingType.House, 
-                new Dictionary<ResourceType, int>
-            {
-                [ResourceType.Coin] = 10,
-                [ResourceType.Log] = 10,
-                [ResourceType.Stone] = 10
-            }, new[] {"House1", "House2", "House3"}),
-            [BuildingType.Barracks] = new CreatingInfo("Казармы", BuildingType.Barracks, 
-                new Dictionary<ResourceType, int>
-            {
-                [ResourceType.Coin] = 10,
-                [ResourceType.Log] = 10,
-                [ResourceType.Stone] = 10
-            }, new[] {"Barracks"}),
-            [BuildingType.Warehouse] = new CreatingInfo("Склад", BuildingType.Warehouse, 
-                new Dictionary<ResourceType, int>
-            {
-                [ResourceType.Coin] = 10,
-                [ResourceType.Log] = 10,
-                [ResourceType.Stone] = 10
-            }, new[] {"Warehouse"}),
-            [BuildingType.Centre] = new CreatingInfo("Администрация", BuildingType.Centre, 
-                new Dictionary<ResourceType, int>
-            {
-                [ResourceType.Coin] = 10,
-                [ResourceType.Log] = 10,
-                [ResourceType.Stone] = 10
-            }, new[] {"Centre"}),
+            [BuildingType.House1] = "House1",
+            [BuildingType.House2] = "House2",
+            [BuildingType.House3] = "House3",
+            [BuildingType.Barracks] = "Barracks",
+            [BuildingType.Warehouse] = "Warehouse",
+            [BuildingType.Centre] = "Centre",
             [BuildingType.Wall] = null,
             [BuildingType.OpenedGates] = null,
             [BuildingType.ClosedGates] = null
         };
 
-        #endregion
-        
-        #region UnitsCreating
-
-        private static readonly Dictionary<UnitType, CreatingInfo> CreatingInfoByUnitType = new()
+        public static readonly Dictionary<BuildingType, string> BuildingNames = new()
         {
-            [UnitType.Cadet] = new CreatingInfo("Кадет", UnitType.Cadet, 
-                new Dictionary<ResourceType, int>
-                {
-                    [ResourceType.Coin] = 10
-                }, new[] {UnitModel.TexturesByUnitTypes[UnitType.Cadet]}),
-            [UnitType.Scout] = new CreatingInfo("Разведка", UnitType.Scout, 
-                new Dictionary<ResourceType, int>
-                {
-                    [ResourceType.Coin] = 10
-                }, new[] {UnitModel.TexturesByUnitTypes[UnitType.Scout]}),
-            [UnitType.Garrison] = new CreatingInfo("Гарнизон", UnitType.Garrison, 
-                new Dictionary<ResourceType, int>
-                {
-                    [ResourceType.Coin] = 10
-                }, new[] {UnitModel.TexturesByUnitTypes[UnitType.Garrison]}),
-            [UnitType.Police] = new CreatingInfo("Полиция", UnitType.Police, 
-                new Dictionary<ResourceType, int>
-                {
-                    [ResourceType.Coin] = 10
-                }, new[] {UnitModel.TexturesByUnitTypes[UnitType.Police]}),
-            [UnitType.Builder] = new CreatingInfo("Строитель", UnitType.Builder, 
-                new Dictionary<ResourceType, int>
-                {
-                    [ResourceType.Coin] = 10
-                }, new[] {UnitModel.TexturesByUnitTypes[UnitType.Builder]})
+            [BuildingType.None] = "Ничего",
+            [BuildingType.House1] = "Дом 1",
+            [BuildingType.House2] = "Дом 2",
+            [BuildingType.House3] = "Дом 3",
+            [BuildingType.Barracks] = "Казармы",
+            [BuildingType.Warehouse] = "Склад",
+            [BuildingType.Centre] = "Администрация",
+            [BuildingType.Wall] = "Стена",
+            [BuildingType.OpenedGates] = "",
+            [BuildingType.ClosedGates] = "Ворота"
         };
-
-        #endregion
-
-        private static readonly Random Random = new();
         
         public MapCellModel(int x, int y, BuildingType buildingType = BuildingType.None)
         {
@@ -290,12 +245,12 @@ namespace AttackOnTitan.Models
                 yield return unit;
         }
         
-        public void UpdateBuildingType(BuildingType buildingType, string buildingTextureNames = null)
+        public void UpdateBuildingType(BuildingType buildingType)
         {
+            var buildingTextureName = BuildingTextureNames[buildingType];
             BuildingType = buildingType;
-            var buildingTextureVariants = CreatingInfoByBuildingType[buildingType]?.PossibleTextures;
             
-            if (buildingTextureVariants is null)
+            if (buildingTextureName is null)
                 GameModel.OutputActions.Enqueue(new OutputAction
                 {
                     ActionType = OutputActionType.ClearTextureIntoCell,
@@ -307,24 +262,9 @@ namespace AttackOnTitan.Models
                     ActionType = OutputActionType.ChangeTextureIntoCell,
                     MapCellInfo = new MapCellInfo(X, Y)
                     {
-                        TextureName = buildingTextureNames ?? 
-                            buildingTextureVariants[Random.Next(0, buildingTextureVariants.Length)]
+                        TextureName = buildingTextureName
                     }
                 });
-        }
-
-        public CreatingInfo[] GetPossibleBuildingInCell()
-        {
-            return GetPossibleCreatingBuildingTypes()
-                .Select(buildingType => CreatingInfoByBuildingType[buildingType])
-                .ToArray();
-        }
-
-        public CreatingInfo[] GetPossibleUnitInCell()
-        {
-            return GetPossibleCreatingUnitTypes()
-                .Select(unitType => CreatingInfoByUnitType[unitType])
-                .ToArray();
         }
 
         public IEnumerable<BuildingType> GetPossibleCreatingBuildingTypes()
@@ -335,11 +275,11 @@ namespace AttackOnTitan.Models
             {
                 case BuildingType.None:
                     yield return BuildingType.Centre;
-                    yield return BuildingType.House;
+                    yield return BuildingType.House1;
                     yield return BuildingType.Barracks;
                     yield return BuildingType.Warehouse;
                     break;
-                case BuildingType.House:
+                case BuildingType.House1:
                 case BuildingType.Barracks:
                 case BuildingType.Warehouse:
                 case BuildingType.Centre:
@@ -367,7 +307,7 @@ namespace AttackOnTitan.Models
                     yield return UnitType.Builder;
                     break;
                 case BuildingType.None:
-                case BuildingType.House:
+                case BuildingType.House1:
                 case BuildingType.Warehouse:
                 case BuildingType.Wall:
                 case BuildingType.OpenedGates:
@@ -376,46 +316,6 @@ namespace AttackOnTitan.Models
                     break;
             }
         }
-        
-        
-    }
-    
-    public class CreatingInfo
-    {
-        public readonly string ObjectName;
-        public readonly Dictionary<ResourceType, int> Price;
-        public Dictionary<ResourceType, string> PriceText;
-        public string[] PossibleTextures;
-        public BuildingType BuildingType;
-        public UnitType UnitType;
-
-        public CreatingInfo(string objectName, BuildingType buildingType, 
-            Dictionary<ResourceType, int> price, string[] possibleTextures = null)
-        {
-            ObjectName = objectName;
-            BuildingType = buildingType;
-            Price = price;
-            PossibleTextures = possibleTextures;
-            
-            FillPriceText();
-        }
-
-        public CreatingInfo(string objectName, UnitType unitType, 
-            Dictionary<ResourceType, int> price, string[] possibleTextures = null)
-        {
-            ObjectName = objectName;
-            UnitType = unitType;
-            Price = price;
-            PossibleTextures = possibleTextures;
-            
-            FillPriceText();
-        }
-
-        private void FillPriceText() =>
-            PriceText = Price
-                .Select(pair => new KeyValuePair<ResourceType, string>(pair.Key,
-                    pair.Value.ToString()))
-                .ToDictionary(pair => pair.Key, pair => pair.Value);
     }
 
     public struct Weight

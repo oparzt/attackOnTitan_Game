@@ -66,7 +66,6 @@ namespace AttackOnTitan.Models
     {
         public readonly CommandType CommandType;
         public CreatingInfo CreatingInfo;
-        public string BuildingTextureName;
 
         public InputCommandInfo(CommandType commandType) =>
             CommandType = commandType;

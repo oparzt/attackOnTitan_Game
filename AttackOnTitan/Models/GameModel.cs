@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Threading;
-using AttackOnTitan.Scenes;
-using Microsoft.Xna.Framework;
 
 namespace AttackOnTitan.Models
 {
@@ -11,7 +9,8 @@ namespace AttackOnTitan.Models
     {
         Coin,
         Log,
-        Stone
+        Stone,
+        People
     }
     
     public class GameModel : IDisposable
@@ -28,13 +27,6 @@ namespace AttackOnTitan.Models
             [ResourceType.Log] = "Log",
             [ResourceType.Stone] = "Stone"
         };
-        
-        public readonly Dictionary<ResourceType, int> ResourceCount = new()
-        {
-            [ResourceType.Coin] = 100,
-            [ResourceType.Log] = 100,
-            [ResourceType.Stone] = 100
-        };
 
         private readonly Dictionary<InputActionType, Action<InputAction>> _handlers = new();
 
@@ -44,10 +36,11 @@ namespace AttackOnTitan.Models
         public UnitModel SelectedUnit;
         public readonly UnitPath UnitPath;
         public readonly CommandModel CommandModel;
+        public readonly EconomyModel EconomyModel;
         public readonly Dictionary<int, UnitModel> Units = new();
         
         public bool StepEnd = false;
-        public bool BlockClickEvents = false;
+        public bool BlockClickEvents;
 
         private UnitEventHandler _unitEventHandler;
         private MapEventHandler _mapEventHandler;
@@ -60,6 +53,7 @@ namespace AttackOnTitan.Models
             Map = new MapModel(columnsMapCount, rowsMapCount);
             UnitPath = new UnitPath(this);
             CommandModel = new CommandModel(this);
+            EconomyModel = new EconomyModel(this);
             var unitsTypes = new[]
             {
                 UnitType.Scout, UnitType.Builder, UnitType.Titan
@@ -75,22 +69,10 @@ namespace AttackOnTitan.Models
                 Units[i].AddUnitToTheMap(Map[2, 2], positions[i]);
             }
 
-            foreach (var resourceCountPair in ResourceCount)
-            {
-                OutputActions.Enqueue(new OutputAction()
-                {
-                    ActionType = OutputActionType.AddResource,
-                    ResourceInfo = new ResourceInfo(resourceCountPair.Key)
-                    {
-                        Count = resourceCountPair.Value.ToString(),
-                        TextureName = ResourceTexturesName[resourceCountPair.Key],
-                    }
-                });
-            }
-            
+            EconomyModel.InitializeResourcePanel();
             
             for (var i = 2; i < 10; i++)
-                Map[i, 3].UpdateBuildingType(BuildingType.House);
+                Map[i, 3].UpdateBuildingType(BuildingType.House1);
             
             Map[2, 4].UpdateBuildingType(BuildingType.Centre);
             Map[3, 4].UpdateBuildingType(BuildingType.Barracks);
@@ -134,22 +116,6 @@ namespace AttackOnTitan.Models
         }
 
         public void Dispose() => _killThread = true;
-
-        public void UpdateResourceCount()
-        {
-            foreach (var resCountPair in ResourceCount)
-            {
-                OutputActions.Enqueue(new OutputAction
-                {
-                    ActionType = OutputActionType.UpdateResourceCount,
-                    ResourceInfo = new ResourceInfo(resCountPair.Key)
-                    {
-                        Count = resCountPair.Value.ToString()
-                    }
-                }); 
-            }
-            
-        }
 
         private void Step()
         {

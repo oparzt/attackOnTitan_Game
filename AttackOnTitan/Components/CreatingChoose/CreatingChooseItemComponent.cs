@@ -9,10 +9,10 @@ namespace AttackOnTitan.Components
     public class CreatingChooseItemComponent
     {
         public CommandType CommandType;
-        public CreatingInfo CreatingInfo;
         public UnitInfo UnitInfo;
         public MapCellInfo MapCellInfo;
-        
+        public CreatingInfo CreatingInfo;
+
         public SpriteFont Font;
         public float FontScale;
         
@@ -20,24 +20,21 @@ namespace AttackOnTitan.Components
         public Vector2 ObjectNamePosition;
         
         public Texture2D ObjectTexture;
-        public string ObjectTextureName;
         public Rectangle ObjectTextureRect;
 
         public Texture2D BackgroundTexture;
         public Rectangle BackgroundTextureRect;
 
-        
+        public (ResourceType, Texture2D, string, Rectangle, Vector2)[] ObjectResources;
         public HashSet<ResourceType> NotAvailableResources;
-        public Dictionary<ResourceType, Texture2D> NeededResourceTexture;
-        public Dictionary<ResourceType, (Rectangle, Vector2)> NeededResourcePositions;
 
         private bool _wasPressed;
-        
+
         public void Update(GameTime gameTime, MouseState mouseState)
         {
             if (NotAvailableResources.Count != 0) return;
             
-            var contains = ObjectTextureRect.Contains(mouseState.Position);
+            var contains = BackgroundTextureRect.Contains(mouseState.Position);
             var pressed = mouseState.LeftButton == ButtonState.Pressed;
 
             if (_wasPressed)
@@ -54,8 +51,7 @@ namespace AttackOnTitan.Components
                         InputCellInfo = new InputCellInfo(MapCellInfo.X, MapCellInfo.Y),
                         InputCommandInfo = new InputCommandInfo(CommandType)
                         {
-                            CreatingInfo = CreatingInfo,
-                            BuildingTextureName = ObjectTextureName
+                            CreatingInfo = CreatingInfo
                         }
                     });
                 }
@@ -80,15 +76,15 @@ namespace AttackOnTitan.Components
             spriteBatch.Draw(ObjectTexture, ObjectTextureRect, null,
                 Color.White, 0f, Vector2.Zero, SpriteEffects.None, 1);
 
-            foreach (var price in CreatingInfo.Price)
+            foreach (var objectResource in ObjectResources)
             {
-                spriteBatch.Draw(NeededResourceTexture[price.Key], NeededResourcePositions[price.Key].Item1, 
+                spriteBatch.Draw(objectResource.Item2, objectResource.Item4, 
                     null, Color.White, 0, Vector2.Zero, 
                     SpriteEffects.None, 1);
             
-                spriteBatch.DrawString(Font, CreatingInfo.PriceText[price.Key], 
-                    NeededResourcePositions[price.Key].Item2, 
-                    NotAvailableResources.Contains(price.Key) ? Color.Red : Color.White, 0, 
+                spriteBatch.DrawString(Font, objectResource.Item3, 
+                    objectResource.Item5, 
+                    NotAvailableResources.Contains(objectResource.Item1) ? Color.Red : Color.White, 0, 
                     Vector2.Zero, FontScale, SpriteEffects.None, 1);
             }
 

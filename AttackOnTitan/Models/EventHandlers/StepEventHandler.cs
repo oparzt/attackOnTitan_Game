@@ -22,20 +22,9 @@ namespace AttackOnTitan.Models
             {
                 ActionType = OutputActionType.ChangeStepBtnState
             });
-            GameModel.OutputActions.Enqueue(new OutputAction
-            {
-                ActionType = OutputActionType.UpdateCommandsBar,
-                CommandInfos = new OutputCommandInfo[] {}
-            });
-            GameModel.OutputActions.Enqueue(new OutputAction
-            {
-                ActionType = OutputActionType.UpdateCreatingChoose,
-                OutputCreatingInfo = new OutputCreatingInfo
-                {
-                    BackgroundTextureName = "BuilderCard",
-                    CreatingInfos = new CreatingInfo[] {}
-                }
-            });
+           GameModel.CommandModel.ClearCommandBar();
+           GameModel.CommandModel.ClearCreatingChoose();
+           GameModel.EconomyModel.FillResource();
 
             var units = new List<UnitModel>();
             var enemies = new List<UnitModel>();

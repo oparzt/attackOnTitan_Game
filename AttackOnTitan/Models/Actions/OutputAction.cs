@@ -21,10 +21,13 @@ namespace AttackOnTitan.Models
         ChangeStepBtnState,
         
         UpdateCommandsBar,
+        ClearCommandsBar,
         
         UpdateNoServicedZoneForMap,
         
-        UpdateCreatingChoose
+        UpdateCreatingChoose,
+        InitializeCreatingChoose,
+        ClearCreatingChoose,
 
         //ChangeUnitTexture,
         //ChangeUnitText,
@@ -111,6 +114,6 @@ namespace AttackOnTitan.Models
         public Point ObjectsTextureSize;
         public CreatingInfo[] CreatingInfos;
         public string BackgroundTextureName;
-        public HashSet<ResourceType>[] NotAvailableResource;
+        public Dictionary<ResourceType, string> ResourceTexturesName;
     }
 }

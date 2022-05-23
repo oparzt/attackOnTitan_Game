@@ -58,7 +58,7 @@ namespace AttackOnTitan.Models
             }
         };
 
-        public static readonly Dictionary<UnitType, string> TexturesByUnitTypes = new()
+        public static readonly Dictionary<UnitType, string> UnitTextureNames = new()
         {
             [UnitType.Titan] = "Titan",
             [UnitType.Scout] = "Scout",
@@ -66,6 +66,16 @@ namespace AttackOnTitan.Models
             [UnitType.Police] = "Police",
             [UnitType.Cadet] = "Cadet",
             [UnitType.Builder] = "Builder"
+        };
+
+        public static readonly Dictionary<UnitType, string> UnitNames = new()
+        {
+            [UnitType.Titan] = "Титаны",
+            [UnitType.Scout] = "Разведчики",
+            [UnitType.Garrison] = "Гарнизон",
+            [UnitType.Police] = "Полиция",
+            [UnitType.Cadet] = "Кадеты",
+            [UnitType.Builder] = "Строители"
         };
         
         public UnitModel(int id, UnitType unitType)
@@ -88,7 +98,7 @@ namespace AttackOnTitan.Models
                 {
                     Opacity = 0.65f,
                     Position = position,
-                    TextureName = TexturesByUnitTypes[UnitType],
+                    TextureName = UnitTextureNames[UnitType],
                     X = mapCell.X,
                     Y = mapCell.Y
                 }

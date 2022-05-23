@@ -66,8 +66,11 @@ namespace AttackOnTitan.Scenes
             _commandsActions[OutputActionType.AddResource] = action => _topBarComponent.AddResource(action.ResourceInfo);
             _commandsActions[OutputActionType.UpdateResourceCount] = action => _topBarComponent.UpdateResourceCount(action.ResourceInfo);
             _commandsActions[OutputActionType.ChangeStepBtnState] = _ => _stepBtnComponent.ChangeState();
+            _commandsActions[OutputActionType.ClearCommandsBar] = _commandBarComponent.ClearCommands;
             _commandsActions[OutputActionType.UpdateCommandsBar] = _commandBarComponent.UpdateCommands;
-            _commandsActions[OutputActionType.UpdateCreatingChoose] = _creatingChooseComponent.UpdateBuildings; 
+            _commandsActions[OutputActionType.InitializeCreatingChoose] = _creatingChooseComponent.InitializeCreatingChoose;
+            _commandsActions[OutputActionType.UpdateCreatingChoose] = _creatingChooseComponent.UpdateBuildings;
+            _commandsActions[OutputActionType.ClearCreatingChoose] = _creatingChooseComponent.ClearCreatingChoose;
             
             _gameModel = new GameModel(40, 35);
             _gameModel.Run();
@@ -93,7 +96,7 @@ namespace AttackOnTitan.Scenes
                 "AttackIcon", "AttackIconHalf", "BuildingIcon", "BuildingIconHalf",
                 "GasIcon", "GasIconHalf", "RefuelingIcon", "RefuelingIconHalf",
                 "Barracks", "Centre", "House1", "House2", "House3", "Warehouse",
-                "BuilderCard", "ExitIcon", "ExitIconHalf", "WalkIcon", "WalkIconHalf"
+                "BuilderCard", "ExitIcon", "ExitIconHalf", "WalkIcon", "WalkIconHalf", "People"
             };
 
             Fonts["Medium"] = TtfFontBaker.Bake(File.OpenRead("TTFFonts/OpenSans-Medium.ttf"),

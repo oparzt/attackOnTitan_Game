@@ -9,24 +9,60 @@ namespace AttackOnTitan.Models
     {
         public readonly GameModel GameModel;
         
-        private static readonly OutputCommandInfo[] DefaultCommandInfos = { };
-        private static readonly OutputCreatingInfo DefaultOutputCreatingInfo = new()
-        {
-            BackgroundTextureName = "BuilderCard",
-            CreatingInfos = new CreatingInfo[] {}
-        };
-
         public CommandModel(GameModel gameModel)
         {
             GameModel = gameModel;
+            InitializeCreatingChoose();
         }
 
         public void OpenCreatingMenu(UnitModel unitModel, MapCellModel mapCellModel, 
             bool buildingMode)
         {
-            var creatingInfos = buildingMode ? 
-                mapCellModel.GetPossibleBuildingInCell() : 
-                mapCellModel.GetPossibleUnitInCell();
+            var creatingInfos = new List<CreatingInfo>();
+            if (buildingMode)
+            {
+                foreach (var buildingType in mapCellModel.GetPossibleCreatingBuildingTypes())
+                {
+                    var creatingInfo = new CreatingInfo
+                    {
+                        BuildingType = buildingType,
+                        ObjectName = MapCellModel.BuildingNames[buildingType],
+                        ObjectTextureName = MapCellModel.BuildingTextureNames[buildingType],
+                        ObjectResourceDescription = GetObjectResourceDescription(
+                            BuildingEconomyModel.CountDiff[buildingType],
+                            BuildingEconomyModel.StepCountDiff[buildingType],
+                            BuildingEconomyModel.LimitDiff[buildingType]),
+                        NotAvailableResource = GetNotAvailableResource(
+                        BuildingEconomyModel.CountDiff[buildingType],
+                        GameModel.EconomyModel.ResourceCount)
+                    };
+
+                    creatingInfos.Add(creatingInfo);
+                }
+            }
+            else
+            {
+                foreach (var unitType in mapCellModel.GetPossibleCreatingUnitTypes())
+                {
+                    var creatingInfo = new CreatingInfo
+                    {
+                        UnitType = unitType,
+                        ObjectName = UnitModel.UnitNames[unitType],
+                        ObjectTextureName = UnitModel.UnitTextureNames[unitType],
+                        ObjectResourceDescription = GetObjectResourceDescription(
+                            UnitEconomyModel.CountDiff[unitType],
+                            UnitEconomyModel.StepCountDiff[unitType],
+                            UnitEconomyModel.LimitDiff[unitType]),
+                        NotAvailableResource = GetNotAvailableResource(
+                            UnitEconomyModel.CountDiff[unitType],
+                            GameModel.EconomyModel.ResourceCount)
+                    };
+
+                    creatingInfos.Add(creatingInfo);
+                }
+
+            }
+            
             var unitInfo = new UnitInfo(unitModel?.ID ?? -1);
             var mapCellInfo = new MapCellInfo(mapCellModel.X, mapCellModel.Y);
             
@@ -39,11 +75,7 @@ namespace AttackOnTitan.Models
                 {
                     CommandType = buildingMode ? CommandType.CreateHouse : CommandType.CreateUnit,
                     ObjectsTextureSize = buildingMode ? new Point(185, 160) : new Point(150, 150),
-                    BackgroundTextureName = "BuilderCard",
-                    CreatingInfos = creatingInfos,
-                    NotAvailableResource = creatingInfos
-                        .Select(creatingInfo => GetNotAvailableResourceForCreatingInfos(creatingInfo, GameModel.ResourceCount))
-                        .ToArray()
+                    CreatingInfos = creatingInfos.ToArray(),
                 }
             });
             
@@ -63,24 +95,22 @@ namespace AttackOnTitan.Models
             InputCommandInfo commandInfo)
         {
             CloseCreatingMenu(unitModel, mapCellModel);
+            GameModel.EconomyModel.UpdateResourceSettings(
+                BuildingEconomyModel.CountDiff[commandInfo.CreatingInfo.BuildingType],
+                BuildingEconomyModel.StepCountDiff[commandInfo.CreatingInfo.BuildingType],
+                BuildingEconomyModel.LimitDiff[commandInfo.CreatingInfo.BuildingType]);
             
-            foreach (var pricePair in commandInfo.CreatingInfo.Price)
-                GameModel.ResourceCount[pricePair.Key] -= pricePair.Value;
-            GameModel.UpdateResourceCount();
-            
-            mapCellModel.UpdateBuildingType(
-                commandInfo.CreatingInfo.BuildingType,
-                commandInfo.BuildingTextureName);
+            mapCellModel.UpdateBuildingType(commandInfo.CreatingInfo.BuildingType);
         }
 
         public void CreateUnit(UnitModel unitModel, MapCellModel mapCellModel,
             InputCommandInfo commandInfo)
         {
             CloseCreatingMenu(unitModel, mapCellModel);
-            
-            foreach (var pricePair in commandInfo.CreatingInfo.Price)
-                GameModel.ResourceCount[pricePair.Key] -= pricePair.Value;
-            GameModel.UpdateResourceCount();
+            GameModel.EconomyModel.UpdateResourceSettings(
+                UnitEconomyModel.CountDiff[commandInfo.CreatingInfo.UnitType],
+                UnitEconomyModel.StepCountDiff[commandInfo.CreatingInfo.UnitType],
+                UnitEconomyModel.LimitDiff[commandInfo.CreatingInfo.UnitType]);
 
             for (var i = 0; i < int.MaxValue; i++)
             {
@@ -125,8 +155,20 @@ namespace AttackOnTitan.Models
         {
             GameModel.OutputActions.Enqueue(new OutputAction
             {
-                ActionType = OutputActionType.UpdateCommandsBar,
-                CommandInfos = DefaultCommandInfos
+                ActionType = OutputActionType.ClearCommandsBar
+            });
+        }
+
+        public void InitializeCreatingChoose()
+        {
+            GameModel.OutputActions.Enqueue(new OutputAction
+            {
+                ActionType = OutputActionType.InitializeCreatingChoose,
+                OutputCreatingInfo = new OutputCreatingInfo
+                {
+                    BackgroundTextureName = "BuilderCard",
+                    ResourceTexturesName = EconomyModel.ResourceTexturesName
+                }
             });
         }
 
@@ -134,17 +176,42 @@ namespace AttackOnTitan.Models
         {
             GameModel.OutputActions.Enqueue(new OutputAction
             {
-                ActionType = OutputActionType.UpdateCreatingChoose,
-                OutputCreatingInfo = DefaultOutputCreatingInfo
+                ActionType = OutputActionType.ClearCreatingChoose
             });
         }
-        
-        private HashSet<ResourceType> GetNotAvailableResourceForCreatingInfos(CreatingInfo creatingInfo, Dictionary<ResourceType, int> resourceCount)
+
+        private (ResourceType, string)[] GetObjectResourceDescription(Dictionary<ResourceType, int> countDiff, 
+            Dictionary<ResourceType, int> stepCountDiff,
+            Dictionary<ResourceType, int> limitDiff)
         {
-            return creatingInfo.Price
-                .Where(pair => pair.Value > resourceCount[pair.Key])
+            var objectResourceDescription = countDiff
+                .Select(diff => (diff.Key, diff.Value.ToString())).ToList();
+            objectResourceDescription.AddRange(stepCountDiff
+                .Select(diff => (diff.Key, diff.Value + " за ход")));
+            objectResourceDescription.AddRange(limitDiff
+                .Select(diff => (diff.Key, diff.Value + " в лимиты")));
+            
+            return objectResourceDescription.ToArray();
+        }
+        
+        private HashSet<ResourceType> GetNotAvailableResource(Dictionary<ResourceType, int> countDiff, Dictionary<ResourceType, int> resourceCount)
+        {
+            return countDiff
+                .Where(pair => Math.Abs(pair.Value) > resourceCount[pair.Key])
                 .Select(pair => pair.Key)
                 .ToHashSet();
         }
     }
+    
+        
+    public class CreatingInfo
+    {
+        public string ObjectName;
+        public string ObjectTextureName;
+        public (ResourceType, string)[] ObjectResourceDescription;
+        public HashSet<ResourceType> NotAvailableResource;
+        public BuildingType BuildingType;
+        public UnitType UnitType;
+    }
+
 }
