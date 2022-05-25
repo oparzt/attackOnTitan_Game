@@ -66,6 +66,7 @@ namespace AttackOnTitan.Models
     {
         public readonly CommandType CommandType;
         public CreatingInfo CreatingInfo;
+        public (ResourceType, int) PeopleDiff;
 
         public InputCommandInfo(CommandType commandType) =>
             CommandType = commandType;

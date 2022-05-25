@@ -61,7 +61,17 @@ namespace AttackOnTitan.Models
                     InputCommandInfo = new InputCommandInfo(CommandType.OpenCreatingUnitMenu)
                 });
             }
-            
+            else if (mapCell.BuildingType == BuildingType.Warehouse)
+            {
+                GameModel.InputActions.Enqueue(new InputAction
+                {
+                    ActionType = InputActionType.ExecCommand,
+                    InputCellInfo = action.InputCellInfo,
+                    InputUnitInfo = new InputUnitInfo(-1),
+                    InputCommandInfo = new InputCommandInfo(CommandType.OpenProductionMenu)
+                });
+            }
+
         }
 
         private void HandleRightMouseSelect(InputAction action)

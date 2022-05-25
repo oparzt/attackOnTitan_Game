@@ -28,6 +28,7 @@ namespace AttackOnTitan.Scenes
         private StepBtnComponent _stepBtnComponent;
         private CommandBarComponent _commandBarComponent;
         private CreatingChooseComponent _creatingChooseComponent;
+        private ProductionMenuComponent _productionMenuComponent;
 
         private Keys _lastKey = Keys.None;
 
@@ -52,6 +53,7 @@ namespace AttackOnTitan.Scenes
             _stepBtnComponent = new StepBtnComponent(this, viewport.Width, viewport.Height, 24);
             _commandBarComponent = new CommandBarComponent(this, viewport.Width, viewport.Height);
             _creatingChooseComponent = new CreatingChooseComponent(this, viewport.Width, viewport.Height);
+            _productionMenuComponent = new ProductionMenuComponent(this, viewport.Width, viewport.Height);
             
             _commandsActions[OutputActionType.AddUnit] = action => _mapComponent.AddUnit(action.UnitInfo);
             _commandsActions[OutputActionType.MoveUnit] = action => _mapComponent.MoveUnit(action.UnitInfo);
@@ -71,6 +73,10 @@ namespace AttackOnTitan.Scenes
             _commandsActions[OutputActionType.InitializeCreatingChoose] = _creatingChooseComponent.InitializeCreatingChoose;
             _commandsActions[OutputActionType.UpdateCreatingChoose] = _creatingChooseComponent.UpdateBuildings;
             _commandsActions[OutputActionType.ClearCreatingChoose] = _creatingChooseComponent.ClearCreatingChoose;
+            _commandsActions[OutputActionType.InitializeProductionMenu] = _productionMenuComponent.Initialize;
+            _commandsActions[OutputActionType.UpdateProductionMenu] = _productionMenuComponent.UpdateProductionMenu;
+            _commandsActions[OutputActionType.OpenProductionMenu] = _productionMenuComponent.OpenMenu;
+            _commandsActions[OutputActionType.CloseProductionMenu] = _productionMenuComponent.CloseMenu;
             
             _gameModel = new GameModel(40, 35);
             _gameModel.Run();
@@ -96,7 +102,8 @@ namespace AttackOnTitan.Scenes
                 "AttackIcon", "AttackIconHalf", "BuildingIcon", "BuildingIconHalf",
                 "GasIcon", "GasIconHalf", "RefuelingIcon", "RefuelingIconHalf",
                 "Barracks", "Centre", "House1", "House2", "House3", "Warehouse",
-                "BuilderCard", "ExitIcon", "ExitIconHalf", "WalkIcon", "WalkIconHalf", "People"
+                "BuilderCard", "ExitIcon", "ExitIconHalf", "WalkIcon", "WalkIconHalf", "People",
+                "PlusIcon", "MinusIcon"
             };
 
             Fonts["Medium"] = TtfFontBaker.Bake(File.OpenRead("TTFFonts/OpenSans-Medium.ttf"),
@@ -124,6 +131,7 @@ namespace AttackOnTitan.Scenes
             _stepBtnComponent.Update(gameTime, mouseState);
             _commandBarComponent.Update(gameTime, mouseState);
             _creatingChooseComponent.Update(gameTime, mouseState);
+            _productionMenuComponent.Update(gameTime, mouseState);
             _mapComponent.Update(gameTime, mouseState);
             
             GameModel.InputActions.Enqueue(new InputAction
@@ -163,6 +171,7 @@ namespace AttackOnTitan.Scenes
             _stepBtnComponent.Draw(Sprite);
             _commandBarComponent.Draw(Sprite);
             _creatingChooseComponent.Draw(Sprite);
+            _productionMenuComponent.Draw(Sprite);
 
             base.Draw(gameTime);
         }

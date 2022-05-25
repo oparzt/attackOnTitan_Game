@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace AttackOnTitan.Models
 {
@@ -37,6 +38,18 @@ namespace AttackOnTitan.Models
             [ResourceType.People] = "People"
         };
 
+        public readonly Dictionary<ResourceType, int> PeopleAtWork = new()
+        {
+            [ResourceType.Log] = 0,
+            [ResourceType.Stone] = 0,
+        };
+
+        public static readonly Dictionary<ResourceType, int> PeopleAtWorkMadeResource = new()
+        {
+            [ResourceType.Log] = 1,
+            [ResourceType.Stone] = 1,
+        };
+
         public EconomyModel(GameModel gameModel)
         {
             GameModel = gameModel;
@@ -56,13 +69,16 @@ namespace AttackOnTitan.Models
                     }
                 });
             }
-        }
-
-        public void UseResources(Dictionary<ResourceType, int> price)
-        {
-            foreach (var pricePair in price)
-                ResourceCount[pricePair.Key] -= pricePair.Value;
-            UpdateResourceView();
+            
+            GameModel.OutputActions.Enqueue(new OutputAction
+            {
+                ActionType = OutputActionType.InitializeProductionMenu,
+                ProductionInfo = new ProductionInfo
+                {
+                    BackgroundTextureName = "BuilderCard",
+                    ResourceTexturesName = ResourceTexturesName
+                }
+            });
         }
 
         public void UpdateResourceSettings(Dictionary<ResourceType, int> countDiff, 
@@ -71,6 +87,8 @@ namespace AttackOnTitan.Models
         {
             foreach (var resCountPair in countDiff)
                 ResourceCount[resCountPair.Key] += resCountPair.Value;
+            foreach (var resCountPair in countDiff)
+                ResourceCount[resCountPair.Key] = ResourceCount[resCountPair.Key] < 0 ? 0 : ResourceCount[resCountPair.Key];
             foreach (var resCountPair in stepCountDiff)
                 ResourceCountInStep[resCountPair.Key] += resCountPair.Value;
             foreach (var resCountPair in limitDiff)
@@ -78,15 +96,35 @@ namespace AttackOnTitan.Models
             UpdateResourceView();
         }
 
+        public void ChangePeopleAtWork((ResourceType, int) peopleDiff)
+        {
+            var peopleAtWorkLimit = ResourceCount[ResourceType.People];
+            var allPeopleAtWork = PeopleAtWork.Sum(peopleOnRes => peopleOnRes.Value);
+            
+            if (allPeopleAtWork + peopleDiff.Item2 > peopleAtWorkLimit ||
+                PeopleAtWork[peopleDiff.Item1] + peopleDiff.Item2 < 0)
+                return;
+
+            PeopleAtWork[peopleDiff.Item1] += peopleDiff.Item2;
+            ResourceCountInStep[peopleDiff.Item1] += PeopleAtWorkMadeResource[peopleDiff.Item1] * peopleDiff.Item2;
+            
+            UpdateResourceView();
+        }
+
         public void FillResource()
         {
             foreach (var resCountPair in ResourceCountInStep)
                 ResourceCount[resCountPair.Key] += resCountPair.Value;
+            foreach (var resLimitPair in ResourceLimit)
+                    ResourceCount[resLimitPair.Key] = ResourceCount[resLimitPair.Key] >= resLimitPair.Value ? 
+                        resLimitPair.Value : ResourceCount[resLimitPair.Key];
             UpdateResourceView();
         }
         
         public void UpdateResourceView()
         {
+            var resInformation = new Dictionary<ResourceType, string>();
+            
             foreach (var resCountPair in ResourceCount)
             {
                 GameModel.OutputActions.Enqueue(new OutputAction
@@ -97,7 +135,34 @@ namespace AttackOnTitan.Models
                         Count = resCountPair.Value.ToString()
                     }
                 }); 
+                
+                resInformation[resCountPair.Key] = resCountPair.Value + 
+                    (ResourceLimit.TryGetValue(resCountPair.Key, out var limit) ? $"/{limit}" : "") +
+                    (ResourceCountInStep.TryGetValue(resCountPair.Key, out var countInStep) ? $" ({countInStep})" : "");
             }
+
+            var peopleAtWorkLimit = ResourceCount[ResourceType.People];
+            var allPeopleAtWork = PeopleAtWork.Sum(peopleOnRes => peopleOnRes.Value);
+            var canUpdateProductionResource = new Dictionary<ResourceType, string>();
+            var canUpdateProduction = new List<(bool, bool)>();
+
+            foreach (var peopleAtWork in PeopleAtWork)
+            {
+                canUpdateProductionResource[peopleAtWork.Key] = peopleAtWork.Value.ToString();
+                canUpdateProduction.Add((peopleAtWork.Value > 0, allPeopleAtWork < peopleAtWorkLimit));
+            }
+            
+            GameModel.OutputActions.Enqueue(new OutputAction
+            {
+                ActionType = OutputActionType.UpdateProductionMenu,
+                ProductionInfo = new ProductionInfo
+                {
+                    ResourceInformation = resInformation,
+                    CanUpdateProductionResource = canUpdateProductionResource,
+                    CanUpdateProduction = canUpdateProduction.ToArray(),
+                    PeopleAtWork = (ResourceType.People, $"{allPeopleAtWork}/{peopleAtWorkLimit} на работе")
+                }
+            });
         }
     }
 }

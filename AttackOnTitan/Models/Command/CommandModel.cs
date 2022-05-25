@@ -21,46 +21,27 @@ namespace AttackOnTitan.Models
             var creatingInfos = new List<CreatingInfo>();
             if (buildingMode)
             {
-                foreach (var buildingType in mapCellModel.GetPossibleCreatingBuildingTypes())
-                {
-                    var creatingInfo = new CreatingInfo
+                creatingInfos.AddRange(mapCellModel.GetPossibleCreatingBuildingTypes()
+                    .Select(buildingType => new CreatingInfo
                     {
                         BuildingType = buildingType,
                         ObjectName = MapCellModel.BuildingNames[buildingType],
                         ObjectTextureName = MapCellModel.BuildingTextureNames[buildingType],
-                        ObjectResourceDescription = GetObjectResourceDescription(
-                            BuildingEconomyModel.CountDiff[buildingType],
-                            BuildingEconomyModel.StepCountDiff[buildingType],
-                            BuildingEconomyModel.LimitDiff[buildingType]),
-                        NotAvailableResource = GetNotAvailableResource(
-                        BuildingEconomyModel.CountDiff[buildingType],
-                        GameModel.EconomyModel.ResourceCount)
-                    };
-
-                    creatingInfos.Add(creatingInfo);
-                }
+                        ObjectResourceDescription = GetObjectResourceDescription(BuildingEconomyModel.CountDiff[buildingType], BuildingEconomyModel.StepCountDiff[buildingType], BuildingEconomyModel.LimitDiff[buildingType]),
+                        NotAvailableResource = GetNotAvailableResource(BuildingEconomyModel.CountDiff[buildingType], GameModel.EconomyModel.ResourceCount)
+                    }));
             }
             else
             {
-                foreach (var unitType in mapCellModel.GetPossibleCreatingUnitTypes())
-                {
-                    var creatingInfo = new CreatingInfo
+                creatingInfos.AddRange(mapCellModel.GetPossibleCreatingUnitTypes()
+                    .Select(unitType => new CreatingInfo
                     {
                         UnitType = unitType,
                         ObjectName = UnitModel.UnitNames[unitType],
                         ObjectTextureName = UnitModel.UnitTextureNames[unitType],
-                        ObjectResourceDescription = GetObjectResourceDescription(
-                            UnitEconomyModel.CountDiff[unitType],
-                            UnitEconomyModel.StepCountDiff[unitType],
-                            UnitEconomyModel.LimitDiff[unitType]),
-                        NotAvailableResource = GetNotAvailableResource(
-                            UnitEconomyModel.CountDiff[unitType],
-                            GameModel.EconomyModel.ResourceCount)
-                    };
-
-                    creatingInfos.Add(creatingInfo);
-                }
-
+                        ObjectResourceDescription = GetObjectResourceDescription(UnitEconomyModel.CountDiff[unitType], UnitEconomyModel.StepCountDiff[unitType], UnitEconomyModel.LimitDiff[unitType]),
+                        NotAvailableResource = GetNotAvailableResource(UnitEconomyModel.CountDiff[unitType], GameModel.EconomyModel.ResourceCount)
+                    }));
             }
             
             var unitInfo = new UnitInfo(unitModel?.ID ?? -1);
@@ -87,6 +68,28 @@ namespace AttackOnTitan.Models
                 CommandInfos = new []
                 {
                     new OutputCommandInfo(CommandType.CloseCreatingMenu , true, "ExitIcon")
+                }
+            });
+        }
+
+        public void OpenProductionMenu(MapCellModel mapCellModel)
+        {
+            GameModel.OutputActions.Enqueue(new OutputAction
+            {
+                ActionType = OutputActionType.OpenProductionMenu,
+                UnitInfo = new UnitInfo(-1),
+                MapCellInfo = new MapCellInfo(mapCellModel.X, mapCellModel.Y)
+            });
+            
+            ClearCommandBar();
+            GameModel.OutputActions.Enqueue(new OutputAction
+            {
+                ActionType = OutputActionType.UpdateCommandsBar,
+                UnitInfo = new UnitInfo(-1),
+                MapCellInfo = new MapCellInfo(mapCellModel.X, mapCellModel.Y),
+                CommandInfos = new []
+                {
+                    new OutputCommandInfo(CommandType.CloseProductionMenu , true, "ExitIcon")
                 }
             });
         }
@@ -132,6 +135,15 @@ namespace AttackOnTitan.Models
                 ClearCommandBar();
             
             ClearCreatingChoose();
+        }
+
+        public void CloseProductionMenu()
+        {
+            ClearCommandBar();
+            GameModel.OutputActions.Enqueue(new OutputAction
+            {
+                ActionType = OutputActionType.CloseProductionMenu
+            });
         }
 
         public void FlyOrWalk(UnitModel unitModel, bool fly)

@@ -28,6 +28,11 @@ namespace AttackOnTitan.Models
         UpdateCreatingChoose,
         InitializeCreatingChoose,
         ClearCreatingChoose,
+        
+        InitializeProductionMenu,
+        UpdateProductionMenu,
+        OpenProductionMenu,
+        CloseProductionMenu,
 
         //ChangeUnitTexture,
         //ChangeUnitText,
@@ -44,6 +49,7 @@ namespace AttackOnTitan.Models
         public OutputCommandInfo[] CommandInfos;
         public NoServicedZone NoServicedZone;
         public OutputCreatingInfo OutputCreatingInfo;
+        public ProductionInfo ProductionInfo;
     }
 
     public class UnitInfo
@@ -115,5 +121,15 @@ namespace AttackOnTitan.Models
         public CreatingInfo[] CreatingInfos;
         public string BackgroundTextureName;
         public Dictionary<ResourceType, string> ResourceTexturesName;
+    }
+
+    public class ProductionInfo
+    {
+        public Dictionary<ResourceType, string> ResourceTexturesName;
+        public Dictionary<ResourceType, string> ResourceInformation;
+        public Dictionary<ResourceType, string> CanUpdateProductionResource;
+        public (bool, bool)[] CanUpdateProduction;
+        public (ResourceType, string) PeopleAtWork;
+        public string BackgroundTextureName;
     }
 }

@@ -104,6 +104,9 @@ namespace AttackOnTitan.Components
 
         public void Update(GameTime gameTime, MouseState mouseState)
         {
+            foreach (var unit in _movedUnits)
+                unit.Update(gameTime, mouseState);
+            
             if (_noServicedZones.Values
                 .SelectMany(noServicedZone => noServicedZone)
                 .Any(noServicedRect => noServicedRect.Contains(mouseState.Position)))
@@ -118,9 +121,6 @@ namespace AttackOnTitan.Components
                 _cellsInViewport = GetRangeIntoViewport(HexWidth * 0.75f, HexHeight, _cellsColumnCount, _cellsRowCount);
                 _grassInViewport = GetRangeIntoViewport(GrassWidth, GrassHeight, _grassColumnCount, _grassRowCount); 
             }
-
-            foreach (var unit in _movedUnits)
-                unit.Update(gameTime, mouseState);
 
             if (_camera.MatrixWasUpdated)
             {

@@ -56,7 +56,7 @@ namespace AttackOnTitan.Models
             EconomyModel = new EconomyModel(this);
             var unitsTypes = new[]
             {
-                UnitType.Scout, UnitType.Builder, UnitType.Titan
+                UnitType.Scout, UnitType.Builder
             };
             var positions = new[]
             {
@@ -70,6 +70,7 @@ namespace AttackOnTitan.Models
             }
 
             EconomyModel.InitializeResourcePanel();
+            EconomyModel.UpdateResourceView();
             
             for (var i = 2; i < 10; i++)
                 Map[i, 3].UpdateBuildingType(BuildingType.House1);
