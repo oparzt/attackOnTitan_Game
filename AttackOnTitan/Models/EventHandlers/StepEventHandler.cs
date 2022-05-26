@@ -25,6 +25,8 @@ namespace AttackOnTitan.Models
            GameModel.CommandModel.ClearCommandBar();
            GameModel.CommandModel.ClearCreatingChoose();
            GameModel.EconomyModel.FillResource();
+           
+           RestoreUnitsEnergy(GameModel.Units.Values);
 
             var units = new List<UnitModel>();
             var enemies = new List<UnitModel>();
@@ -50,7 +52,13 @@ namespace AttackOnTitan.Models
             });
         }
 
-        public void BattleInCell(MapCellModel mapCellModel, List<UnitModel> units, 
+        private void RestoreUnitsEnergy(IEnumerable<UnitModel> unitModels)
+        {
+            foreach (var unitModel in unitModels)
+                unitModel.Energy = unitModel.MaxEnergy;
+        }
+
+        private void BattleInCell(MapCellModel mapCellModel, List<UnitModel> units, 
             List<UnitModel> enemies)
         {
             var unitsInSafe = units.Count - enemies.Count;

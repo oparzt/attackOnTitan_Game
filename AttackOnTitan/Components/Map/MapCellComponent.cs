@@ -46,12 +46,12 @@ namespace AttackOnTitan.Components
         {
             spriteBatch.Draw(_hexagonTexture, _hexagonRect, 
                 null, Color.White * _opacity, 0f, 
-                Vector2.Zero, SpriteEffects.None, 0.5f);
+                Vector2.Zero, SpriteEffects.None, 0.25f);
             
             if (_houseTexture is not null)
                 spriteBatch.Draw(_houseTexture, _hexagonRect, 
                     null, Color.White, 0f, 
-                    Vector2.Zero, SpriteEffects.None, 0.5f);
+                    Vector2.Zero, SpriteEffects.None, 0.25f);
         }
 
         public bool IsComponentOnPosition(Point point)

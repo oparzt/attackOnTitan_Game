@@ -89,7 +89,10 @@ namespace AttackOnTitan.Models
         private void HandleCreateHouseCommand(InputAction action, UnitModel unitModel, MapCellModel mapCellModel)
         {
             if (unitModel is not null)
+            {
                 GameModel.CommandModel.CreateHouse(unitModel, mapCellModel, action.InputCommandInfo);
+                unitModel.Energy = 0;
+            }
             else
             {
                 GameModel.CommandModel.ClearCommandBar();

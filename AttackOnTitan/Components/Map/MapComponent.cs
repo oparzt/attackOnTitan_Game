@@ -96,7 +96,7 @@ namespace AttackOnTitan.Components
             _grassRects = new Rectangle[_grassColumnCount, _grassRowCount];
 
             for (var x = 0; x < _grassColumnCount; x++)
-            for (var y = 0; y < _grassColumnCount; y++)
+            for (var y = 0; y < _grassRowCount; y++)
                 _grassRects[x, y] = new Rectangle(x * _grassWidth, y * _grassHeight, _grassWidth, _grassHeight);
         }
         
@@ -289,6 +289,9 @@ namespace AttackOnTitan.Components
 
             foreach (var unit in _units.Values)
                 unit.Draw(spriteBatch);
+            
+            spriteBatch.Draw(_scene.Textures["Wall"], new Rectangle(0, 0, 3840, 2160), 
+                null, Color.White, 0, Vector2.Zero, SpriteEffects.None, 0.5f);
             
             for (var i = _grassInViewport.Left; i < _grassInViewport.Right; i++)
             for (var n = _grassInViewport.Top; n < _grassInViewport.Bottom; n++)

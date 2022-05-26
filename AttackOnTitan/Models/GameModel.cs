@@ -72,13 +72,6 @@ namespace AttackOnTitan.Models
             EconomyModel.InitializeResourcePanel();
             EconomyModel.UpdateResourceView();
             
-            for (var i = 2; i < 10; i++)
-                Map[i, 3].UpdateBuildingType(BuildingType.House1);
-            
-            Map[2, 4].UpdateBuildingType(BuildingType.Centre);
-            Map[3, 4].UpdateBuildingType(BuildingType.Barracks);
-            Map[4, 4].UpdateBuildingType(BuildingType.Warehouse);
-            
             InitializeHandlers();
         }
 

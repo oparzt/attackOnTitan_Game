@@ -78,7 +78,7 @@ namespace AttackOnTitan.Scenes
             _commandsActions[OutputActionType.OpenProductionMenu] = _productionMenuComponent.OpenMenu;
             _commandsActions[OutputActionType.CloseProductionMenu] = _productionMenuComponent.CloseMenu;
             
-            _gameModel = new GameModel(40, 35);
+            _gameModel = new GameModel(23, 11);
             _gameModel.Run();
 
             base.Initialize();
@@ -103,7 +103,7 @@ namespace AttackOnTitan.Scenes
                 "GasIcon", "GasIconHalf", "RefuelingIcon", "RefuelingIconHalf",
                 "Barracks", "Centre", "House1", "House2", "House3", "Warehouse",
                 "BuilderCard", "ExitIcon", "ExitIconHalf", "WalkIcon", "WalkIconHalf", "People",
-                "PlusIcon", "MinusIcon"
+                "PlusIcon", "MinusIcon", "Wall"
             };
 
             Fonts["Medium"] = TtfFontBaker.Bake(File.OpenRead("TTFFonts/OpenSans-Medium.ttf"),
@@ -167,6 +167,7 @@ namespace AttackOnTitan.Scenes
         public override void Draw(GameTime gameTime)
         {
             _mapComponent.Draw(Sprite);
+            
             _topBarComponent.Draw(Sprite);
             _stepBtnComponent.Draw(Sprite);
             _commandBarComponent.Draw(Sprite);
