@@ -56,7 +56,7 @@ namespace AttackOnTitan.Scenes
 
             startBtn.OnClick += () =>
             {
-                Game.Components.Add(new Level0Scene(Game));
+                Game.Components.Add(new StoryScene(Game));
                 Game.Components.Remove(this);
             };
             exitBtn.OnClick += () => Game.Exit();
