@@ -35,9 +35,9 @@ namespace AttackOnTitan.Models
             if (GameModel.UnitPath.Count != 0)
                 GameModel.UnitPath.ExecutePath();
             if (_lastNoMouseSelected is not null)
-                GameModel.Map.SetUnselectedOpacity(_lastNoMouseSelected);
+                MapModel.SetUnselectedOpacity(_lastNoMouseSelected);
 
-            GameModel.Map.SetPreselectedOpacity(targetCell);
+            MapModel.SetPreselectedOpacity(targetCell);
 
             _lastNoMouseSelected = targetCell;
         }
@@ -84,7 +84,7 @@ namespace AttackOnTitan.Models
                 return;
             }
             var targetCell = GameModel.Map[action.InputCellInfo.X, action.InputCellInfo.Y];
-            GameModel.Map.SetUnselectedOpacity(targetCell);
+            MapModel.SetUnselectedOpacity(targetCell);
             GameModel.UnitPath.Add(targetCell);
         }
     }

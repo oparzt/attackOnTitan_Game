@@ -270,6 +270,11 @@ namespace AttackOnTitan.Components
         {
             _mapItems[mapCellInfo.X, mapCellInfo.Y].SetOpacity(mapCellInfo.Opacity);
         }
+        
+        public void SetCellHidden(MapCellInfo mapCellInfo)
+        {
+            _mapItems[mapCellInfo.X, mapCellInfo.Y].SetHidden();
+        }
 
         public void UpdateNoServicedZone(NoServicedZone noServicedZone)
         {

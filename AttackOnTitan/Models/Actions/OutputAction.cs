@@ -15,6 +15,7 @@ namespace AttackOnTitan.Models
         ChangeTextureIntoCell,
         ClearTextureIntoCell,
         ChangeCellOpacity,
+        SetCellHidden,
         
         AddResource,
         UpdateResourceCount,
@@ -33,6 +34,9 @@ namespace AttackOnTitan.Models
         UpdateProductionMenu,
         OpenProductionMenu,
         CloseProductionMenu,
+        
+        UpdateUnitStatusBar,
+        
 
         //ChangeUnitTexture,
         //ChangeUnitText,
@@ -44,6 +48,7 @@ namespace AttackOnTitan.Models
         public OutputActionType ActionType;
 
         public UnitInfo UnitInfo;
+        public string[] UnitStatus;
         public MapCellInfo MapCellInfo;
         public ResourceInfo ResourceInfo;
         public OutputCommandInfo[] CommandInfos;

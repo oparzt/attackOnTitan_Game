@@ -45,6 +45,7 @@
     <PackageReference Include="SpriteFontPlus" Version="0.9.2" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Content\Songs" />
     <Folder Include="Scenes\" />
     <Folder Include="Scenes\StartScene\" />
     <Folder Include="TTFFonts\" />

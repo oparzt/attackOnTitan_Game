@@ -4,12 +4,10 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
 
 using AttackOnTitan.Scenes;
-using SpriteFontPlus;
 
 namespace AttackOnTitan
 {
@@ -42,13 +40,16 @@ namespace AttackOnTitan
             //    _graphics.GraphicsDevice.DisplayMode.Height);
 
 
-            Components.Add(new StartScene(this));
-
+            // Components.Add(new StartScene(this));
+            Components.Add(new Level0Scene(this));
             base.Initialize();
         }
 
         protected override void LoadContent()
         {
+            var song = Content.Load<Song>("Songs/BackgroundSong");
+            MediaPlayer.Play(song);
+            MediaPlayer.IsRepeating = true;
             base.LoadContent();
         }
 

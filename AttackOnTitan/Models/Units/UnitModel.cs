@@ -14,18 +14,38 @@ namespace AttackOnTitan.Models
         Builder
     }
 
+    public enum TravelMode
+    {
+        None,
+        Run,
+        BuilderRun,
+        Fly
+    }
+
     public class UnitModel
     {
         public readonly int ID;
         public MapCellModel CurCell;
 
         public bool CanGo = true;
-        public bool IsFly;
         public bool Moved;
         public bool IsEnemy => UnitType == UnitType.Titan;
+        public TravelMode TravelMode = TravelMode.Run;
 
-        public int MaxEnergy = 10;
-        public int Energy = 10;
+        public const float MaxEnergy = 10;
+        public const float MaxGas = 100; 
+        public float Energy = 10;
+        public float Gas = 100;
+
+        public readonly Dictionary<TravelMode, float> TravelEnergyCost = new()
+        {
+            [TravelMode.None] = float.MaxValue,
+            [TravelMode.Run] = 1f,
+            [TravelMode.BuilderRun] = 2f,
+            [TravelMode.Fly] = 0.5f
+        };
+
+        public readonly float TravelGasCost = 4f;
 
         public readonly UnitType UnitType;
 
@@ -82,6 +102,8 @@ namespace AttackOnTitan.Models
         {
             ID = id;
             UnitType = unitType;
+
+            if (unitType == UnitType.Builder) TravelMode = TravelMode.BuilderRun;
         }
 
         public void AddUnitToTheMap(MapCellModel mapCell, Position position)
@@ -103,6 +125,26 @@ namespace AttackOnTitan.Models
                     Y = mapCell.Y
                 }
             });
+        }
+
+        public float GetEnergyCost() => TravelEnergyCost[TravelMode];
+        public float GetGasCost() => TravelMode == TravelMode.Fly ? TravelGasCost : 0f;
+
+        public void Refuel() => Gas = MaxGas;
+
+        public bool IsExistTravel(float energyCost, float gasCost)
+        {
+            switch (TravelMode)
+            {
+                case TravelMode.Run:
+                case TravelMode.BuilderRun:
+                    return Energy >= energyCost;
+                case TravelMode.Fly:
+                    return Energy >= energyCost && Gas >= gasCost;
+                case TravelMode.None:
+                default:
+                    return false;
+            }
         }
 
         public void SetUnselectedOpacity() =>
@@ -133,8 +175,8 @@ namespace AttackOnTitan.Models
                 case UnitType.Police:
                 case UnitType.Cadet:
                     yield return CommandInfoByTypes[CommandType.Attack][CurCell.IsEnemyInCell()];
-                    yield return CommandInfoByTypes[IsFly ? CommandType.Walk : CommandType.Fly][true];
-                    // yield return CommandInfoByTypes[UnitCommandType.Refuel][false];
+                    yield return CommandInfoByTypes[TravelMode == TravelMode.Fly ? CommandType.Walk : CommandType.Fly][true];
+                    yield return CommandInfoByTypes[CommandType.Refuel][CurCell.BuildingType == BuildingType.Barracks];
                     break;
                 case UnitType.Builder:
                     yield return CommandInfoByTypes[CommandType.OpenCreatingHouseMenu][CurCell.GetPossibleCreatingBuildingTypes().Any()];

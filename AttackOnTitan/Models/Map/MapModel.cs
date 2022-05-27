@@ -9,24 +9,19 @@ namespace AttackOnTitan.Models
         public readonly int ColumnsCount;
         public readonly int RowsCount;
 
-        public UnitModel SelectedUnit;
-
         private MapCellModel[,] _mapCells;
 
-        public MapCellModel this[int x, int y]
-        {
-            get => _mapCells[x, y];
-        }
+        public MapCellModel this[int x, int y] => _mapCells[x, y];
 
-        public MapModel(int columnsCount, int rowsCount)
+        public MapModel(int columnsCount, int rowsCount, Dictionary<BuildingType, (int, int)[]> buildings)
         {
             ColumnsCount = columnsCount;
             RowsCount = rowsCount;
 
-            InitializeMap();
+            InitializeMap(buildings);
         }
 
-        private void InitializeMap()
+        private void InitializeMap(Dictionary<BuildingType, (int, int)[]> buildings)
         {
             _mapCells = new MapCellModel[ColumnsCount, RowsCount];
             
@@ -37,25 +32,41 @@ namespace AttackOnTitan.Models
             });
 
             for (var x = 0; x < ColumnsCount; x++)
-                for (var y = 0; y < RowsCount; y++)
-                    _mapCells[x, y] = new(x, y);
-
-            var nearCellsWeights = new Dictionary<NearCellsName, Weight>()
-            {
-                [NearCellsName.LeftTop] = new(1, 1, NearCellsName.LeftTop),
-                [NearCellsName.LeftBottom] = new(1, 1, NearCellsName.LeftBottom),
-                [NearCellsName.Top] = new(1, 1, NearCellsName.Top),
-                [NearCellsName.Bottom] = new(1, 1, NearCellsName.Bottom),
-                [NearCellsName.RightTop] = new(1, 1, NearCellsName.RightTop),
-                [NearCellsName.RightBottom] = new(1, 1, NearCellsName.RightBottom)
-            };
-
+            for (var y = 0; y < RowsCount; y++)
+                _mapCells[x, y] = new MapCellModel(x, y);
+            
             for (var x = 0; x < ColumnsCount; x++)
-                for (var y = 0; y < RowsCount; y++)
-                    _mapCells[x, y].ConnectWithNearCells(_mapCells, ColumnsCount, RowsCount, nearCellsWeights);
+            for (var y = 0; y < RowsCount; y++)
+                _mapCells[x, y].ConnectWithNearCells(_mapCells, ColumnsCount, RowsCount);
+
+            foreach (var (buildingType, buildingCoords) in buildings)
+            {
+                foreach (var (x, y) in buildingCoords)
+                    _mapCells[x, y].UpdateBuildingType(buildingType);
+            }
+            
         }
 
-        public void SetCellOpacity(MapCellModel mapCell, float opacity) =>
+        public static void SetHidden(MapCellModel mapCell)
+        {
+            GameModel.OutputActions.Enqueue(new OutputAction()
+            {
+                ActionType = OutputActionType.SetCellHidden,
+                MapCellInfo = new MapCellInfo(mapCell.X, mapCell.Y)
+            });
+            SetCellOpacity(mapCell, 0);
+        }
+        
+        public static void SetUnselectedOpacity(MapCellModel mapCell) =>
+            SetCellOpacity(mapCell, 0.3f);
+
+        public static void SetPreselectedOpacity(MapCellModel mapCell) =>
+            SetCellOpacity(mapCell, 0.65f);
+
+        public static void SetSelectedOpacity(MapCellModel mapCell) =>
+            SetCellOpacity(mapCell, 1f);
+        
+        private static void SetCellOpacity(MapCellModel mapCell, float opacity) =>
             GameModel.OutputActions.Enqueue(new OutputAction()
             {
                 ActionType = OutputActionType.ChangeCellOpacity,
@@ -64,14 +75,5 @@ namespace AttackOnTitan.Models
                     Opacity = opacity
                 }
             });
-
-        public void SetUnselectedOpacity(MapCellModel mapCell) =>
-            SetCellOpacity(mapCell, 0.3f);
-
-        public void SetPreselectedOpacity(MapCellModel mapCell) =>
-            SetCellOpacity(mapCell, 0.65f);
-
-        public void SetSelectedOpacity(MapCellModel mapCell) =>
-            SetCellOpacity(mapCell, 1f);
     }
 }

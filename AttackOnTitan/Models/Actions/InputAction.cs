@@ -27,7 +27,8 @@ namespace AttackOnTitan.Models
         TopBar,
         CommandBar,
         StepBtn,
-        BuilderChoose
+        BuilderChoose,
+        UnitStatusBar
     }
 
     public class InputAction

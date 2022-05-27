@@ -148,7 +148,13 @@ namespace AttackOnTitan.Models
 
         public void FlyOrWalk(UnitModel unitModel, bool fly)
         {
-            unitModel.IsFly = fly;
+            unitModel.TravelMode = fly ? TravelMode.Fly : TravelMode.Run;
+            UpdateCommandBar(unitModel);
+        }
+
+        public void RefuelCommand(UnitModel unitModel)
+        {
+            unitModel.Refuel();
             UpdateCommandBar(unitModel);
         }
 
@@ -171,7 +177,7 @@ namespace AttackOnTitan.Models
             });
         }
 
-        public void InitializeCreatingChoose()
+        private void InitializeCreatingChoose()
         {
             GameModel.OutputActions.Enqueue(new OutputAction
             {
@@ -192,9 +198,9 @@ namespace AttackOnTitan.Models
             });
         }
 
-        private (ResourceType, string)[] GetObjectResourceDescription(Dictionary<ResourceType, int> countDiff, 
-            Dictionary<ResourceType, int> stepCountDiff,
-            Dictionary<ResourceType, int> limitDiff)
+        private (ResourceType, string)[] GetObjectResourceDescription(Dictionary<ResourceType, float> countDiff, 
+            Dictionary<ResourceType, float> stepCountDiff,
+            Dictionary<ResourceType, float> limitDiff)
         {
             var objectResourceDescription = countDiff
                 .Select(diff => (diff.Key, diff.Value.ToString())).ToList();
@@ -206,7 +212,8 @@ namespace AttackOnTitan.Models
             return objectResourceDescription.ToArray();
         }
         
-        private HashSet<ResourceType> GetNotAvailableResource(Dictionary<ResourceType, int> countDiff, Dictionary<ResourceType, int> resourceCount)
+        private HashSet<ResourceType> GetNotAvailableResource(Dictionary<ResourceType, float> countDiff, 
+            Dictionary<ResourceType, float> resourceCount)
         {
             return countDiff
                 .Where(pair => Math.Abs(pair.Value) > resourceCount[pair.Key])

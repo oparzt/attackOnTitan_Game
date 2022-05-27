@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace AttackOnTitan.Models
@@ -34,15 +33,21 @@ namespace AttackOnTitan.Models
     public enum BuildingType
     {
         None,
+        HiddenNone,
+        BetweenHousesNone,
+
         House1,
         House2,
         House3,
+        
         Barracks,
         Warehouse,
         Centre,
+        
         Wall,
-        OpenedGates,
-        ClosedGates
+        InnerGates,
+        OuterGates,
+        ClosedGates,
     }
 
     public class MapCellModel
@@ -51,16 +56,14 @@ namespace AttackOnTitan.Models
         public readonly int Y;
         public BuildingType BuildingType;
 
-        public readonly Dictionary<MapCellModel, Weight> NearCells = new();
+        private readonly Dictionary<MapCellModel, NearCellsName> _nearCells = new();
 
         public UnitModel UnitInCenterOfCell;
-
-        public static readonly Position[] PossiblePositionsInCell = { Position.TopLeft, Position.TopRight, 
-            Position.BottomLeft, Position.BottomRight};
         public readonly Dictionary<Position, UnitModel> UnitsInCell = new();
         public readonly Dictionary<Position, UnitModel> UnitsOnBorder = new();
 
-        public static readonly Dictionary<NearCellsName, Position> NearCellsNameToPosition = new()
+        #region Positions
+        private static readonly Dictionary<NearCellsName, Position> NearCellsNameToPosition = new()
         {
             [NearCellsName.LeftTop] = Position.LeftTopBorder,
             [NearCellsName.Top] = Position.TopBorder,
@@ -69,9 +72,16 @@ namespace AttackOnTitan.Models
             [NearCellsName.Bottom] = Position.BottomBorder,
             [NearCellsName.LeftBottom] = Position.LeftBottomBorder
         };
+        
+        private static readonly Position[] PossiblePositionsInCell = 
+        { 
+            Position.TopLeft, Position.TopRight, 
+            Position.BottomLeft, Position.BottomRight
+        };
+        #endregion
 
-        #region PossibleNearCellsDiffs
-        public static readonly Dictionary<NearCellsName, (int, int)> PossibleNearCellsDiffsFromOdd = new()
+        #region NearCellsStaticInfo
+        private static readonly Dictionary<NearCellsName, (int, int)> PossibleNearCellsDiffsFromOdd = new()
         {
             [NearCellsName.LeftTop] = (-1, 0),
             [NearCellsName.LeftBottom] = (-1, 1),
@@ -81,7 +91,7 @@ namespace AttackOnTitan.Models
             [NearCellsName.RightBottom] = (1, 1)
         };
 
-        public static readonly Dictionary<NearCellsName, (int, int)> PossibleNearCellsDiffsFromEven = new()
+        private static readonly Dictionary<NearCellsName, (int, int)> PossibleNearCellsDiffsFromEven = new()
         {
             [NearCellsName.LeftTop] = (-1, -1),
             [NearCellsName.LeftBottom] = (-1, 0),
@@ -91,28 +101,27 @@ namespace AttackOnTitan.Models
             [NearCellsName.RightBottom] = (1, 0)
         };
         
-        public Dictionary<NearCellsName, (int, int)> PossibleNearCells => X % 2 == 0 ?
+        private Dictionary<NearCellsName, (int, int)> PossibleNearCellsDiffs => X % 2 == 0 ?
             PossibleNearCellsDiffsFromEven :
             PossibleNearCellsDiffsFromOdd;
         #endregion
 
+        #region BuildingsInfo
         public static readonly Dictionary<BuildingType, string> BuildingTextureNames = new()
         {
-            [BuildingType.None] = null,
             [BuildingType.House1] = "House1",
             [BuildingType.House2] = "House2",
             [BuildingType.House3] = "House3",
+            
             [BuildingType.Barracks] = "Barracks",
             [BuildingType.Warehouse] = "Warehouse",
             [BuildingType.Centre] = "Centre",
-            [BuildingType.Wall] = null,
-            [BuildingType.OpenedGates] = null,
-            [BuildingType.ClosedGates] = null
+
+            [BuildingType.ClosedGates] = "OuterGates"
         };
 
         public static readonly Dictionary<BuildingType, string> BuildingNames = new()
         {
-            [BuildingType.None] = "Ничего",
             [BuildingType.House1] = "Дом 1",
             [BuildingType.House2] = "Дом 2",
             [BuildingType.House3] = "Дом 3",
@@ -120,9 +129,32 @@ namespace AttackOnTitan.Models
             [BuildingType.Warehouse] = "Склад",
             [BuildingType.Centre] = "Администрация",
             [BuildingType.Wall] = "Стена",
-            [BuildingType.OpenedGates] = "",
             [BuildingType.ClosedGates] = "Ворота"
         };
+
+        private static readonly HashSet<BuildingType> HousesBuildingTypes = new()
+        {
+            BuildingType.House1,
+            BuildingType.House2,
+            BuildingType.House3,
+        
+            BuildingType.Barracks,
+            BuildingType.Warehouse,
+            BuildingType.Centre,
+        };
+
+        private static readonly HashSet<BuildingType> WallBuildingTypes = new()
+        {
+            BuildingType.Wall,
+            BuildingType.InnerGates,
+            BuildingType.OuterGates,
+            BuildingType.ClosedGates,
+        };
+        #endregion
+
+        #region PossibleTravelModes
+
+        #endregion
         
         public MapCellModel(int x, int y, BuildingType buildingType = BuildingType.None)
         {
@@ -132,43 +164,92 @@ namespace AttackOnTitan.Models
         }
 
         public void ConnectWithNearCells(MapCellModel[,] mapCells,
-            int columnsCount, int rowsCount,
-            Dictionary<NearCellsName, Weight> nearCellsWeights)
+            int columnsCount, int rowsCount)
         {
-            var possibleDiffs = PossibleNearCells;
-
-            foreach (var nearCellsWeight in nearCellsWeights)
+            foreach (var (nearCellName, diff) in PossibleNearCellsDiffs)
             {
-                var diff = possibleDiffs[nearCellsWeight.Key];
                 var coordX = X + diff.Item1;
                 var coordY = Y + diff.Item2;
 
                 if (coordX < 0 || coordX >= columnsCount || coordY < 0 || coordY >= rowsCount)
                     continue;
 
-                NearCells[mapCells[coordX, coordY]] = nearCellsWeight.Value;
+                var mapCell = mapCells[coordX, coordY];
+
+                if (!_nearCells.ContainsKey(mapCell))
+                    _nearCells[mapCell] = nearCellName;
             }
         }
 
-        public bool TryGetCost(MapCellModel mapCell, UnitModel unitModel, out int cost)
+        private IEnumerable<TravelMode> GetPossibleTravelModesTo(MapCellModel mapCell)
         {
-            if (NearCells.TryGetValue(mapCell, out var weight))
+            switch (mapCell.BuildingType)
             {
-                cost = unitModel.IsFly ? weight.WeightForFly : weight.WeightForRun;
-                return true;
-            }
+                case BuildingType.None:
+                    if (WallBuildingTypes.Contains(BuildingType))
+                        yield return TravelMode.Fly;
+                    else
+                        yield return TravelMode.Run;
 
-            cost = 0;
-            return false;
+                    yield return TravelMode.BuilderRun;
+                    
+                    if (HousesBuildingTypes.Contains(BuildingType)) yield return TravelMode.Fly;
+                    break;
+                
+                case BuildingType.BetweenHousesNone:
+                    if (!WallBuildingTypes.Contains(BuildingType))
+                        yield return TravelMode.Run;
+                    yield return TravelMode.BuilderRun;
+                    yield return TravelMode.Fly;
+                    break;
+                case BuildingType.House1:
+                case BuildingType.House2:
+                case BuildingType.House3:
+                case BuildingType.Barracks:
+                case BuildingType.Warehouse:
+                case BuildingType.Centre:
+                    if (HousesBuildingTypes.Contains(BuildingType)) 
+                        yield return TravelMode.Run;
+                    else if (WallBuildingTypes.Contains(BuildingType))
+                        yield return TravelMode.Fly;
+                    else
+                    {
+                        if (mapCell.BuildingType == BuildingType.Barracks) yield return TravelMode.Run;
+                        yield return TravelMode.Fly;
+                        yield return TravelMode.BuilderRun;
+                    }
+                    break;
+                case BuildingType.Wall:
+                    if (WallBuildingTypes.Contains(BuildingType))
+                        yield return TravelMode.Run;
+                    else 
+                        yield return TravelMode.Fly;
+                    break;
+                case BuildingType.InnerGates:
+                case BuildingType.OuterGates:
+                case BuildingType.ClosedGates:
+                    yield return TravelMode.BuilderRun;
+                    yield return TravelMode.Fly;
+                    yield return TravelMode.Run;
+                    break;
+                case BuildingType.HiddenNone:
+                default:
+                    yield return TravelMode.None;
+                    yield break;
+            }
         }
 
         public bool IsExistEmptyPositionInCell() => UnitsInCell.Count != 4;
+
+        public bool IsExistTravelToCell(MapCellModel mapCell, UnitModel unitModel) =>
+            _nearCells.ContainsKey(mapCell) &&
+            GetPossibleTravelModesTo(mapCell).Contains(unitModel.TravelMode);
         
         public bool IsEnemyInCell() => UnitsInCell.Values
             .FirstOrDefault(unit => unit.UnitType == UnitType.Titan) is not null || UnitInCenterOfCell?.IsEnemy is true;
 
-        public bool IsExistEmptyPositionOnBorder(MapCellModel mapCell) => NearCells.TryGetValue(mapCell, out var weight) 
-            && !UnitsOnBorder.ContainsKey(NearCellsNameToPosition[weight.NearCellsName]);
+        public bool IsExistEmptyPositionOnBorder(MapCellModel mapCell) => _nearCells.TryGetValue(mapCell, out var nearCellsName) 
+            && !UnitsOnBorder.ContainsKey(NearCellsNameToPosition[nearCellsName]);
 
         public Position MoveUnitToTheCell(UnitModel unitModel)
         {
@@ -204,7 +285,7 @@ namespace AttackOnTitan.Models
 
         public Position MoveUnitToBorder(UnitModel unitModel, MapCellModel mapCell)
         {
-            var position = NearCellsNameToPosition[NearCells[mapCell].NearCellsName];
+            var position = NearCellsNameToPosition[_nearCells[mapCell]];
             UnitsOnBorder[position] = unitModel;
             return position;
         }
@@ -247,16 +328,22 @@ namespace AttackOnTitan.Models
         
         public void UpdateBuildingType(BuildingType buildingType)
         {
-            var buildingTextureName = BuildingTextureNames[buildingType];
+            var textureFound = BuildingTextureNames.TryGetValue(buildingType, out var buildingTextureName);
             BuildingType = buildingType;
             
-            if (buildingTextureName is null)
-                GameModel.OutputActions.Enqueue(new OutputAction
-                {
-                    ActionType = OutputActionType.ClearTextureIntoCell,
-                    MapCellInfo = new MapCellInfo(X, Y)
-                });
-            else
+            if (buildingType == BuildingType.HiddenNone)
+                MapModel.SetHidden(this);
+            else if (buildingType == BuildingType.ClosedGates)
+            {
+                
+            } else if (HousesBuildingTypes.Contains(buildingType))
+            {
+                foreach (var nearCell in _nearCells.Keys
+                    .Where(cell => cell.BuildingType == BuildingType.None))
+                    nearCell.UpdateBuildingType(BuildingType.BetweenHousesNone);
+            }
+            
+            if (textureFound)
                 GameModel.OutputActions.Enqueue(new OutputAction
                 {
                     ActionType = OutputActionType.ChangeTextureIntoCell,
@@ -265,8 +352,15 @@ namespace AttackOnTitan.Models
                         TextureName = buildingTextureName
                     }
                 });
+            else
+                GameModel.OutputActions.Enqueue(new OutputAction
+                {
+                    ActionType = OutputActionType.ClearTextureIntoCell,
+                    MapCellInfo = new MapCellInfo(X, Y)
+                });
         }
 
+        #region PossibleCreating
         public IEnumerable<BuildingType> GetPossibleCreatingBuildingTypes()
         {
             if (IsEnemyInCell())
@@ -274,18 +368,25 @@ namespace AttackOnTitan.Models
             switch (BuildingType)
             {
                 case BuildingType.None:
+                case BuildingType.BetweenHousesNone:
                     yield return BuildingType.Centre;
                     yield return BuildingType.House1;
                     yield return BuildingType.Barracks;
                     yield return BuildingType.Warehouse;
+                    break;
+                case BuildingType.OuterGates:
+                    yield return BuildingType.ClosedGates;
                     break;
                 case BuildingType.House1:
                 case BuildingType.Barracks:
                 case BuildingType.Warehouse:
                 case BuildingType.Centre:
                 case BuildingType.Wall:
-                case BuildingType.OpenedGates:
+                case BuildingType.InnerGates:
                 case BuildingType.ClosedGates:
+                case BuildingType.HiddenNone:
+                case BuildingType.House2:
+                case BuildingType.House3:
                 default:
                     break;
             }
@@ -306,29 +407,21 @@ namespace AttackOnTitan.Models
                 case BuildingType.Centre:
                     yield return UnitType.Builder;
                     break;
+                case BuildingType.OuterGates:
                 case BuildingType.None:
-                case BuildingType.House1:
+                case BuildingType.HiddenNone:
                 case BuildingType.Warehouse:
                 case BuildingType.Wall:
-                case BuildingType.OpenedGates:
+                case BuildingType.InnerGates:
                 case BuildingType.ClosedGates:
+                case BuildingType.House1:
+                case BuildingType.House2:
+                case BuildingType.House3:
+                case BuildingType.BetweenHousesNone:
                 default:
                     break;
             }
         }
-    }
-
-    public struct Weight
-    {
-        public int WeightForRun;
-        public int WeightForFly;
-        public NearCellsName NearCellsName;
-
-        public Weight(int weightForRun, int weightForFly, NearCellsName nearCellsName)
-        {
-            WeightForRun = weightForRun;
-            WeightForFly = weightForFly;
-            NearCellsName = nearCellsName;
-        }
+        #endregion
     }
 }

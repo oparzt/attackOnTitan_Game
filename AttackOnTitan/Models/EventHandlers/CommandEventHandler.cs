@@ -21,20 +21,20 @@ namespace AttackOnTitan.Models
     
     public class CommandEventHandler
     {
-        public readonly GameModel GameModel;
+        private readonly GameModel _gameModel;
         private readonly Dictionary<CommandType, Action<InputAction, UnitModel, MapCellModel>> _commandHandlers = new();
 
         public CommandEventHandler(GameModel gameModel)
         {
-            GameModel = gameModel;
+            _gameModel = gameModel;
             InitializeHandlers();
         }
 
         public void HandleCommand(InputAction action)
         {
-            GameModel.BlockClickEvents = true;
-            var unitFounded = GameModel.Units.TryGetValue(action.InputUnitInfo.ID, out var unitModel);
-            var mapCell = GameModel.Map[action.InputCellInfo.X, action.InputCellInfo.Y];
+            _gameModel.BlockClickEvents = true;
+            var unitFounded = _gameModel.Units.TryGetValue(action.InputUnitInfo.ID, out var unitModel);
+            var mapCell = _gameModel.Map[action.InputCellInfo.X, action.InputCellInfo.Y];
             _commandHandlers[action.InputCommandInfo.CommandType](action, unitModel, mapCell);
         }
         
@@ -61,55 +61,56 @@ namespace AttackOnTitan.Models
         private void HandleFlyCommand(InputAction action, UnitModel unitModel, MapCellModel mapCellModel)
         {
             if (unitModel is not null)
-                GameModel.CommandModel.FlyOrWalk(unitModel,true);
+                _gameModel.CommandModel.FlyOrWalk(unitModel,true);
         }
         
         private void HandleWalkCommand(InputAction action, UnitModel unitModel, MapCellModel mapCellModel)
         {
             if (unitModel is not null)
-                GameModel.CommandModel.FlyOrWalk(unitModel, false);
+                _gameModel.CommandModel.FlyOrWalk(unitModel, false);
         }
 
         private void HandleRefuelCommand(InputAction action, UnitModel unitModel, MapCellModel mapCellModel)
         {
+            _gameModel.CommandModel.RefuelCommand(unitModel);
         }
         
         private void HandleOpenCreatingHouseMenuCommand(InputAction action, UnitModel unitModel, MapCellModel mapCellModel)
         {
             if (unitModel is not null)
-                GameModel.CommandModel.OpenCreatingMenu(unitModel, mapCellModel, true);
+                _gameModel.CommandModel.OpenCreatingMenu(unitModel, mapCellModel, true);
         }
 
         private void HandleOpenCreatingUnitMenuCommand(InputAction action, UnitModel unitModel,MapCellModel mapCellModel) =>
-            GameModel.CommandModel.OpenCreatingMenu(unitModel, mapCellModel, false);
+            _gameModel.CommandModel.OpenCreatingMenu(unitModel, mapCellModel, false);
 
         private void HandleOpenProductionMenuCommand(InputAction action, UnitModel unitModel, MapCellModel mapCellModel) =>
-            GameModel.CommandModel.OpenProductionMenu(mapCellModel);    
+            _gameModel.CommandModel.OpenProductionMenu(mapCellModel);    
         
         private void HandleCreateHouseCommand(InputAction action, UnitModel unitModel, MapCellModel mapCellModel)
         {
             if (unitModel is not null)
             {
-                GameModel.CommandModel.CreateHouse(unitModel, mapCellModel, action.InputCommandInfo);
+                _gameModel.CommandModel.CreateHouse(unitModel, mapCellModel, action.InputCommandInfo);
                 unitModel.Energy = 0;
             }
             else
             {
-                GameModel.CommandModel.ClearCommandBar();
-                GameModel.CommandModel.ClearCreatingChoose();
+                _gameModel.CommandModel.ClearCommandBar();
+                _gameModel.CommandModel.ClearCreatingChoose();
             }
         }
 
         private void HandleCreateUnitCommand(InputAction action, UnitModel unitModel, MapCellModel mapCellModel) =>
-            GameModel.CommandModel.CreateUnit(unitModel, mapCellModel, action.InputCommandInfo);
+            _gameModel.CommandModel.CreateUnit(unitModel, mapCellModel, action.InputCommandInfo);
 
         private void HandleChangePeopleAtWorkCommand(InputAction action, UnitModel unitModel, MapCellModel mapCellModel) =>
-            GameModel.EconomyModel.ChangePeopleAtWork(action.InputCommandInfo.PeopleDiff);
+            _gameModel.EconomyModel.ChangePeopleAtWork(action.InputCommandInfo.PeopleDiff);
         
         private void HandleExitCommand(InputAction action, UnitModel unitModel, MapCellModel mapCellModel) =>
-            GameModel.CommandModel.CloseCreatingMenu(unitModel, mapCellModel);
+            _gameModel.CommandModel.CloseCreatingMenu(unitModel, mapCellModel);
 
         private void HandleExitProductionMenuCommand(InputAction action, UnitModel unitModel, MapCellModel mapCellModel) =>
-            GameModel.CommandModel.CloseProductionMenu();
+            _gameModel.CommandModel.CloseProductionMenu();
     }
 }

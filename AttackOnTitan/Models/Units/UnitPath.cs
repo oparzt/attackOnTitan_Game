@@ -6,22 +6,23 @@ namespace AttackOnTitan.Models
 {
     public class UnitPath
     {
-        public readonly GameModel GameModel;
-        public int Count { get => _pathStack.Count; }
+        private readonly GameModel _gameModel;
+        public int Count => _pathStack.Count;
 
         private UnitModel _unit;
 
-        private Stack<MapCellModel> _pathStack = new();
-        private Stack<MapCellModel> _endPathStack = new();
-        private Stack<int> _pathCosts = new();
-        private HashSet<MapCellModel> _pathHash = new();
-        private MapCellModel _enemyCell;
+        private readonly Stack<MapCellModel> _pathStack = new();
+        private readonly Stack<MapCellModel> _endPathStack = new();
+        private readonly HashSet<MapCellModel> _pathHash = new();
 
-        private int _pathCost;
+        private readonly Stack<float> _pathEnergyCosts = new();
+        private readonly Stack<float> _pathGasCosts = new();
+        
+        private MapCellModel _enemyCell;
 
         public UnitPath(GameModel gameModel)
         {
-            GameModel = gameModel;
+            _gameModel = gameModel;
         }
 
         public void SetUnit(UnitModel unit)
@@ -29,9 +30,15 @@ namespace AttackOnTitan.Models
             _unit = unit;
             _pathStack.Clear();
             _pathHash.Clear();
-            _pathCosts.Clear();
-
-            _pathCost = 0;
+            _pathEnergyCosts.Clear();
+            _pathGasCosts.Clear();
+            _enemyCell = null;
+            
+            if (_unit is null)
+                _gameModel.StatusBarModel.ClearStatusBar();
+            else
+                _gameModel.StatusBarModel.UpdateStatusBar(UnitModel.UnitNames[_unit.UnitType], 
+                    _unit.Energy, _unit.Gas);
         }
 
         public void Add(MapCellModel mapCell)
@@ -40,23 +47,28 @@ namespace AttackOnTitan.Models
 
             var lastCellFound = _pathStack.TryPeek(out var lastCell);
             
+            
             if (!lastCellFound)
-                AddToPath(_unit.CurCell, 0);
-            else if (_unit.CanGo
-                && lastCell.TryGetCost(mapCell, _unit, out var cost)
-                && (_pathCost + cost) <= _unit.Energy
-                && _enemyCell is null)
+                AddToPath(_unit.CurCell, 0, 0);
+            else
             {
+                var curEnergyCost = _pathEnergyCosts.Peek() + _unit.GetEnergyCost();
+                var curGasCost = _pathGasCosts.Peek() + _unit.GetGasCost();
+
+                if (!_unit.CanGo || !lastCell.IsExistTravelToCell(mapCell, _unit) ||
+                    !_unit.IsExistTravel(curEnergyCost, curGasCost) || _enemyCell is not null) return;
+                
                 var isEnemyCell = mapCell.IsEnemyInCell();
 
                 if (!isEnemyCell)
                 {
                     if (mapCell.IsExistEmptyPositionInCell())
-                        AddToPath(mapCell, cost);
+                        AddToPath(mapCell, curEnergyCost, curGasCost);
                 }
                 else if (mapCell.IsExistEmptyPositionOnBorder(lastCell))
-                    AddToPath(mapCell, cost, true);
+                    AddToPath(mapCell, curEnergyCost, curGasCost, true);
             }
+            
         }
 
         private void RemovePathToTheCell(MapCellModel mapCell)
@@ -64,63 +76,63 @@ namespace AttackOnTitan.Models
             while (_pathStack.TryPop(out var prevMapCell))
             {
                 _pathHash.Remove(prevMapCell);
-                _pathCosts.Pop();
-                GameModel.Map.SetUnselectedOpacity(prevMapCell);
+                _pathEnergyCosts.Pop();
+                _pathGasCosts.Pop();
+                MapModel.SetUnselectedOpacity(prevMapCell);
 
                 if (_enemyCell is not null && prevMapCell == _enemyCell) _enemyCell = null;
                 if (mapCell == prevMapCell) break;
             }
 
-            _pathCost = _pathCosts.TryPeek(out var lastCost) ? lastCost : 0;
+            _pathEnergyCosts.TryPeek(out var energyCost);
+            _pathGasCosts.TryPeek(out var gasCost);
+            
+            _gameModel.StatusBarModel.UpdateStatusBar(UnitModel.UnitNames[_unit.UnitType], 
+                _unit.Energy - energyCost, _unit.Gas - gasCost);
         }
 
-        private void AddToPath(MapCellModel mapCell, int cost, bool enemyCell = false)
+        private void AddToPath(MapCellModel mapCell, float energyCost, float gasCost, bool enemyCell = false)
         {
             if (enemyCell) _enemyCell = mapCell;
-            _pathCost += cost;
-
             _pathStack.Push(mapCell);
-            _pathCosts.Push(_pathCost);
+            _pathEnergyCosts.Push(energyCost);
+            _pathGasCosts.Push(gasCost);
             _pathHash.Add(mapCell);
+            
+            _gameModel.StatusBarModel.UpdateStatusBar(UnitModel.UnitNames[_unit.UnitType], 
+                _unit.Energy - energyCost, _unit.Gas - gasCost);
 
-            GameModel.Map.SetSelectedOpacity(mapCell);
+            MapModel.SetSelectedOpacity(mapCell);
         }
 
         public void ExecutePath()
         {
-            GameModel.Map.SetUnselectedOpacity(_unit.CurCell);
+            MapModel.SetUnselectedOpacity(_unit.CurCell);
+
+            _unit.Energy -= _pathEnergyCosts.Peek();
+            _unit.Gas -= _pathGasCosts.Peek();
 
             if (_pathStack.Count > 1)
             {
                 _unit.Moved = true;
-                _unit.Energy -= _pathCost;
 
                 var prevMapCell = _unit.CurCell;
                 var lastCell = _pathStack.Pop();
                 _unit.CurCell.RemoveUnitFromCell(_unit);
                 _unit.CurCell = lastCell;
-                GameModel.Map.SetUnselectedOpacity(lastCell);
+                MapModel.SetUnselectedOpacity(lastCell);
 
                 while (_pathStack.Count > 1)
                 {
                     prevMapCell = _pathStack.Pop();
-                    GameModel.Map.SetUnselectedOpacity(prevMapCell);
+                    MapModel.SetUnselectedOpacity(prevMapCell);
                     _endPathStack.Push(prevMapCell);
                 }
 
                 while (_endPathStack.Count != 0)
                 {
                     prevMapCell = _endPathStack.Pop();
-                    GameModel.OutputActions.Enqueue(new OutputAction()
-                    {
-                        ActionType = OutputActionType.MoveUnit,
-                        UnitInfo = new UnitInfo(_unit.ID)
-                        {
-                            X = prevMapCell.X,
-                            Y = prevMapCell.Y,
-                            Position = Position.Center
-                        }
-                    });
+                    InitMoveUnit(prevMapCell.X, prevMapCell.Y, Position.Center);
                 }
                 
                 var endPosition = _enemyCell is not null ? 
@@ -129,25 +141,25 @@ namespace AttackOnTitan.Models
                 if (_enemyCell is not null)
                     _unit.CanGo = false;
                 
-                GameModel.OutputActions.Enqueue(new OutputAction()
-                {
-                    ActionType = OutputActionType.MoveUnit,
-                    UnitInfo = new UnitInfo(_unit.ID)
-                    {
-                        X = lastCell.X,
-                        Y = lastCell.Y,
-                        Position = endPosition
-                    }
-                });
-                
-                GameModel.CommandModel.UpdateCommandBar(_unit);
+                InitMoveUnit(lastCell.X, lastCell.Y, endPosition);
+                _gameModel.CommandModel.UpdateCommandBar(_unit);
             }
             
-            _pathStack.Clear();
-            _pathHash.Clear();
-            _pathCosts.Clear();
-            _pathCost = 0;
-            _enemyCell = null;
+            SetUnit(_unit);
+        }
+
+        private void InitMoveUnit(int x, int y, Position position)
+        {
+            GameModel.OutputActions.Enqueue(new OutputAction
+            {
+                ActionType = OutputActionType.MoveUnit,
+                UnitInfo = new UnitInfo(_unit.ID)
+                {
+                    X = x,
+                    Y = y,
+                    Position = position
+                }
+            });
         }
     }
 }

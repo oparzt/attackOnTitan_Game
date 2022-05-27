@@ -7,7 +7,7 @@ namespace AttackOnTitan.Models
     {
         private GameModel GameModel;
 
-        public readonly Dictionary<ResourceType, int> ResourceCount = new()
+        public readonly Dictionary<ResourceType, float> ResourceCount = new()
         {
             [ResourceType.Coin] = 100,
             [ResourceType.Log] = 100,
@@ -15,7 +15,7 @@ namespace AttackOnTitan.Models
             [ResourceType.People] = 100
         };
 
-        public readonly Dictionary<ResourceType, int> ResourceCountInStep = new()
+        public readonly Dictionary<ResourceType, float> ResourceCountInStep = new()
         {
             [ResourceType.Coin] = 10,
             [ResourceType.Log] = 0,
@@ -23,7 +23,7 @@ namespace AttackOnTitan.Models
             [ResourceType.People] = 0
         };
 
-        public readonly Dictionary<ResourceType, int> ResourceLimit = new()
+        public readonly Dictionary<ResourceType, float> ResourceLimit = new()
         {
             [ResourceType.Log] = 100,
             [ResourceType.Stone] = 100,
@@ -44,7 +44,7 @@ namespace AttackOnTitan.Models
             [ResourceType.Stone] = 0,
         };
 
-        public static readonly Dictionary<ResourceType, int> PeopleAtWorkMadeResource = new()
+        public static readonly Dictionary<ResourceType, float> PeopleAtWorkMadeResource = new()
         {
             [ResourceType.Log] = 1,
             [ResourceType.Stone] = 1,
@@ -81,9 +81,9 @@ namespace AttackOnTitan.Models
             });
         }
 
-        public void UpdateResourceSettings(Dictionary<ResourceType, int> countDiff, 
-            Dictionary<ResourceType, int> stepCountDiff,
-            Dictionary<ResourceType, int> limitDiff)
+        public void UpdateResourceSettings(Dictionary<ResourceType, float> countDiff, 
+            Dictionary<ResourceType, float> stepCountDiff,
+            Dictionary<ResourceType, float> limitDiff)
         {
             foreach (var resCountPair in countDiff)
                 ResourceCount[resCountPair.Key] += resCountPair.Value;

@@ -29,6 +29,7 @@ namespace AttackOnTitan.Scenes
         private CommandBarComponent _commandBarComponent;
         private CreatingChooseComponent _creatingChooseComponent;
         private ProductionMenuComponent _productionMenuComponent;
+        private UnitStatusBarComponent _unitStatusBarComponent;
 
         private Keys _lastKey = Keys.None;
 
@@ -54,6 +55,7 @@ namespace AttackOnTitan.Scenes
             _commandBarComponent = new CommandBarComponent(this, viewport.Width, viewport.Height);
             _creatingChooseComponent = new CreatingChooseComponent(this, viewport.Width, viewport.Height);
             _productionMenuComponent = new ProductionMenuComponent(this, viewport.Width, viewport.Height);
+            _unitStatusBarComponent = new UnitStatusBarComponent(this, viewport.Width, viewport.Height, 24);
             
             _commandsActions[OutputActionType.AddUnit] = action => _mapComponent.AddUnit(action.UnitInfo);
             _commandsActions[OutputActionType.MoveUnit] = action => _mapComponent.MoveUnit(action.UnitInfo);
@@ -64,6 +66,7 @@ namespace AttackOnTitan.Scenes
             _commandsActions[OutputActionType.ChangeTextureIntoCell] = action => _mapComponent.ChangeTextureIntoCell(action.MapCellInfo);
             _commandsActions[OutputActionType.ClearTextureIntoCell] = action => _mapComponent.ClearTextureIntoCell(action.MapCellInfo);
             _commandsActions[OutputActionType.ChangeCellOpacity] = action => _mapComponent.ChangeCellOpacity(action.MapCellInfo);
+            _commandsActions[OutputActionType.SetCellHidden] = action => _mapComponent.SetCellHidden(action.MapCellInfo);
             _commandsActions[OutputActionType.UpdateNoServicedZoneForMap] = action => _mapComponent.UpdateNoServicedZone(action.NoServicedZone);
             _commandsActions[OutputActionType.AddResource] = action => _topBarComponent.AddResource(action.ResourceInfo);
             _commandsActions[OutputActionType.UpdateResourceCount] = action => _topBarComponent.UpdateResourceCount(action.ResourceInfo);
@@ -77,6 +80,7 @@ namespace AttackOnTitan.Scenes
             _commandsActions[OutputActionType.UpdateProductionMenu] = _productionMenuComponent.UpdateProductionMenu;
             _commandsActions[OutputActionType.OpenProductionMenu] = _productionMenuComponent.OpenMenu;
             _commandsActions[OutputActionType.CloseProductionMenu] = _productionMenuComponent.CloseMenu;
+            _commandsActions[OutputActionType.UpdateUnitStatusBar] = _unitStatusBarComponent.UpdateStatusBar;
             
             _gameModel = new GameModel(23, 11);
             _gameModel.Run();
@@ -103,7 +107,7 @@ namespace AttackOnTitan.Scenes
                 "GasIcon", "GasIconHalf", "RefuelingIcon", "RefuelingIconHalf",
                 "Barracks", "Centre", "House1", "House2", "House3", "Warehouse",
                 "BuilderCard", "ExitIcon", "ExitIconHalf", "WalkIcon", "WalkIconHalf", "People",
-                "PlusIcon", "MinusIcon", "Wall"
+                "PlusIcon", "MinusIcon", "Wall", "OuterGates", "UnitStatusBar"
             };
 
             Fonts["Medium"] = TtfFontBaker.Bake(File.OpenRead("TTFFonts/OpenSans-Medium.ttf"),
@@ -113,8 +117,10 @@ namespace AttackOnTitan.Scenes
             
             _topBarComponent.SetFont(Fonts["Medium"]);
             _stepBtnComponent.SetFont(Fonts["Medium"]);
+            _unitStatusBarComponent.SetFont(Fonts["Medium"]);
             _topBarComponent.SetBackgroundTexture(Textures["TopBarBackground"]);
             _stepBtnComponent.SetBackgroundTexture(Textures["Step"]);
+            _unitStatusBarComponent.SetBackgroundTexture(Textures["UnitStatusBar"]);
             
             RunModelActions();
             
@@ -173,6 +179,7 @@ namespace AttackOnTitan.Scenes
             _commandBarComponent.Draw(Sprite);
             _creatingChooseComponent.Draw(Sprite);
             _productionMenuComponent.Draw(Sprite);
+            _unitStatusBarComponent.Draw(Sprite);
 
             base.Draw(gameTime);
         }

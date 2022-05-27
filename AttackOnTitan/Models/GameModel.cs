@@ -35,6 +35,7 @@ namespace AttackOnTitan.Models
         public UnitModel PreselectedUnit;
         public UnitModel SelectedUnit;
         public readonly UnitPath UnitPath;
+        public readonly StatusBarModel StatusBarModel;
         public readonly CommandModel CommandModel;
         public readonly EconomyModel EconomyModel;
         public readonly Dictionary<int, UnitModel> Units = new();
@@ -50,10 +51,47 @@ namespace AttackOnTitan.Models
 
         public GameModel(int columnsMapCount, int rowsMapCount)
         {
-            Map = new MapModel(columnsMapCount, rowsMapCount);
+            var buildings = new Dictionary<BuildingType, (int, int)[]>
+            {
+                [BuildingType.HiddenNone] = new []
+                {
+                    (0,0), (1,0), (2,0), (3,0), (4,0), (17,0), (18,0), (19,0), (20,0), (21,0), (22,0),
+                    (0,10), (1,10), (2,10), (3,10), (4,10), (17,10), (18,10), (19,10), (20,10), (21,10), (22,10)
+                },
+                [BuildingType.Wall] = new []
+                {
+                    (5,0), (5,1), (5,2), (5,3), (5,6), (5, 7), (5,8), (5,9), (5,10),
+                    (6,0), (6,1), (6,10),
+                    (7,0), (7,9), (6,10),
+                    (8,0), (8,1), (8,10),
+                    (9,0), (9,9), (9,10),
+                    (10,0), (10,1), (10,10),
+                    (11,0), (11,9), (11,10),
+                    (12,0), (12,1), (12,10),
+                    (13,0), (13,9), (13,10),
+                    (14,0), (14,1), (14,10),
+                    (15,0), (15,9), (15,10),
+                    (16,0), (16,1), (16,9), (16,10),
+                    (17,1), (17,2), (17,8), (17,9),
+                    (18,1), (18,2), (18,3), (18,4),
+                    (18,6), (18,7), (18,8), (18,9),
+                    (19,2), (19,3), (19,6), (19,7),
+                },
+                [BuildingType.InnerGates] = new []
+                {
+                    (5,4), (5,5)
+                },
+                [BuildingType.OuterGates] = new []
+                {
+                    (18,5)
+                }
+            };
+            
+            Map = new MapModel(columnsMapCount, rowsMapCount, buildings);
             UnitPath = new UnitPath(this);
             CommandModel = new CommandModel(this);
             EconomyModel = new EconomyModel(this);
+            StatusBarModel = new StatusBarModel();
             var unitsTypes = new[]
             {
                 UnitType.Scout, UnitType.Builder

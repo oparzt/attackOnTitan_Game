@@ -4,78 +4,79 @@ namespace AttackOnTitan.Models
 {
     public static class BuildingEconomyModel
     {
-        public static readonly Dictionary<BuildingType, Dictionary<ResourceType, int>> CountDiff = new()
+        public static readonly Dictionary<BuildingType, Dictionary<ResourceType, float>> CountDiff = new()
         {
-            [BuildingType.Barracks] = new Dictionary<ResourceType, int>
+            [BuildingType.Barracks] = new Dictionary<ResourceType, float>
             {
                 [ResourceType.Coin] = -10,
                 [ResourceType.Log] = -10,
                 [ResourceType.Stone] = -10
             },
-            [BuildingType.Centre] = new Dictionary<ResourceType, int>
+            [BuildingType.Centre] = new Dictionary<ResourceType, float>
             {
                 [ResourceType.Coin] = -10,
                 [ResourceType.Log] = -10,
                 [ResourceType.Stone] = -10
             },
-            [BuildingType.House1] = new Dictionary<ResourceType, int>
+            [BuildingType.House1] = new Dictionary<ResourceType, float>
             {
                 [ResourceType.Coin] = -10,
                 [ResourceType.Log] = -10,
                 [ResourceType.Stone] = -10
             },
-            [BuildingType.None] = new Dictionary<ResourceType, int> {},
-            [BuildingType.Wall] = new Dictionary<ResourceType, int> {},
-            [BuildingType.Warehouse] = new Dictionary<ResourceType, int>
+            [BuildingType.None] = new Dictionary<ResourceType, float> {},
+            [BuildingType.Wall] = new Dictionary<ResourceType, float> {},
+            [BuildingType.Warehouse] = new Dictionary<ResourceType, float>
             {
                 [ResourceType.Coin] = -10,
                 [ResourceType.Log] = -10,
                 [ResourceType.Stone] = -10
             },
-            [BuildingType.ClosedGates] = new Dictionary<ResourceType, int>
+            [BuildingType.ClosedGates] = new Dictionary<ResourceType, float>
             {
                 [ResourceType.Coin] = -1000,
                 [ResourceType.Log] = -1000,
                 [ResourceType.Stone] = -1000
-            },
-            [BuildingType.OpenedGates] = new Dictionary<ResourceType, int> {}
+            }
         };
 
-        public static readonly Dictionary<BuildingType, Dictionary<ResourceType, int>> StepCountDiff = new()
+        public static readonly float PeopleMakeGoldInStep = 0.1f;
+
+        public static readonly Dictionary<BuildingType, Dictionary<ResourceType, float>> StepCountDiff = new()
         {
-            [BuildingType.Barracks] = new Dictionary<ResourceType, int> {},
-            [BuildingType.Centre] = new Dictionary<ResourceType, int> {},
-            [BuildingType.House1] = new Dictionary<ResourceType, int> {},
-            [BuildingType.None] = new Dictionary<ResourceType, int> {},
-            [BuildingType.Wall] = new Dictionary<ResourceType, int> {},
-            [BuildingType.Warehouse] = new Dictionary<ResourceType, int> {},
-            [BuildingType.ClosedGates] = new Dictionary<ResourceType, int> {},
-            [BuildingType.OpenedGates] = new Dictionary<ResourceType, int> {}
+            [BuildingType.Barracks] = new Dictionary<ResourceType, float> {},
+            [BuildingType.Centre] = new Dictionary<ResourceType, float> {},
+            [BuildingType.House1] = new Dictionary<ResourceType, float> {},
+            [BuildingType.None] = new Dictionary<ResourceType, float> {},
+            [BuildingType.Wall] = new Dictionary<ResourceType, float> {},
+            [BuildingType.Warehouse] = new Dictionary<ResourceType, float> {},
+            [BuildingType.ClosedGates] = new Dictionary<ResourceType, float> {},
+            [BuildingType.InnerGates] = new Dictionary<ResourceType, float> {}
         };
         
-        public static readonly Dictionary<BuildingType, Dictionary<ResourceType, int>> LimitDiff = new()
+        public static readonly Dictionary<BuildingType, Dictionary<ResourceType, float>> LimitDiff = new()
         {
-            [BuildingType.Barracks] = new Dictionary<ResourceType, int>
+            [BuildingType.Barracks] = new Dictionary<ResourceType, float>
             {
                 [ResourceType.People] = 15
             },
-            [BuildingType.Centre] = new Dictionary<ResourceType, int>
+            [BuildingType.Centre] = new Dictionary<ResourceType, float>
             {
                 [ResourceType.People] = 15
             },
-            [BuildingType.House1] = new Dictionary<ResourceType, int>
+            [BuildingType.House1] = new Dictionary<ResourceType, float>
             {
                 [ResourceType.People] = 30
             },
-            [BuildingType.None] = new Dictionary<ResourceType, int> {},
-            [BuildingType.Wall] = new Dictionary<ResourceType, int> {},
-            [BuildingType.Warehouse] = new Dictionary<ResourceType, int>
+            [BuildingType.None] = new Dictionary<ResourceType, float> {},
+            [BuildingType.Wall] = new Dictionary<ResourceType, float> {},
+            [BuildingType.Warehouse] = new Dictionary<ResourceType, float>
             {
                 [ResourceType.Log] = 100,
                 [ResourceType.Stone] = 100
             },
-            [BuildingType.ClosedGates] = new Dictionary<ResourceType, int> {},
-            [BuildingType.OpenedGates] = new Dictionary<ResourceType, int> {}
+            [BuildingType.ClosedGates] = new Dictionary<ResourceType, float> {},
+            [BuildingType.InnerGates] = new Dictionary<ResourceType, float> {}
         };
     }
 }

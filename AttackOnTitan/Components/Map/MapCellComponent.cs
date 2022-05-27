@@ -19,6 +19,8 @@ namespace AttackOnTitan.Components
         private Texture2D _houseTexture;
         private float _opacity = 0.3f;
 
+        private bool _hidden = false;
+
         private readonly Dictionary<Position, Rectangle> _positionsRectangles = new();
 
         public MapCellComponent(int x, int y, Texture2D hexagonTexture, Rectangle hexagonRect)
@@ -31,6 +33,8 @@ namespace AttackOnTitan.Components
         }
 
         public void SetOpacity(float opacity) => _opacity = opacity;
+
+        public void SetHidden() => _hidden = true;
 
         public void UpdateHouseTexture(Texture2D houseTexture)
         {
@@ -57,7 +61,7 @@ namespace AttackOnTitan.Components
         public bool IsComponentOnPosition(Point point)
         {
             var dist = (point - _hexagonRect.Center).ToVector2().Length();
-            return dist <= _hexagonRect.Height / 2f;
+            return !_hidden && dist <= _hexagonRect.Height / 2f;
         }
         
         public Rectangle GetPosition(Position position) => _positionsRectangles[position];

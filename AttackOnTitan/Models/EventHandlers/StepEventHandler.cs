@@ -42,7 +42,8 @@ namespace AttackOnTitan.Models
                     BattleInCell(mapCell, units, enemies);
                 units.Clear();
                 enemies.Clear();
-                GameModel.Map.SetUnselectedOpacity(mapCell);
+                if (mapCell.BuildingType != BuildingType.HiddenNone)
+                    MapModel.SetUnselectedOpacity(mapCell);
             }
             
             GameModel.StepEnd = false;
@@ -55,7 +56,7 @@ namespace AttackOnTitan.Models
         private void RestoreUnitsEnergy(IEnumerable<UnitModel> unitModels)
         {
             foreach (var unitModel in unitModels)
-                unitModel.Energy = unitModel.MaxEnergy;
+                unitModel.Energy = UnitModel.MaxEnergy;
         }
 
         private void BattleInCell(MapCellModel mapCellModel, List<UnitModel> units, 

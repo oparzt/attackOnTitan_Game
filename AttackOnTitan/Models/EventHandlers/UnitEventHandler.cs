@@ -60,10 +60,13 @@ namespace AttackOnTitan.Models
             GameModel.SelectedUnit = target;
             GameModel.PreselectedUnit = null;
             GameModel.SelectedUnit.SetSelectedOpacity();
+            GameModel.CommandModel.ClearCommandBar();
 
-            GameModel.UnitPath.SetUnit(target);
-            
-            GameModel.CommandModel.UpdateCommandBar(target);
+            if (!target.IsEnemy)
+            {
+                GameModel.UnitPath.SetUnit(target);
+                GameModel.CommandModel.UpdateCommandBar(target); 
+            }
         }
 
         private void HandleRightMouseSelect(InputAction action) {}
