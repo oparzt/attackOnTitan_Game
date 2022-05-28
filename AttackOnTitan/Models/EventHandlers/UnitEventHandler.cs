@@ -27,7 +27,9 @@ namespace AttackOnTitan.Models
                 ActionType = OutputActionType.StopUnit,
                 UnitInfo = new UnitInfo(action.InputUnitInfo.ID)
             });
-            GameModel.Units[action.InputUnitInfo.ID].Moved = false;
+            GameModel.Units.TryGetValue(action.InputUnitInfo.ID, out var unit);
+            if (unit is not null)
+                unit.Moved = false;
         }
 
         private void InitializeHandlers()
@@ -62,9 +64,10 @@ namespace AttackOnTitan.Models
             GameModel.SelectedUnit.SetSelectedOpacity();
             GameModel.CommandModel.ClearCommandBar();
 
+            GameModel.UnitPath.SetUnit(target);
+
             if (!target.IsEnemy)
             {
-                GameModel.UnitPath.SetUnit(target);
                 GameModel.CommandModel.UpdateCommandBar(target); 
             }
         }

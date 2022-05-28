@@ -20,6 +20,8 @@ namespace AttackOnTitan.Models
         UpdateWasEnd,
         UpdateNoServicedZones,
         ExecCommand,
+        StepStart,
+        GameOver
     }
 
     public enum NoServicedZoneLocation
@@ -37,6 +39,7 @@ namespace AttackOnTitan.Models
 
         public Keys Key;
         public MouseBtn MouseBtn;
+        public bool Win;
 
         public InputCellInfo InputCellInfo;
         public InputUnitInfo InputUnitInfo;

@@ -19,7 +19,16 @@ namespace AttackOnTitan.Models
         None,
         Run,
         BuilderRun,
-        Fly
+        Fly,
+        TitanRun
+    }
+
+    public enum TitanTargetType
+    {
+        None,
+        Attack,
+        OuterGate,
+        InnerGate
     }
 
     public class UnitModel
@@ -32,17 +41,23 @@ namespace AttackOnTitan.Models
         public bool IsEnemy => UnitType == UnitType.Titan;
         public TravelMode TravelMode = TravelMode.Run;
 
-        public const float MaxEnergy = 10;
-        public const float MaxGas = 100; 
-        public float Energy = 10;
-        public float Gas = 100;
+        public MapCellModel TitanTarget;
+        public TitanTargetType TitanTargetType;
+
+        private readonly float _unitDamage;
+        public float UnitDamage => UnitType is UnitType.Builder or UnitType.Titan ? _unitDamage : 2;
+        public readonly float MaxEnergy = 10;
+        public readonly float MaxGas = 100; 
+        public float Energy;
+        public float Gas;
 
         public readonly Dictionary<TravelMode, float> TravelEnergyCost = new()
         {
             [TravelMode.None] = float.MaxValue,
             [TravelMode.Run] = 1f,
             [TravelMode.BuilderRun] = 2f,
-            [TravelMode.Fly] = 0.5f
+            [TravelMode.Fly] = 0.5f,
+            [TravelMode.TitanRun] = 1f
         };
 
         public readonly float TravelGasCost = 4f;
@@ -97,22 +112,62 @@ namespace AttackOnTitan.Models
             [UnitType.Cadet] = "Кадеты",
             [UnitType.Builder] = "Строители"
         };
+
+        public static readonly Random Random = new Random();
         
         public UnitModel(int id, UnitType unitType)
         {
             ID = id;
             UnitType = unitType;
+            Energy = 0;
+
+            switch (unitType)
+            {
+                case UnitType.Titan:
+                    MaxEnergy = 5;
+                    MaxGas = 0;
+                    _unitDamage = Random.Next(2, 15);
+                    TitanTargetType = TitanTargetType.OuterGate;
+                    break;
+                case UnitType.Scout:
+                    MaxEnergy = 9;
+                    MaxGas = 80;
+                    _unitDamage = 10;
+                    break;
+                case UnitType.Garrison:
+                    MaxEnergy = 8;
+                    MaxGas = 80;
+                    _unitDamage = 5;
+                    break;
+                case UnitType.Police:
+                    MaxEnergy = 11;
+                    MaxGas = 80;
+                    _unitDamage = 7;
+                    break;
+                case UnitType.Cadet:
+                    MaxEnergy = 6;
+                    MaxGas = 80;
+                    _unitDamage = 4;
+                    break;
+                case UnitType.Builder:
+                    MaxEnergy = 6;
+                    MaxGas = 0;
+                    _unitDamage = 0;
+                    break;
+                default:
+                    break;
+            }
+
+            Gas = MaxGas;
 
             if (unitType == UnitType.Builder) TravelMode = TravelMode.BuilderRun;
         }
 
-        public void AddUnitToTheMap(MapCellModel mapCell, Position position)
+        public void AddUnitToTheMap(MapCellModel mapCell)
         {
             CurCell = mapCell;
-            if (position == Position.Center)
-                mapCell.UnitInCenterOfCell = this;
-            else
-                mapCell.UnitsInCell[position] = this;
+            var position = mapCell.MoveUnitToTheCell(this);
+
             GameModel.OutputActions.Enqueue(new OutputAction
             {
                 ActionType = OutputActionType.AddUnit,

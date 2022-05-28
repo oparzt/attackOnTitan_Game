@@ -50,7 +50,7 @@ namespace AttackOnTitan.Components
         {
             spriteBatch.Draw(_hexagonTexture, _hexagonRect, 
                 null, Color.White * _opacity, 0f, 
-                Vector2.Zero, SpriteEffects.None, 0.25f);
+                Vector2.Zero, SpriteEffects.None, 0.6f);
             
             if (_houseTexture is not null)
                 spriteBatch.Draw(_houseTexture, _hexagonRect, 

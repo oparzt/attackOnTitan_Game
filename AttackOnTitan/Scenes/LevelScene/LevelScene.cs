@@ -13,7 +13,7 @@ using AttackOnTitan.Models;
 
 namespace AttackOnTitan.Scenes
 {
-    public class Level0Scene : DrawableGameComponent, IScene
+    public class LevelScene : DrawableGameComponent, IScene
     {
         public Dictionary<string, Texture2D> Textures { get; }
         public Dictionary<string, SpriteFont> Fonts { get; }
@@ -40,7 +40,7 @@ namespace AttackOnTitan.Scenes
         };
 
 
-        public Level0Scene(Game game) : base(game)
+        public LevelScene(Game game) : base(game)
         {
             Textures = new();
             Fonts = new();
@@ -81,7 +81,13 @@ namespace AttackOnTitan.Scenes
             _commandsActions[OutputActionType.OpenProductionMenu] = _productionMenuComponent.OpenMenu;
             _commandsActions[OutputActionType.CloseProductionMenu] = _productionMenuComponent.CloseMenu;
             _commandsActions[OutputActionType.UpdateUnitStatusBar] = _unitStatusBarComponent.UpdateStatusBar;
-            
+            _commandsActions[OutputActionType.GameOver] = action =>
+            {
+                Game.Components.Add(new EndScene(Game, action.Win));
+                Game.Components.Remove(this);
+            };
+            _commandsActions[OutputActionType.UpdateGameStepCount] = _topBarComponent.UpdateStepCount;
+
             _gameModel = new GameModel(23, 11);
             _gameModel.Run();
 

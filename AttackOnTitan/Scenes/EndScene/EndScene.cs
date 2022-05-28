@@ -1,38 +1,35 @@
 using System.Collections.Generic;
-using AttackOnTitan.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 namespace AttackOnTitan.Scenes
 {
-    public class StoryScene: DrawableGameComponent, IScene
+    public class EndScene: DrawableGameComponent, IScene
     {
-        public Dictionary<string, Texture2D> Textures { get; }
-        public Dictionary<string, SpriteFont> Fonts { get; }
+        public Dictionary<string, Texture2D> Textures { get; } = new();
+        public Dictionary<string, SpriteFont> Fonts { get; } = new();
         
         private SpriteBatch Sprite { get; set; }
 
-        private int _curPage = 1;
-        private Keys _lastKey = Keys.None;
+        private readonly bool _win;
+        private Keys _lastKey;
         
-        public StoryScene(Game game) : base(game)
+        public EndScene(Game game, bool win) : base(game)
         {
-            Textures = new Dictionary<string, Texture2D>();
-            Fonts = new Dictionary<string, SpriteFont>();
+            _win = win;
         }
 
         protected override void LoadContent()
         {
-            var device = SceneManager.GraphicsMgr.GraphicsDevice;
             Sprite = new SpriteBatch(Game.GraphicsDevice);
 
-            for (var i = 1; i < 19; i++)
-                Textures[$"Page{i}"] = Game.Content.Load<Texture2D>($"Textures/Page{i}");
+            Textures["Texture"] = Game.Content.Load<Texture2D>(_win ?
+                "Textures/Win" : "Textures/Loss");
             
             base.LoadContent();
         }
-        
+
         public override void Update(GameTime gameTime)
         {
             var keyboardState = Keyboard.GetState();
@@ -41,18 +38,15 @@ namespace AttackOnTitan.Scenes
 
             if (keyPressed != _lastKey && keyPressed == Keys.Enter)
             {
-                if (_curPage + 1 == 19)
-                {
-                    Game.Components.Add(new LevelScene(Game));
-                    Game.Components.Remove(this);
-                } else
-                    _curPage++;
+                Game.Components.Add(new StartScene(Game));
+                Game.Components.Remove(this);
             }
 
             _lastKey = keyPressed;
             
             base.Update(gameTime);
         }
+
 
         public override void Draw(GameTime gameTime)
         {
@@ -63,7 +57,7 @@ namespace AttackOnTitan.Scenes
             
             Sprite.Begin();
             
-            Sprite.Draw(Textures[$"Page{_curPage}"], 
+            Sprite.Draw(Textures[$"Texture"], 
                 new Rectangle(0, y, width, height), 
                 Color.White);
             

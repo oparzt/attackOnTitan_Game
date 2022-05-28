@@ -27,7 +27,7 @@ namespace AttackOnTitan
 
         protected override void Initialize()
         {
-            Window.Title = "Attack On Titan - Game";
+            Window.Title = "Attack On Titan - Rebirth of Humanity";
             Window.IsBorderless = true;
             //Window.BeginScreenDeviceChange(true);
             GraphicsMgr.PreferMultiSampling = true;
@@ -40,16 +40,15 @@ namespace AttackOnTitan
             //    _graphics.GraphicsDevice.DisplayMode.Height);
 
 
-            // Components.Add(new StartScene(this));
-            Components.Add(new Level0Scene(this));
+            Components.Add(new StartScene(this));
             base.Initialize();
         }
 
         protected override void LoadContent()
         {
-            var song = Content.Load<Song>("Songs/BackgroundSong");
-            MediaPlayer.Play(song);
-            MediaPlayer.IsRepeating = true;
+            // var song = Content.Load<Song>("Songs/BackgroundSong");
+            // MediaPlayer.Play(song);
+            // MediaPlayer.IsRepeating = true;
             base.LoadContent();
         }
 

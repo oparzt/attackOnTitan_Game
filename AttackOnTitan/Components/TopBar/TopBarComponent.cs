@@ -19,6 +19,8 @@ namespace AttackOnTitan.Components
         private Texture2D _backgroundTexture;
 
         private int _nextResX = 15;
+        private int _stepCount = 1;
+        private readonly Vector2 _textPos;
 
         private readonly Dictionary<ResourceType, TopBarResourceComponent> _resComponents = new();
 
@@ -28,6 +30,8 @@ namespace AttackOnTitan.Components
             _width = width;
             _height = height;
             _fontSize = fontSize;
+
+            _textPos = new Vector2(_width - 350, (_height - _fontSize) / 2f);
             
             GameModel.InputActions.Enqueue(new InputAction
             {
@@ -60,8 +64,10 @@ namespace AttackOnTitan.Components
 
         public void UpdateResourceCount(ResourceInfo resInfo) => 
             _resComponents[resInfo.ResourceType].UpdateResourceCount(resInfo.Count);
-        
 
+        public void UpdateStepCount(OutputAction action) =>
+            _stepCount = action.StepCount;
+        
         public void Draw(SpriteBatch spriteBatch)
         {
             var limitBackground = _width / _height + 1;
@@ -75,6 +81,9 @@ namespace AttackOnTitan.Components
                 spriteBatch.Draw(_backgroundTexture, 
                     new Rectangle(_height * i, 0, _height, _height), null,
                     Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0);
+            
+            spriteBatch.DrawString(_font, $"{_stepCount} ход", _textPos, 
+                Color.White, 0, Vector2.Zero, 0.24f, SpriteEffects.None, 1);
 
             spriteBatch.End();
         }

@@ -1,88 +1,110 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Xna.Framework;
 
 namespace AttackOnTitan.Models
 {
     public class StepEventHandler
     {
-        public readonly GameModel GameModel;
+        private readonly GameModel _gameModel;
+        private int _step;
+
+        private Dictionary<int, Action> _wave = new ();
 
         public StepEventHandler(GameModel gameModel)
         {
-            GameModel = gameModel;
+            _gameModel = gameModel;
+            _wave[25] = () => _gameModel.CommandModel.CreateTitans(2);
+            _wave[32] = () => _gameModel.CommandModel.CreateTitans(3);
+            _wave[39] = () => _gameModel.CommandModel.CreateTitans(3);
+            _wave[44] = () => _gameModel.CommandModel.CreateTitans(3);
+            _wave[50] = () => _gameModel.CommandModel.CreateTitans(3);
+            _wave[52] = () => _gameModel.CommandModel.CreateTitans(3);
+            _wave[54] = () => _gameModel.CommandModel.CreateTitans(3);
+            _wave[60] = () => _gameModel.CommandModel.CreateTitans(4);
+            _wave[62] = () => _gameModel.CommandModel.CreateTitans(4);
+            _wave[64] = () => _gameModel.CommandModel.CreateTitans(4);
+            _wave[70] = () => _gameModel.CommandModel.CreateTitans(5);
+            _wave[72] = () => _gameModel.CommandModel.CreateTitans(5);
         }
 
         public void HandleStepBtnPressed(InputAction action)
         {
-            GameModel.StepEnd = true;
-            GameModel.BlockClickEvents = true;
-            GameModel.SelectedUnit?.SetUnselectedOpacity();
-            GameModel.SelectedUnit = null;
-            GameModel.UnitPath.SetUnit(null);
+            _gameModel.StepEnd = true;
+            _gameModel.SelectedUnit?.SetUnselectedOpacity();
+            _gameModel.PreselectedUnit?.SetUnselectedOpacity();
+            _gameModel.SelectedUnit = null;
+            _gameModel.PreselectedUnit = null;
+            _gameModel.UnitPath.SetUnit(null);
             GameModel.OutputActions.Enqueue(new OutputAction
             {
                 ActionType = OutputActionType.ChangeStepBtnState
             });
-           GameModel.CommandModel.ClearCommandBar();
-           GameModel.CommandModel.ClearCreatingChoose();
-           GameModel.EconomyModel.FillResource();
+           _gameModel.CommandModel.ClearCommandBar();
+           _gameModel.CommandModel.ClearCreatingChoose();
+           _step++;
+           GameModel.OutputActions.Enqueue(new OutputAction
+           {
+               ActionType = OutputActionType.UpdateGameStepCount,
+               StepCount = _step
+           });
+           _gameModel.EconomyModel.FillResource();
+
+           if (_wave.TryGetValue(_step, out var wave)) wave();
            
-           RestoreUnitsEnergy(GameModel.Units.Values);
-
-            var units = new List<UnitModel>();
-            var enemies = new List<UnitModel>();
-
-            for (var x = 0; x < GameModel.Map.ColumnsCount; x++)
-            for (var y = 0; y < GameModel.Map.RowsCount; y++)
-            {
-                var mapCell = GameModel.Map[x, y];
-                units.AddRange(mapCell.GetAllUnitInCell(false));
-                enemies.AddRange(mapCell.GetAllUnitInCell(true));
-                
-                if (units.Count != 0 && enemies.Count != 0)
-                    BattleInCell(mapCell, units, enemies);
-                units.Clear();
-                enemies.Clear();
-                if (mapCell.BuildingType != BuildingType.HiddenNone)
-                    MapModel.SetUnselectedOpacity(mapCell);
-            }
+           var titans = _gameModel.Units.Values
+               .Where(unit => unit.UnitType == UnitType.Titan)
+               .ToArray();
+           
+           RestoreUnitsEnergy(_gameModel.Units.Values);
+           
+           CheckMapForBattles();
             
-            GameModel.StepEnd = false;
+
+            while (titans.Any(titan => titan.Energy > titan.GetEnergyCost()))
+                foreach (var titan in titans.Where(titan => titan.Energy > titan.GetEnergyCost()))
+                    _gameModel.TitanPath.TitanStep(titan);
+            
+            CheckMapForBattles();
+            
+            GameModel.InputActions.Enqueue(new InputAction
+            {
+                ActionType = InputActionType.StepStart
+            });
             GameModel.OutputActions.Enqueue(new OutputAction
             {
                 ActionType = OutputActionType.ChangeStepBtnState
             });
+            
+            if (_gameModel.Units.Values
+                .Where(unit => unit.UnitType == UnitType.Titan)
+                .Any(unit => _gameModel.Map.InnerGates.Contains(unit.CurCell)))
+                GameModel.InputActions.Enqueue(new InputAction
+                {
+                    ActionType = InputActionType.GameOver,
+                    Win = false
+                });
         }
 
         private void RestoreUnitsEnergy(IEnumerable<UnitModel> unitModels)
         {
             foreach (var unitModel in unitModels)
-                unitModel.Energy = UnitModel.MaxEnergy;
+                unitModel.Energy = unitModel.MaxEnergy;
         }
 
-        private void BattleInCell(MapCellModel mapCellModel, List<UnitModel> units, 
-            List<UnitModel> enemies)
+        private void CheckMapForBattles()
         {
-            var unitsInSafe = units.Count - enemies.Count;
-            var deadCount = unitsInSafe > 0 ? enemies.Count : units.Count;
+            var mapCells = _gameModel.Units.Values
+                .Where(unit => unit.UnitType == UnitType.Titan)
+                .Where(titan => titan.CurCell.GetAllUnitInCell(false).Any())
+                .Select(titan => titan.CurCell)
+                .ToHashSet();
 
-            for (var i = 0; i < deadCount; i++)
-            {
-                GameModel.Units.Remove(units[i].ID);
-                GameModel.Units.Remove(enemies[i].ID);
-                mapCellModel.RemoveUnitFromCell(units[i]);
-                mapCellModel.RemoveUnitFromCell(enemies[i]);
-
-                GameModel.OutputActions.Enqueue(new OutputAction
-                {
-                    ActionType = OutputActionType.RemoveUnit,
-                    UnitInfo = new UnitInfo(units[i].ID)
-                });
-                GameModel.OutputActions.Enqueue(new OutputAction
-                {
-                    ActionType = OutputActionType.RemoveUnit,
-                    UnitInfo = new UnitInfo(enemies[i].ID)
-                });
-            }
+            foreach (var mapCell in mapCells
+                .Where(mapCell => mapCell.GetAllUnitInCell(false).Any() && 
+                    mapCell.GetAllUnitInCell(true).Any()))
+                _gameModel.CommandModel.AttackCommand(mapCell);
         }
     }
 }

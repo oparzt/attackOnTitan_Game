@@ -50,7 +50,7 @@
     <Folder Include="Scenes\StartScene\" />
     <Folder Include="TTFFonts\" />
     <Folder Include="Components\" />
-    <Folder Include="Scenes\Level0Scene\" />
+    <Folder Include="Scenes\LevelScene\" />
     <Folder Include="Components\Map\" />
     <Folder Include="Models\" />
     <Folder Include="Models\Map\" />

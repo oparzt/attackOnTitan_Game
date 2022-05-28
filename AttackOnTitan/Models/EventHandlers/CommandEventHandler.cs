@@ -56,6 +56,8 @@ namespace AttackOnTitan.Models
 
         private void HandleAttackCommand(InputAction action, UnitModel unitModel, MapCellModel mapCellModel)
         {
+            if (unitModel is not null)
+                _gameModel.CommandModel.AttackCommand(unitModel.CurCell);
         }
 
         private void HandleFlyCommand(InputAction action, UnitModel unitModel, MapCellModel mapCellModel)

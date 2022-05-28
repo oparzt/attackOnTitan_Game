@@ -11,7 +11,7 @@ namespace AttackOnTitan.Models
             });
         }
         
-        public void UpdateStatusBar(string name, float energy, float gas)
+        public void UpdateStatusBar(string name, float energy, float gas, float damage)
         {
             GameModel.OutputActions.Enqueue(new OutputAction
             {
@@ -20,7 +20,8 @@ namespace AttackOnTitan.Models
                 {
                     name,
                     $"Энергия {energy}",
-                    $"Газ {gas}"
+                    $"Газ {gas}",
+                    $"Сила {damage}"
                 }
             });
         }

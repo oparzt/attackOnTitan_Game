@@ -22,6 +22,7 @@ namespace AttackOnTitan.Models
         ChangeStepBtnState,
         
         UpdateCommandsBar,
+        UpdateGameStepCount,
         ClearCommandsBar,
         
         UpdateNoServicedZoneForMap,
@@ -37,16 +38,15 @@ namespace AttackOnTitan.Models
         
         UpdateUnitStatusBar,
         
-
-        //ChangeUnitTexture,
-        //ChangeUnitText,
-        //ChangeCellTexture
+        GameOver
     }
 
     public class OutputAction
     {
         public OutputActionType ActionType;
 
+        public int StepCount;
+        public bool Win;
         public UnitInfo UnitInfo;
         public string[] UnitStatus;
         public MapCellInfo MapCellInfo;

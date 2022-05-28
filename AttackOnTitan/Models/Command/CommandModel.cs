@@ -7,11 +7,12 @@ namespace AttackOnTitan.Models
 {
     public class CommandModel
     {
-        public readonly GameModel GameModel;
+        private readonly GameModel _gameModel;
+        private static readonly Random Random = new();
         
         public CommandModel(GameModel gameModel)
         {
-            GameModel = gameModel;
+            _gameModel = gameModel;
             InitializeCreatingChoose();
         }
 
@@ -28,7 +29,7 @@ namespace AttackOnTitan.Models
                         ObjectName = MapCellModel.BuildingNames[buildingType],
                         ObjectTextureName = MapCellModel.BuildingTextureNames[buildingType],
                         ObjectResourceDescription = GetObjectResourceDescription(BuildingEconomyModel.CountDiff[buildingType], BuildingEconomyModel.StepCountDiff[buildingType], BuildingEconomyModel.LimitDiff[buildingType]),
-                        NotAvailableResource = GetNotAvailableResource(BuildingEconomyModel.CountDiff[buildingType], GameModel.EconomyModel.ResourceCount)
+                        NotAvailableResource = GetNotAvailableResource(BuildingEconomyModel.CountDiff[buildingType], _gameModel.EconomyModel.ResourceCount)
                     }));
             }
             else
@@ -40,7 +41,7 @@ namespace AttackOnTitan.Models
                         ObjectName = UnitModel.UnitNames[unitType],
                         ObjectTextureName = UnitModel.UnitTextureNames[unitType],
                         ObjectResourceDescription = GetObjectResourceDescription(UnitEconomyModel.CountDiff[unitType], UnitEconomyModel.StepCountDiff[unitType], UnitEconomyModel.LimitDiff[unitType]),
-                        NotAvailableResource = GetNotAvailableResource(UnitEconomyModel.CountDiff[unitType], GameModel.EconomyModel.ResourceCount)
+                        NotAvailableResource = GetNotAvailableResource(UnitEconomyModel.CountDiff[unitType], _gameModel.EconomyModel.ResourceCount)
                     }));
             }
             
@@ -98,7 +99,7 @@ namespace AttackOnTitan.Models
             InputCommandInfo commandInfo)
         {
             CloseCreatingMenu(unitModel, mapCellModel);
-            GameModel.EconomyModel.UpdateResourceSettings(
+            _gameModel.EconomyModel.UpdateResourceSettings(
                 BuildingEconomyModel.CountDiff[commandInfo.CreatingInfo.BuildingType],
                 BuildingEconomyModel.StepCountDiff[commandInfo.CreatingInfo.BuildingType],
                 BuildingEconomyModel.LimitDiff[commandInfo.CreatingInfo.BuildingType]);
@@ -110,18 +111,32 @@ namespace AttackOnTitan.Models
             InputCommandInfo commandInfo)
         {
             CloseCreatingMenu(unitModel, mapCellModel);
-            GameModel.EconomyModel.UpdateResourceSettings(
+            _gameModel.EconomyModel.UpdateResourceSettings(
                 UnitEconomyModel.CountDiff[commandInfo.CreatingInfo.UnitType],
                 UnitEconomyModel.StepCountDiff[commandInfo.CreatingInfo.UnitType],
                 UnitEconomyModel.LimitDiff[commandInfo.CreatingInfo.UnitType]);
 
             for (var i = 0; i < int.MaxValue; i++)
             {
-                if (GameModel.Units.ContainsKey(i)) continue;
+                if (_gameModel.Units.ContainsKey(i)) continue;
                 
-                GameModel.Units[i] = new UnitModel(i, commandInfo.CreatingInfo.UnitType);
-                var position = mapCellModel.MoveUnitToTheCell(GameModel.Units[i]);
-                GameModel.Units[i].AddUnitToTheMap(mapCellModel, position);
+                _gameModel.Units[i] = new UnitModel(i, commandInfo.CreatingInfo.UnitType);
+                _gameModel.Units[i].AddUnitToTheMap(mapCellModel);
+                
+                break;
+            }
+        }
+
+        public void CreateTitans(int titansCount)
+        {
+            var startY = 5 - titansCount / 2;
+            for (var n = 0; n < titansCount; n++)
+            for (var i = 0; i < int.MaxValue; i++)
+            {
+                if (_gameModel.Units.ContainsKey(i)) continue;
+                
+                _gameModel.Units[i] = new UnitModel(i, UnitType.Titan);
+                _gameModel.Units[i].AddUnitToTheMap(_gameModel.Map[22, startY + n]);
                 
                 break;
             }
@@ -158,6 +173,99 @@ namespace AttackOnTitan.Models
             UpdateCommandBar(unitModel);
         }
 
+        public void AttackCommand(MapCellModel mapCellModel)
+        {
+            var units = mapCellModel
+                .GetAllUnitInCell(false)
+                .OrderByDescending(unit => unit.UnitDamage)
+                .ToList();
+            var titans = mapCellModel
+                .GetAllUnitInCell(true)
+                .OrderByDescending(unit => unit.UnitDamage)
+                .ToList();
+
+            while (units.Count != 0 && titans.Count != 0)
+            {
+                var titan = titans[0];
+                var attackUnits = new List<UnitModel>();
+                var unitsDamage = 0f;
+
+                foreach (var unit in units)
+                {
+                    unitsDamage += unit.UnitDamage;
+                    attackUnits.Add(unit);
+                    if (unitsDamage > titan.UnitDamage)
+                        break;
+                }
+                
+                var winBattle = CheckWinBattle(titan.UnitDamage, unitsDamage, 
+                    attackUnits.Count, out var deadUnitsCount);
+
+                for (var i = 0; i < deadUnitsCount; i++)
+                {
+                    var deadUnit = attackUnits[Random.Next(0, attackUnits.Count)];
+                    attackUnits.Remove(deadUnit);
+                    units.Remove(deadUnit);
+                    RemoveUnit(deadUnit);
+                }
+
+                if (winBattle)
+                {
+                    titans.Remove(titan);
+                    RemoveUnit(titan);
+                }
+            }
+
+            foreach (var unitModel in titans.Concat(units))
+            {
+                mapCellModel.RemoveUnitFromCell(unitModel);
+                unitModel.CanGo = true;
+            }
+            foreach (var unitModel in titans.Concat(units))
+            {
+                if (mapCellModel.IsExistEmptyPositionInCell())
+                {
+                    var position = mapCellModel.MoveUnitToTheCell(unitModel);
+                    _gameModel.UnitPath.InitMoveUnit(unitModel, mapCellModel.X, mapCellModel.Y, position);
+                }
+                else
+                {
+                    var cell = mapCellModel.NearCells.Keys.First(cell => cell.IsExistEmptyPositionInCell());
+                    var position = mapCellModel.MoveUnitToTheCell(unitModel);
+                    _gameModel.UnitPath.InitMoveUnit(unitModel, mapCellModel.X, mapCellModel.Y, position);
+                }
+            }
+        }
+
+        private bool CheckWinBattle(float titanDamage, float unitDamage, int unitsCount, out int deadUnitsCount)
+        {
+            if (unitDamage > titanDamage)
+            {
+                var isExistDeadUnits = Random.Next(1, 101) < 100 / unitsCount;
+                deadUnitsCount = isExistDeadUnits ? Random.Next(0, unitsCount) : 0;
+                return true;
+            }
+            
+            deadUnitsCount = Random.Next(0, unitsCount + 1);
+            deadUnitsCount = deadUnitsCount > 0 ? deadUnitsCount : 
+                    unitsCount == 1 ? 1 : 0;
+            return Random.Next(1, 101) > 100 / unitsCount;
+        }
+
+        private void RemoveUnit(UnitModel unitModel)
+        {
+            _gameModel.Units.Remove(unitModel.ID);
+            unitModel.CurCell.RemoveUnitFromCell(unitModel);
+            GameModel.OutputActions.Enqueue(new OutputAction
+            {
+                ActionType = OutputActionType.RemoveUnit,
+                UnitInfo = new UnitInfo(unitModel.ID)
+            });
+            _gameModel.EconomyModel.UpdateResourceSettings(new Dictionary<ResourceType, float>(),
+                UnitEconomyModel.StepCountDiff[unitModel.UnitType],
+                UnitEconomyModel.LimitDiff[unitModel.UnitType], true);
+        }
+        
         public void UpdateCommandBar(UnitModel unitModel)
         {
             GameModel.OutputActions.Enqueue(new OutputAction

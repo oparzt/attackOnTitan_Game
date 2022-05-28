@@ -6,9 +6,10 @@ namespace AttackOnTitan.Models
     {
         public static readonly Dictionary<UnitType, Dictionary<ResourceType, float>> CountDiff = new()
         {
+            [UnitType.Titan] = new Dictionary<ResourceType, float>(),
             [UnitType.Builder] = new Dictionary<ResourceType, float>
             {
-                [ResourceType.Coin] = -10
+                [ResourceType.Coin] = -5
             },
             [UnitType.Cadet] = new Dictionary<ResourceType, float>
             {
@@ -16,27 +17,28 @@ namespace AttackOnTitan.Models
             },
             [UnitType.Garrison] = new Dictionary<ResourceType, float>
             {
-                [ResourceType.Coin] = -10
+                [ResourceType.Coin] = -15
             },
             [UnitType.Police] = new Dictionary<ResourceType, float>
             {
-                [ResourceType.Coin] = -10
+                [ResourceType.Coin] = -30
             },
             [UnitType.Scout] = new Dictionary<ResourceType, float>
             {
-                [ResourceType.Coin] = -10
+                [ResourceType.Coin] = -20
             }
         };
 
         public static readonly Dictionary<UnitType, Dictionary<ResourceType, float>> StepCountDiff = new()
         {
+            [UnitType.Titan] = new Dictionary<ResourceType, float>(),
             [UnitType.Builder] = new Dictionary<ResourceType, float>
             {
-                [ResourceType.Coin] = -1
+                [ResourceType.Coin] = -1.5f
             },
             [UnitType.Cadet] = new Dictionary<ResourceType, float>
             {
-                [ResourceType.Coin] = -1
+                [ResourceType.Coin] = -4f
             },
             [UnitType.Garrison] = new Dictionary<ResourceType, float>
             {
@@ -54,6 +56,7 @@ namespace AttackOnTitan.Models
         
         public static readonly Dictionary<UnitType, Dictionary<ResourceType, float>> LimitDiff = new()
         {
+            [UnitType.Titan] = new Dictionary<ResourceType, float>(),
             [UnitType.Builder] = new Dictionary<ResourceType, float> {},
             [UnitType.Cadet] = new Dictionary<ResourceType, float> {},
             [UnitType.Garrison] = new Dictionary<ResourceType, float> {},

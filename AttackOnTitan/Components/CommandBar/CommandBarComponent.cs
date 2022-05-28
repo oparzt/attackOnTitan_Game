@@ -89,7 +89,5 @@ namespace AttackOnTitan.Components
                 commandBarItem.Draw(spriteBatch);            
             spriteBatch.End();
         }
-
-        
     }
 }

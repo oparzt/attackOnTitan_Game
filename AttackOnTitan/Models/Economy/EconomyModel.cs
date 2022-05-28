@@ -17,10 +17,10 @@ namespace AttackOnTitan.Models
 
         public readonly Dictionary<ResourceType, float> ResourceCountInStep = new()
         {
-            [ResourceType.Coin] = 10,
+            [ResourceType.Coin] = 10  * BuildingEconomyModel.PeopleMakeGoldInStep,
             [ResourceType.Log] = 0,
             [ResourceType.Stone] = 0,
-            [ResourceType.People] = 0
+            [ResourceType.People] = 4
         };
 
         public readonly Dictionary<ResourceType, float> ResourceLimit = new()
@@ -83,16 +83,21 @@ namespace AttackOnTitan.Models
 
         public void UpdateResourceSettings(Dictionary<ResourceType, float> countDiff, 
             Dictionary<ResourceType, float> stepCountDiff,
-            Dictionary<ResourceType, float> limitDiff)
+            Dictionary<ResourceType, float> limitDiff, bool decrement = false)
         {
             foreach (var resCountPair in countDiff)
                 ResourceCount[resCountPair.Key] += resCountPair.Value;
             foreach (var resCountPair in countDiff)
                 ResourceCount[resCountPair.Key] = ResourceCount[resCountPair.Key] < 0 ? 0 : ResourceCount[resCountPair.Key];
             foreach (var resCountPair in stepCountDiff)
-                ResourceCountInStep[resCountPair.Key] += resCountPair.Value;
+                ResourceCountInStep[resCountPair.Key] += resCountPair.Value * (decrement ? -1f : 1f);
             foreach (var resCountPair in limitDiff)
-                ResourceLimit[resCountPair.Key] += resCountPair.Value;
+                ResourceLimit[resCountPair.Key] += resCountPair.Value * (decrement ? -1f : 1f);
+            foreach (var resLimit in ResourceLimit)
+                ResourceCount[resLimit.Key] = ResourceCount[resLimit.Key] > ResourceLimit[resLimit.Key] ? 
+                    ResourceLimit[resLimit.Key] : 
+                    ResourceCount[resLimit.Key];
+            ResourceCountInStep[ResourceType.Coin] = ResourceCount[ResourceType.People] * BuildingEconomyModel.PeopleMakeGoldInStep;
             UpdateResourceView();
         }
 

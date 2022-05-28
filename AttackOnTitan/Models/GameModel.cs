@@ -35,6 +35,7 @@ namespace AttackOnTitan.Models
         public UnitModel PreselectedUnit;
         public UnitModel SelectedUnit;
         public readonly UnitPath UnitPath;
+        public readonly TitanPath TitanPath;
         public readonly StatusBarModel StatusBarModel;
         public readonly CommandModel CommandModel;
         public readonly EconomyModel EconomyModel;
@@ -84,28 +85,39 @@ namespace AttackOnTitan.Models
                 [BuildingType.OuterGates] = new []
                 {
                     (18,5)
+                },
+                [BuildingType.OuterNone] = new []
+                {
+                    (19,1), (19,4), (19,5), (19,8), (19,9),
+                    (20,1), (20,2), (20,3), (20,4), (20,5), (20,6), (20,7), (20,8), (20,9), 
+                    (21,1), (21,2), (21,3), (21,4), (21,5), (21,6), (21,7), (21,8), (21,9), 
+                    (22,1), (22,2), (22,3), (22,4), (22,5), (22,6), (22,7), (22,8), (22,9)
+                },
+                [BuildingType.Centre] = new []
+                {
+                    (3,4)
+                },
+                [BuildingType.House1] = new []
+                {
+                    (3,5)
+                },
+                [BuildingType.Barracks] = new []
+                {
+                    (2,4)
+                },
+                [BuildingType.Warehouse] = new []
+                {
+                    (2,5)
                 }
             };
             
             Map = new MapModel(columnsMapCount, rowsMapCount, buildings);
             UnitPath = new UnitPath(this);
+            TitanPath = new TitanPath(this);
             CommandModel = new CommandModel(this);
             EconomyModel = new EconomyModel(this);
             StatusBarModel = new StatusBarModel();
-            var unitsTypes = new[]
-            {
-                UnitType.Scout, UnitType.Builder
-            };
-            var positions = new[]
-            {
-                Position.TopLeft, Position.TopRight, Position.BottomLeft, Position.BottomRight
-            };
-
-            for (var i = 0; i < unitsTypes.Length; i++)
-            {
-                Units[i] = new UnitModel(i, unitsTypes[i]);
-                Units[i].AddUnitToTheMap(Map[2, 2], positions[i]);
-            }
+            
 
             EconomyModel.InitializeResourcePanel();
             EconomyModel.UpdateResourceView();
@@ -136,6 +148,12 @@ namespace AttackOnTitan.Models
                     NoServicedZone = action.NoServicedZone
                 });
             _handlers[InputActionType.ExecCommand] = _commandEventHandler.HandleCommand;
+            _handlers[InputActionType.StepStart] = action => StepEnd = false;
+            _handlers[InputActionType.GameOver] = action => OutputActions.Enqueue(new OutputAction
+            {
+                ActionType = OutputActionType.GameOver,
+                Win = action.Win
+            });
         }
 
         public void Run()
@@ -154,7 +172,10 @@ namespace AttackOnTitan.Models
             while (!_killThread)
             {
                 while (InputActions.TryDequeue(out var action)) {
-                    _handlers[action.ActionType](action);
+                    if (!StepEnd) 
+                        _handlers[action.ActionType](action);
+                    else if (action.ActionType == InputActionType.StepStart)
+                        _handlers[action.ActionType](action);
                 }
                 Thread.Sleep(30);
             }

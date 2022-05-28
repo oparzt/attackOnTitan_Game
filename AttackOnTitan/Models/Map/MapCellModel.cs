@@ -34,6 +34,7 @@ namespace AttackOnTitan.Models
     {
         None,
         HiddenNone,
+        OuterNone,
         BetweenHousesNone,
 
         House1,
@@ -56,7 +57,7 @@ namespace AttackOnTitan.Models
         public readonly int Y;
         public BuildingType BuildingType;
 
-        private readonly Dictionary<MapCellModel, NearCellsName> _nearCells = new();
+        public readonly Dictionary<MapCellModel, NearCellsName> NearCells = new();
 
         public UnitModel UnitInCenterOfCell;
         public readonly Dictionary<Position, UnitModel> UnitsInCell = new();
@@ -132,7 +133,7 @@ namespace AttackOnTitan.Models
             [BuildingType.ClosedGates] = "Ворота"
         };
 
-        private static readonly HashSet<BuildingType> HousesBuildingTypes = new()
+        public static readonly HashSet<BuildingType> HousesBuildingTypes = new()
         {
             BuildingType.House1,
             BuildingType.House2,
@@ -143,7 +144,7 @@ namespace AttackOnTitan.Models
             BuildingType.Centre,
         };
 
-        private static readonly HashSet<BuildingType> WallBuildingTypes = new()
+        public static readonly HashSet<BuildingType> WallBuildingTypes = new()
         {
             BuildingType.Wall,
             BuildingType.InnerGates,
@@ -176,12 +177,12 @@ namespace AttackOnTitan.Models
 
                 var mapCell = mapCells[coordX, coordY];
 
-                if (!_nearCells.ContainsKey(mapCell))
-                    _nearCells[mapCell] = nearCellName;
+                if (!NearCells.ContainsKey(mapCell))
+                    NearCells[mapCell] = nearCellName;
             }
         }
 
-        private IEnumerable<TravelMode> GetPossibleTravelModesTo(MapCellModel mapCell)
+        public IEnumerable<TravelMode> GetPossibleTravelModesTo(MapCellModel mapCell)
         {
             switch (mapCell.BuildingType)
             {
@@ -192,7 +193,7 @@ namespace AttackOnTitan.Models
                         yield return TravelMode.Run;
 
                     yield return TravelMode.BuilderRun;
-                    
+                    yield return TravelMode.TitanRun;
                     if (HousesBuildingTypes.Contains(BuildingType)) yield return TravelMode.Fly;
                     break;
                 
@@ -201,6 +202,10 @@ namespace AttackOnTitan.Models
                         yield return TravelMode.Run;
                     yield return TravelMode.BuilderRun;
                     yield return TravelMode.Fly;
+                    yield return TravelMode.TitanRun;
+                    break;
+                case BuildingType.OuterNone:
+                    yield return TravelMode.TitanRun;
                     break;
                 case BuildingType.House1:
                 case BuildingType.House2:
@@ -218,6 +223,8 @@ namespace AttackOnTitan.Models
                         yield return TravelMode.Fly;
                         yield return TravelMode.BuilderRun;
                     }
+                    
+                    yield return TravelMode.TitanRun;
                     break;
                 case BuildingType.Wall:
                     if (WallBuildingTypes.Contains(BuildingType))
@@ -231,6 +238,10 @@ namespace AttackOnTitan.Models
                     yield return TravelMode.BuilderRun;
                     yield return TravelMode.Fly;
                     yield return TravelMode.Run;
+                    if (mapCell.BuildingType != BuildingType.ClosedGates)
+                    {
+                        yield return TravelMode.TitanRun;
+                    }
                     break;
                 case BuildingType.HiddenNone:
                 default:
@@ -242,13 +253,13 @@ namespace AttackOnTitan.Models
         public bool IsExistEmptyPositionInCell() => UnitsInCell.Count != 4;
 
         public bool IsExistTravelToCell(MapCellModel mapCell, UnitModel unitModel) =>
-            _nearCells.ContainsKey(mapCell) &&
+            NearCells.ContainsKey(mapCell) &&
             GetPossibleTravelModesTo(mapCell).Contains(unitModel.TravelMode);
         
         public bool IsEnemyInCell() => UnitsInCell.Values
             .FirstOrDefault(unit => unit.UnitType == UnitType.Titan) is not null || UnitInCenterOfCell?.IsEnemy is true;
 
-        public bool IsExistEmptyPositionOnBorder(MapCellModel mapCell) => _nearCells.TryGetValue(mapCell, out var nearCellsName) 
+        public bool IsExistEmptyPositionOnBorder(MapCellModel mapCell) => NearCells.TryGetValue(mapCell, out var nearCellsName) 
             && !UnitsOnBorder.ContainsKey(NearCellsNameToPosition[nearCellsName]);
 
         public Position MoveUnitToTheCell(UnitModel unitModel)
@@ -285,7 +296,7 @@ namespace AttackOnTitan.Models
 
         public Position MoveUnitToBorder(UnitModel unitModel, MapCellModel mapCell)
         {
-            var position = NearCellsNameToPosition[_nearCells[mapCell]];
+            var position = NearCellsNameToPosition[NearCells[mapCell]];
             UnitsOnBorder[position] = unitModel;
             return position;
         }
@@ -335,10 +346,14 @@ namespace AttackOnTitan.Models
                 MapModel.SetHidden(this);
             else if (buildingType == BuildingType.ClosedGates)
             {
-                
+                GameModel.InputActions.Enqueue(new InputAction
+                {
+                    ActionType = InputActionType.GameOver,
+                    Win = true
+                });
             } else if (HousesBuildingTypes.Contains(buildingType))
             {
-                foreach (var nearCell in _nearCells.Keys
+                foreach (var nearCell in NearCells.Keys
                     .Where(cell => cell.BuildingType == BuildingType.None))
                     nearCell.UpdateBuildingType(BuildingType.BetweenHousesNone);
             }
@@ -377,7 +392,6 @@ namespace AttackOnTitan.Models
                 case BuildingType.OuterGates:
                     yield return BuildingType.ClosedGates;
                     break;
-                case BuildingType.House1:
                 case BuildingType.Barracks:
                 case BuildingType.Warehouse:
                 case BuildingType.Centre:
@@ -385,6 +399,7 @@ namespace AttackOnTitan.Models
                 case BuildingType.InnerGates:
                 case BuildingType.ClosedGates:
                 case BuildingType.HiddenNone:
+                case BuildingType.House1:
                 case BuildingType.House2:
                 case BuildingType.House3:
                 default:

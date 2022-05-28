@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Linq;
 
 namespace AttackOnTitan.Models
 {
@@ -12,6 +13,8 @@ namespace AttackOnTitan.Models
         private MapCellModel[,] _mapCells;
 
         public MapCellModel this[int x, int y] => _mapCells[x, y];
+        public MapCellModel[] OuterGates;
+        public MapCellModel[] InnerGates;
 
         public MapModel(int columnsCount, int rowsCount, Dictionary<BuildingType, (int, int)[]> buildings)
         {
@@ -40,11 +43,16 @@ namespace AttackOnTitan.Models
                 _mapCells[x, y].ConnectWithNearCells(_mapCells, ColumnsCount, RowsCount);
 
             foreach (var (buildingType, buildingCoords) in buildings)
-            {
-                foreach (var (x, y) in buildingCoords)
-                    _mapCells[x, y].UpdateBuildingType(buildingType);
-            }
+            foreach (var (x, y) in buildingCoords)
+                _mapCells[x, y].UpdateBuildingType(buildingType);
+
+            OuterGates = buildings[BuildingType.OuterGates]
+                .Select(coords => _mapCells[coords.Item1, coords.Item2])
+                .ToArray();
             
+            InnerGates = buildings[BuildingType.InnerGates]
+                .Select(coords => _mapCells[coords.Item1, coords.Item2])
+                .ToArray();
         }
 
         public static void SetHidden(MapCellModel mapCell)

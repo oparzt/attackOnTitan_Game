@@ -15,28 +15,28 @@ namespace AttackOnTitan.Models
             [BuildingType.Centre] = new Dictionary<ResourceType, float>
             {
                 [ResourceType.Coin] = -10,
-                [ResourceType.Log] = -10,
-                [ResourceType.Stone] = -10
+                [ResourceType.Log] = -4,
+                [ResourceType.Stone] = -8
             },
             [BuildingType.House1] = new Dictionary<ResourceType, float>
             {
                 [ResourceType.Coin] = -10,
-                [ResourceType.Log] = -10,
-                [ResourceType.Stone] = -10
+                [ResourceType.Log] = -2,
+                [ResourceType.Stone] = -6
             },
             [BuildingType.None] = new Dictionary<ResourceType, float> {},
             [BuildingType.Wall] = new Dictionary<ResourceType, float> {},
             [BuildingType.Warehouse] = new Dictionary<ResourceType, float>
             {
-                [ResourceType.Coin] = -10,
-                [ResourceType.Log] = -10,
-                [ResourceType.Stone] = -10
+                [ResourceType.Coin] = -5,
+                [ResourceType.Log] = -5,
+                [ResourceType.Stone] = -1
             },
             [BuildingType.ClosedGates] = new Dictionary<ResourceType, float>
             {
-                [ResourceType.Coin] = -1000,
-                [ResourceType.Log] = -1000,
-                [ResourceType.Stone] = -1000
+                [ResourceType.Coin] = -650,
+                [ResourceType.Log] = -300,
+                [ResourceType.Stone] = -800
             }
         };
 
@@ -44,9 +44,18 @@ namespace AttackOnTitan.Models
 
         public static readonly Dictionary<BuildingType, Dictionary<ResourceType, float>> StepCountDiff = new()
         {
-            [BuildingType.Barracks] = new Dictionary<ResourceType, float> {},
-            [BuildingType.Centre] = new Dictionary<ResourceType, float> {},
-            [BuildingType.House1] = new Dictionary<ResourceType, float> {},
+            [BuildingType.Barracks] = new Dictionary<ResourceType, float>
+            {
+                [ResourceType.People] = 3
+            },
+            [BuildingType.Centre] = new Dictionary<ResourceType, float>
+            {
+                [ResourceType.People] = 10
+            },
+            [BuildingType.House1] = new Dictionary<ResourceType, float>
+            {
+                [ResourceType.People] = 5
+            },
             [BuildingType.None] = new Dictionary<ResourceType, float> {},
             [BuildingType.Wall] = new Dictionary<ResourceType, float> {},
             [BuildingType.Warehouse] = new Dictionary<ResourceType, float> {},

@@ -38,7 +38,7 @@ namespace AttackOnTitan.Models
                 _gameModel.StatusBarModel.ClearStatusBar();
             else
                 _gameModel.StatusBarModel.UpdateStatusBar(UnitModel.UnitNames[_unit.UnitType], 
-                    _unit.Energy, _unit.Gas);
+                    _unit.Energy, _unit.Gas, _unit.UnitDamage);
         }
 
         public void Add(MapCellModel mapCell)
@@ -56,7 +56,8 @@ namespace AttackOnTitan.Models
                 var curGasCost = _pathGasCosts.Peek() + _unit.GetGasCost();
 
                 if (!_unit.CanGo || !lastCell.IsExistTravelToCell(mapCell, _unit) ||
-                    !_unit.IsExistTravel(curEnergyCost, curGasCost) || _enemyCell is not null) return;
+                    !_unit.IsExistTravel(curEnergyCost, curGasCost) || _enemyCell is not null
+                    || _unit.IsEnemy) return;
                 
                 var isEnemyCell = mapCell.IsEnemyInCell();
 
@@ -88,7 +89,7 @@ namespace AttackOnTitan.Models
             _pathGasCosts.TryPeek(out var gasCost);
             
             _gameModel.StatusBarModel.UpdateStatusBar(UnitModel.UnitNames[_unit.UnitType], 
-                _unit.Energy - energyCost, _unit.Gas - gasCost);
+                _unit.Energy - energyCost, _unit.Gas - gasCost, _unit.UnitDamage);
         }
 
         private void AddToPath(MapCellModel mapCell, float energyCost, float gasCost, bool enemyCell = false)
@@ -100,7 +101,7 @@ namespace AttackOnTitan.Models
             _pathHash.Add(mapCell);
             
             _gameModel.StatusBarModel.UpdateStatusBar(UnitModel.UnitNames[_unit.UnitType], 
-                _unit.Energy - energyCost, _unit.Gas - gasCost);
+                _unit.Energy - energyCost, _unit.Gas - gasCost, _unit.UnitDamage);
 
             MapModel.SetSelectedOpacity(mapCell);
         }
@@ -132,7 +133,7 @@ namespace AttackOnTitan.Models
                 while (_endPathStack.Count != 0)
                 {
                     prevMapCell = _endPathStack.Pop();
-                    InitMoveUnit(prevMapCell.X, prevMapCell.Y, Position.Center);
+                    InitMoveUnit(_unit, prevMapCell.X, prevMapCell.Y, Position.Center);
                 }
                 
                 var endPosition = _enemyCell is not null ? 
@@ -141,19 +142,19 @@ namespace AttackOnTitan.Models
                 if (_enemyCell is not null)
                     _unit.CanGo = false;
                 
-                InitMoveUnit(lastCell.X, lastCell.Y, endPosition);
+                InitMoveUnit(_unit, lastCell.X, lastCell.Y, endPosition);
                 _gameModel.CommandModel.UpdateCommandBar(_unit);
             }
             
             SetUnit(_unit);
         }
 
-        private void InitMoveUnit(int x, int y, Position position)
+        public void InitMoveUnit(UnitModel unitModel,  int x, int y, Position position)
         {
             GameModel.OutputActions.Enqueue(new OutputAction
             {
                 ActionType = OutputActionType.MoveUnit,
-                UnitInfo = new UnitInfo(_unit.ID)
+                UnitInfo = new UnitInfo(unitModel.ID)
                 {
                     X = x,
                     Y = y,

@@ -6,7 +6,7 @@ namespace AttackOnTitan.Models
 {
     public class MapEventHandler
     {
-        public readonly GameModel GameModel;
+        private readonly GameModel _gameModel;
         private readonly Dictionary<MouseBtn, Action<InputAction>> _selectHandlers = new();
 
         private MapCellModel _lastNoMouseSelected;
@@ -14,7 +14,7 @@ namespace AttackOnTitan.Models
 
         public MapEventHandler(GameModel gameModel)
         {
-            GameModel = gameModel;
+            _gameModel = gameModel;
             InitializeHandlers();
         }
 
@@ -30,10 +30,10 @@ namespace AttackOnTitan.Models
 
         private void HandleNoMouseSelect(InputAction action)
         {
-            var targetCell = GameModel.Map[action.InputCellInfo.X, action.InputCellInfo.Y];
+            var targetCell = _gameModel.Map[action.InputCellInfo.X, action.InputCellInfo.Y];
 
-            if (GameModel.UnitPath.Count != 0)
-                GameModel.UnitPath.ExecutePath();
+            if (_gameModel.UnitPath.Count != 0)
+                _gameModel.UnitPath.ExecutePath();
             if (_lastNoMouseSelected is not null)
                 MapModel.SetUnselectedOpacity(_lastNoMouseSelected);
 
@@ -44,13 +44,13 @@ namespace AttackOnTitan.Models
 
         private void HandleLeftMouseSelect(InputAction action)
         {
-            if (GameModel.StepEnd || GameModel.BlockClickEvents) return;
-            GameModel.BlockClickEvents = true;
-            GameModel.SelectedUnit?.SetUnselectedOpacity();
-            GameModel.SelectedUnit = null;
-            GameModel.UnitPath.SetUnit(null);
-            GameModel.CommandModel.ClearCommandBar();
-            var mapCell = GameModel.Map[action.InputCellInfo.X, action.InputCellInfo.Y];
+            if (_gameModel.StepEnd || _gameModel.BlockClickEvents) return;
+            _gameModel.BlockClickEvents = true;
+            _gameModel.SelectedUnit?.SetUnselectedOpacity();
+            _gameModel.SelectedUnit = null;
+            _gameModel.UnitPath.SetUnit(null);
+            _gameModel.CommandModel.ClearCommandBar();
+            var mapCell = _gameModel.Map[action.InputCellInfo.X, action.InputCellInfo.Y];
             if (mapCell.GetPossibleCreatingUnitTypes().Any())
             {
                 GameModel.InputActions.Enqueue(new InputAction
@@ -76,16 +76,16 @@ namespace AttackOnTitan.Models
 
         private void HandleRightMouseSelect(InputAction action)
         {
-            if (GameModel.SelectedUnit is null 
-                || GameModel.SelectedUnit.UnitType == UnitType.Titan 
-                || GameModel.SelectedUnit.Moved)
+            if (_gameModel.SelectedUnit is null 
+                || _gameModel.SelectedUnit.UnitType == UnitType.Titan 
+                || _gameModel.SelectedUnit.Moved)
             {
                 HandleNoMouseSelect(action);
                 return;
             }
-            var targetCell = GameModel.Map[action.InputCellInfo.X, action.InputCellInfo.Y];
+            var targetCell = _gameModel.Map[action.InputCellInfo.X, action.InputCellInfo.Y];
             MapModel.SetUnselectedOpacity(targetCell);
-            GameModel.UnitPath.Add(targetCell);
+            _gameModel.UnitPath.Add(targetCell);
         }
     }
 }
