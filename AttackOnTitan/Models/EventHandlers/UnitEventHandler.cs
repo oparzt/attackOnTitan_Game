@@ -41,7 +41,9 @@ namespace AttackOnTitan.Models
 
         private void HandleNoMouseSelect(InputAction action)
         {
-            if (!GameModel.Units.TryGetValue(action.InputUnitInfo.ID, out var target) || target == GameModel.SelectedUnit)
+            if (!GameModel.Units.TryGetValue(action.InputUnitInfo.ID, out var target) || 
+                target == GameModel.SelectedUnit ||
+                target.IsEnemy)
                 return;
 
             GameModel.PreselectedUnit?.SetUnselectedOpacity();
@@ -51,7 +53,8 @@ namespace AttackOnTitan.Models
 
         private void HandleLeftMouseSelect(InputAction action)
         {
-            if (GameModel.StepEnd || GameModel.BlockClickEvents || 
+            if (GameModel.StepEnd || 
+                GameModel.BlockClickEvents || 
                 !GameModel.Units.TryGetValue(action.InputUnitInfo.ID, out var target)) 
                 return;
             
@@ -63,13 +66,8 @@ namespace AttackOnTitan.Models
             GameModel.PreselectedUnit = null;
             GameModel.SelectedUnit.SetSelectedOpacity();
             GameModel.CommandModel.ClearCommandBar();
-
+            GameModel.CommandModel.UpdateCommandBar(target); 
             GameModel.UnitPath.SetUnit(target);
-
-            if (!target.IsEnemy)
-            {
-                GameModel.CommandModel.UpdateCommandBar(target); 
-            }
         }
 
         private void HandleRightMouseSelect(InputAction action) {}

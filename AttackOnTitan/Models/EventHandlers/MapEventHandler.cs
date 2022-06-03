@@ -32,7 +32,7 @@ namespace AttackOnTitan.Models
         {
             var targetCell = _gameModel.Map[action.InputCellInfo.X, action.InputCellInfo.Y];
 
-            if (_gameModel.UnitPath.Count != 0)
+            if (_gameModel.UnitPath.CanExecute)
                 _gameModel.UnitPath.ExecutePath();
             if (_lastNoMouseSelected is not null)
                 MapModel.SetUnselectedOpacity(_lastNoMouseSelected);
@@ -85,7 +85,7 @@ namespace AttackOnTitan.Models
             }
             var targetCell = _gameModel.Map[action.InputCellInfo.X, action.InputCellInfo.Y];
             MapModel.SetUnselectedOpacity(targetCell);
-            _gameModel.UnitPath.Add(targetCell);
+            _gameModel.UnitPath.SetPath(targetCell);
         }
     }
 }

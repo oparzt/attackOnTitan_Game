@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace AttackOnTitan.Scenes
 {
-    public class EndScene: DrawableGameComponent, IScene
+    public class EndScene: DrawableGameComponent
     {
         public Dictionary<string, Texture2D> Textures { get; } = new();
         public Dictionary<string, SpriteFont> Fonts { get; } = new();

@@ -27,7 +27,6 @@ namespace AttackOnTitan.Models
     {
         None,
         Attack,
-        OuterGate,
         InnerGate
     }
 
@@ -37,70 +36,48 @@ namespace AttackOnTitan.Models
         public MapCellModel CurCell;
 
         public bool CanGo = true;
+        public bool IsFly;
         public bool Moved;
         public bool IsEnemy => UnitType == UnitType.Titan;
-        public TravelMode TravelMode = TravelMode.Run;
+        public HashSet<TravelMode> PossibleTravelModes = new HashSet<TravelMode>();
 
         public MapCellModel TitanTarget;
         public TitanTargetType TitanTargetType;
 
-        private readonly float _unitDamage;
-        public float UnitDamage => UnitType is UnitType.Builder or UnitType.Titan ? _unitDamage : 2;
-        public readonly float MaxEnergy = 10;
-        public readonly float MaxGas = 100; 
-        public float Energy;
-        public float Gas;
+        private readonly int _unitDamage;
+        public int UnitDamage => (UnitType is UnitType.Builder or UnitType.Titan) || Gas >= GetEnergyCost(TravelMode.Fly) ? _unitDamage : 0;
+        public readonly int MaxEnergy = 20;
+        public readonly int MaxGas = 200; 
+        public int Energy;
+        public int Gas;
+        public int BuiltCount;
 
-        public readonly Dictionary<TravelMode, float> TravelEnergyCost = new()
+        public readonly Dictionary<TravelMode, int> TravelEnergyCost = new()
         {
-            [TravelMode.None] = float.MaxValue,
-            [TravelMode.Run] = 1f,
-            [TravelMode.BuilderRun] = 2f,
-            [TravelMode.Fly] = 0.5f,
-            [TravelMode.TitanRun] = 1f
+            [TravelMode.None] = int.MaxValue,
+            [TravelMode.Run] = 4,
+            [TravelMode.BuilderRun] = 5,
+            [TravelMode.Fly] = 2,
+            [TravelMode.TitanRun] = 2
         };
 
-        public readonly float TravelGasCost = 4f;
+        public readonly int TravelGasCost = 10;
 
         public readonly UnitType UnitType;
-
-        public static readonly Dictionary<CommandType, Dictionary<bool, OutputCommandInfo>> CommandInfoByTypes = new()
+        
+        public static readonly Dictionary<CommandType, OutputCommandInfo> CommandInfoByTypes = new()
         {
-            [CommandType.Attack] = new Dictionary<bool, OutputCommandInfo>
-            {
-                [true] = new(CommandType.Attack, true, "AttackIcon"),
-                [false] = new(CommandType.Attack, false, "AttackIconHalf")
-            },
-            [CommandType.Refuel] = new Dictionary<bool, OutputCommandInfo>
-            {
-                [true] = new(CommandType.Refuel, true, "RefuelingIcon"),
-                [false] = new(CommandType.Refuel, false, "RefuelingIconHalf")
-            },
-            [CommandType.Fly] = new Dictionary<bool, OutputCommandInfo>
-            {
-                [true] = new(CommandType.Fly, true, "GasIcon"),
-                [false] = new(CommandType.Fly, false, "GasIconHalf")
-            },
-            [CommandType.Walk] = new Dictionary<bool, OutputCommandInfo>
-            {
-                [true] = new(CommandType.Walk, true, "WalkIcon"),
-                [false] = new(CommandType.Walk, false, "WalkIconHalf")
-            },
-            [CommandType.OpenCreatingHouseMenu] = new Dictionary<bool, OutputCommandInfo>
-            {
-                [true] = new(CommandType.OpenCreatingHouseMenu, true, "BuildingIcon"),
-                [false] = new(CommandType.OpenCreatingHouseMenu, false, "BuildingIconHalf")
-            }
-        };
-
-        public static readonly Dictionary<UnitType, string> UnitTextureNames = new()
-        {
-            [UnitType.Titan] = "Titan",
-            [UnitType.Scout] = "Scout",
-            [UnitType.Garrison] = "Garrison",
-            [UnitType.Police] = "Police",
-            [UnitType.Cadet] = "Cadet",
-            [UnitType.Builder] = "Builder"
+            
+            [CommandType.Attack] = new(CommandType.Attack, true),
+            [CommandType.AttackDisabled] = new(CommandType.AttackDisabled, false),
+            [CommandType.Refuel] = new(CommandType.Refuel, true),
+            [CommandType.RefuelDisabled] = new(CommandType.RefuelDisabled, false),
+            [CommandType.Fly] = new(CommandType.Fly, true),
+            [CommandType.FlyDisabled] = new(CommandType.FlyDisabled, false),
+            [CommandType.Walk] = new(CommandType.Walk, true),
+            [CommandType.WalkDisabled] = new(CommandType.WalkDisabled, false),
+            [CommandType.OpenCreatingHouseMenu] = new(CommandType.OpenCreatingHouseMenu, true),
+            [CommandType.OpenCreatingHouseMenuDisabled] = new(CommandType.OpenCreatingHouseMenuDisabled, false)
         };
 
         public static readonly Dictionary<UnitType, string> UnitNames = new()
@@ -113,9 +90,9 @@ namespace AttackOnTitan.Models
             [UnitType.Builder] = "Строители"
         };
 
-        public static readonly Random Random = new Random();
+        public static readonly Random Random = new ();
         
-        public UnitModel(int id, UnitType unitType)
+        public UnitModel(int id, UnitType unitType) 
         {
             ID = id;
             UnitType = unitType;
@@ -124,33 +101,32 @@ namespace AttackOnTitan.Models
             switch (unitType)
             {
                 case UnitType.Titan:
-                    MaxEnergy = 5;
+                    MaxEnergy = 10;
                     MaxGas = 0;
-                    _unitDamage = Random.Next(2, 15);
-                    TitanTargetType = TitanTargetType.OuterGate;
-                    break;
-                case UnitType.Scout:
-                    MaxEnergy = 9;
-                    MaxGas = 80;
-                    _unitDamage = 10;
-                    break;
-                case UnitType.Garrison:
-                    MaxEnergy = 8;
-                    MaxGas = 80;
-                    _unitDamage = 5;
-                    break;
-                case UnitType.Police:
-                    MaxEnergy = 11;
-                    MaxGas = 80;
-                    _unitDamage = 7;
+                    _unitDamage = Random.Next(4, 30);
                     break;
                 case UnitType.Cadet:
-                    MaxEnergy = 6;
-                    MaxGas = 80;
-                    _unitDamage = 4;
+                    MaxEnergy = 12;
+                    MaxGas = 160;
+                    _unitDamage = 5;
+                    break;
+                case UnitType.Scout:
+                    MaxEnergy = 18;
+                    MaxGas = 160;
+                    _unitDamage = 15;
+                    break;
+                case UnitType.Garrison:
+                    MaxEnergy = 16;
+                    MaxGas = 160;
+                    _unitDamage = 8;
+                    break;
+                case UnitType.Police:
+                    MaxEnergy = 22;
+                    MaxGas = 160;
+                    _unitDamage = 12;
                     break;
                 case UnitType.Builder:
-                    MaxEnergy = 6;
+                    MaxEnergy = 12;
                     MaxGas = 0;
                     _unitDamage = 0;
                     break;
@@ -159,8 +135,7 @@ namespace AttackOnTitan.Models
             }
 
             Gas = MaxGas;
-
-            if (unitType == UnitType.Builder) TravelMode = TravelMode.BuilderRun;
+            SetPossibleTravelModes();
         }
 
         public void AddUnitToTheMap(MapCellModel mapCell)
@@ -175,30 +150,42 @@ namespace AttackOnTitan.Models
                 {
                     Opacity = 0.65f,
                     Position = position,
-                    TextureName = UnitTextureNames[UnitType],
+                    TextureName = UnitTextures.UnitTextureNames[UnitType],
                     X = mapCell.X,
                     Y = mapCell.Y
                 }
             });
         }
-
-        public float GetEnergyCost() => TravelEnergyCost[TravelMode];
-        public float GetGasCost() => TravelMode == TravelMode.Fly ? TravelGasCost : 0f;
-
+        
         public void Refuel() => Gas = MaxGas;
 
-        public bool IsExistTravel(float energyCost, float gasCost)
+        public int GetEnergyCost(TravelMode travelMode) => TravelEnergyCost[travelMode];
+        public int GetGasCost(TravelMode travelMode) => travelMode == TravelMode.Fly ? TravelGasCost : 0;
+
+        public bool IsExistTravel(float energyCost, float gasCost) =>
+            Energy >= energyCost && Gas >= gasCost;
+
+        public void SetPossibleTravelModes()
         {
-            switch (TravelMode)
+            PossibleTravelModes.Clear();
+            switch (UnitType)
             {
-                case TravelMode.Run:
-                case TravelMode.BuilderRun:
-                    return Energy >= energyCost;
-                case TravelMode.Fly:
-                    return Energy >= energyCost && Gas >= gasCost;
-                case TravelMode.None:
+                case UnitType.Scout:
+                case UnitType.Garrison:
+                case UnitType.Police:
+                case UnitType.Cadet:
+                    PossibleTravelModes.Add(TravelMode.Run);
+                    if (IsFly)
+                        PossibleTravelModes.Add(TravelMode.Fly);
+                    break;
+                case UnitType.Builder:
+                    PossibleTravelModes.Add(TravelMode.BuilderRun);
+                    break;
+                case UnitType.Titan:
+                    PossibleTravelModes.Add(TravelMode.TitanRun);
+                    break;
                 default:
-                    return false;
+                    throw new ArgumentOutOfRangeException();
             }
         }
 
@@ -229,12 +216,13 @@ namespace AttackOnTitan.Models
                 case UnitType.Garrison:
                 case UnitType.Police:
                 case UnitType.Cadet:
-                    yield return CommandInfoByTypes[CommandType.Attack][CurCell.IsEnemyInCell()];
-                    yield return CommandInfoByTypes[TravelMode == TravelMode.Fly ? CommandType.Walk : CommandType.Fly][true];
-                    yield return CommandInfoByTypes[CommandType.Refuel][CurCell.BuildingType == BuildingType.Barracks];
+                    yield return CommandInfoByTypes[CurCell.IsEnemyInCell() ? CommandType.Attack : CommandType.AttackDisabled];
+                    yield return CommandInfoByTypes[IsFly ? CommandType.Walk : CommandType.Fly];
+                    yield return CommandInfoByTypes[CurCell.BuildingType == BuildingType.Barracks ? CommandType.Refuel : CommandType.RefuelDisabled];
                     break;
                 case UnitType.Builder:
-                    yield return CommandInfoByTypes[CommandType.OpenCreatingHouseMenu][CurCell.GetPossibleCreatingBuildingTypes().Any()];
+                    yield return CommandInfoByTypes[CurCell.GetPossibleCreatingBuildingTypes().Any() && Energy != 0 ?
+                        CommandType.OpenCreatingHouseMenu : CommandType.OpenCreatingHouseMenuDisabled];
                     break;
                 case UnitType.Titan:
                     break;

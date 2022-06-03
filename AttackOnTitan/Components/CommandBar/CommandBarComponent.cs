@@ -10,16 +10,13 @@ namespace AttackOnTitan.Components
 {
     public class CommandBarComponent
     {
-        private readonly IScene _scene;
-        
         private readonly int _viewportWidth;
         private readonly int _viewportHeight;
 
         private readonly Dictionary<CommandType, CommandBarItemComponent> _commandBarItems = new();
 
-        public CommandBarComponent(IScene parent, int viewportWidth, int viewportHeight)
+        public CommandBarComponent(int viewportWidth, int viewportHeight)
         {
-            _scene = parent;
             _viewportWidth = viewportWidth;
             _viewportHeight = viewportHeight;
         }
@@ -43,7 +40,7 @@ namespace AttackOnTitan.Components
                     MapCellInfo = action.MapCellInfo,
                     IsAvailable = commandInfo.IsAvailable,
                     
-                    Texture = _scene.Textures[commandInfo.TextureName],
+                    Texture = SceneManager.Textures[commandInfo.TextureName],
                     TextureRect = new Rectangle(startX + i * 76,
                         _viewportHeight - 70, 60, 60)
                 };

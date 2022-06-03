@@ -12,8 +12,6 @@ namespace AttackOnTitan.Components
 {
     public class MapComponent
     {
-        private readonly IScene _scene;
-
         private MapCellComponent[,] _mapItems;
         private Rectangle[,] _grassRects;
         private Camera2D _camera;
@@ -51,11 +49,10 @@ namespace AttackOnTitan.Components
         private bool _unitWasPressed;
         private bool _mapCellWasPressed;
 
-        public MapComponent(IScene parent, int hexWidth, int hexHeight, int unitWidth, int unitHeight)
+        public MapComponent(int hexWidth, int hexHeight, int unitWidth, int unitHeight)
         {
             _hexWidth = hexWidth;
             _hexHeight = hexHeight;
-            _scene = parent;
 
             _unitTextureRect = new Rectangle(0, 0, unitWidth, unitHeight);
             _unitHitRadius = unitWidth / 6 * 5 / 2;
@@ -63,7 +60,7 @@ namespace AttackOnTitan.Components
 
         #region InitializationMethods
 
-        private void InitializeMap()
+        private void InitializeMap(string defaultTextureName)
         {
             var mapWidth = _cellsColumnCount * _hexWidth / 4 * 3 + _hexWidth / 4;
             var mapHeight = _cellsRowCount * _hexHeight + _hexHeight / 2;
@@ -77,10 +74,10 @@ namespace AttackOnTitan.Components
             for (var row = 0; row < _cellsRowCount; row++)
                 for (var column = 0; column < _cellsColumnCount; column++)
                 {
-                    _mapItems[column, row] = new MapCellComponent(column, row, _scene.Textures["Hexagon"],
+                    _mapItems[column, row] = new MapCellComponent(column, row, SceneManager.Textures[defaultTextureName],
                         new Rectangle(
                             column * _hexWidth / 4 * 3,
-                            row * _hexHeight + (column % 2 == 1 ? _hexHeight / 2 : 0),
+                            row * _hexHeight + (column % 2 == 1 ? _hexHeight / 2 : 0) + _hexHeight / 4,
                             _hexWidth, _hexHeight));
                     _mapItems[column, row].CreatePositionsRectangles(_unitTextureRect.Size);
                 }
@@ -221,12 +218,12 @@ namespace AttackOnTitan.Components
         {
             _cellsColumnCount = mapCellInfo.X;
             _cellsRowCount = mapCellInfo.Y;
-            InitializeMap();
+            InitializeMap(mapCellInfo.TextureName);
         }
         
         public void AddUnit(UnitInfo unitInfo)
         {
-            _units[unitInfo.ID] = new UnitComponent(_scene, unitInfo.ID, unitInfo.TextureName,
+            _units[unitInfo.ID] = new UnitComponent(unitInfo.ID, unitInfo.TextureName,
                 _mapItems[unitInfo.X, unitInfo.Y].GetPosition(unitInfo.Position),
                 _unitHitRadius);
         }
@@ -247,7 +244,9 @@ namespace AttackOnTitan.Components
 
         public void StopUnit(UnitInfo unitInfo)
         {
-            _movedUnits.Remove(_units[unitInfo.ID]);
+            var unit = _movedUnits.FirstOrDefault(movedUnit => unitInfo.ID == movedUnit.ID);
+            if (unit is not null)
+                _movedUnits.Remove(unit);
         }
 
         public void ChangeUnitOpacity(UnitInfo unitInfo)
@@ -258,7 +257,12 @@ namespace AttackOnTitan.Components
 
         public void ChangeTextureIntoCell(MapCellInfo mapCellInfo)
         {
-            _mapItems[mapCellInfo.X, mapCellInfo.Y].UpdateHouseTexture(_scene.Textures[mapCellInfo.TextureName]);
+            _mapItems[mapCellInfo.X, mapCellInfo.Y].UpdateHouseTexture(SceneManager.Textures[mapCellInfo.TextureName]);
+        }
+
+        public void ChangeTextureOverCell(MapCellInfo mapCellInfo)
+        {
+            _mapItems[mapCellInfo.X, mapCellInfo.Y].UpdateHexagonTexture(SceneManager.Textures[mapCellInfo.TextureName]);
         }
 
         public void ClearTextureIntoCell(MapCellInfo mapCellInfo)
@@ -293,14 +297,16 @@ namespace AttackOnTitan.Components
                 _mapItems[x, y].Draw(spriteBatch);
 
             foreach (var unit in _units.Values)
-                unit.Draw(spriteBatch);
+                unit.Draw(spriteBatch);  
             
-            spriteBatch.Draw(_scene.Textures["Wall"], new Rectangle(0, 0, 3840, 2160), 
+            // spriteBatch.Draw(SceneManager.Textures["Wall"], new Rectangle(0, 0, 3840, 2160), 
+            //     null, Color.White, 0, Vector2.Zero, SpriteEffects.None, 0.5f);            
+            spriteBatch.Draw(SceneManager.Textures["Wall"], new Rectangle(0, 0, 3930, 3240), 
                 null, Color.White, 0, Vector2.Zero, SpriteEffects.None, 0.5f);
             
             for (var i = _grassInViewport.Left; i < _grassInViewport.Right; i++)
             for (var n = _grassInViewport.Top; n < _grassInViewport.Bottom; n++)
-                spriteBatch.Draw(_scene.Textures["Grass"], _grassRects[i, n], 
+                spriteBatch.Draw(SceneManager.Textures["Grass"], _grassRects[i, n], 
                     null, Color.White, 0, Vector2.Zero, 
                     SpriteEffects.None, 0);
 

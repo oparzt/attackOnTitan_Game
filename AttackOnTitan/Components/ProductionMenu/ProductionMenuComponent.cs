@@ -10,7 +10,6 @@ namespace AttackOnTitan.Components
 {
     public class ProductionMenuComponent
     {
-        private readonly IScene _scene;
         private const string InfoStr = "Информация";
         private const string ProductionStr = "Производство";
         private readonly int _viewportWidth;
@@ -21,6 +20,8 @@ namespace AttackOnTitan.Components
         private Texture2D _plusIconTexture;
         private Texture2D _minusIconTexture;
         private SpriteFont _font;
+        private int _fontSize;
+        private Vector2 _textOrigin;
 
         private Rectangle _infoBackgroundRect;
         private Rectangle _prodBackgroundRect;
@@ -45,9 +46,8 @@ namespace AttackOnTitan.Components
         private UnitInfo _unitInfo;
         private MapCellInfo _mapCellInfo;
 
-        public ProductionMenuComponent(IScene scene, int viewportWidth, int viewportHeight)
+        public ProductionMenuComponent(int viewportWidth, int viewportHeight)
         {
-            _scene = scene;
             _viewportWidth = viewportWidth;
             _viewportHeight = viewportHeight;
         }
@@ -56,12 +56,18 @@ namespace AttackOnTitan.Components
         {
             var productionInfo = action.ProductionInfo;
             _resourceTextures = productionInfo.ResourceTexturesName
-                .Select(pair => new KeyValuePair<ResourceType, Texture2D>(pair.Key, _scene.Textures[pair.Value]))
+                .Select(pair => new KeyValuePair<ResourceType, Texture2D>(pair.Key, SceneManager.Textures[pair.Value]))
                 .ToDictionary(pair => pair.Key, pair => pair.Value);
-            _backgroundTexture = _scene.Textures[productionInfo.BackgroundTextureName];
-            _font = _scene.Fonts["Medium"];
-            _plusIconTexture = _scene.Textures["PlusIcon"];
-            _minusIconTexture = _scene.Textures["MinusIcon"];
+            _backgroundTexture = SceneManager.Textures[productionInfo.BackgroundTextureName];
+            _plusIconTexture = SceneManager.Textures["PlusIcon"];
+            _minusIconTexture = SceneManager.Textures["MinusIcon"];
+        }
+
+        public void SetFont(SpriteFont font, int fontSize, Vector2 origin)
+        {
+            _font = font;
+            _fontSize = fontSize;
+            _textOrigin = origin;
         }
         
         public void UpdateProductionMenu(OutputAction action)
@@ -87,7 +93,7 @@ namespace AttackOnTitan.Components
                 .Select((pair, pairIndex) => (_resourceTextures[pair.Key],
                     new Rectangle(startX + 10, startY + 35 + 35 * pairIndex, 30, 30), 
                     pair.Value, 
-                    new Vector2(startX + 50, startY + 38 + 35 * pairIndex)))
+                    new Vector2(startX + 50, startY + 35 + (30 - _fontSize) / 2 + 35 * pairIndex)))
                 .ToArray();
         }
 
@@ -111,7 +117,7 @@ namespace AttackOnTitan.Components
                 .Select((pair, pairIndex) => (_resourceTextures[pair.Key],
                     new Rectangle(startX + 10, startY + 70 + 35 * pairIndex, 30, 30), 
                     pair.Value, 
-                    new Vector2(startX + 50, startY + 73 + 35 * pairIndex)))
+                    new Vector2(startX + 50, startY + 70 + (30 - _fontSize) / 2 + 35 * pairIndex)))
                 .ToArray();
 
             UpdateMinusBtns(resourceInfo, canUpdateProduction, startX, startY, cardWidth);
@@ -226,16 +232,16 @@ namespace AttackOnTitan.Components
                 Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0);
 
             spriteBatch.DrawString(_font, InfoStr, _infoStrPos, 
-                Color.White, 0, Vector2.Zero, 0.24f, SpriteEffects.None, 1);
+                Color.White, 0, _textOrigin, 1f, SpriteEffects.None, 1);
             spriteBatch.DrawString(_font, ProductionStr, _prodStrPos, 
-                Color.White, 0, Vector2.Zero, 0.24f, SpriteEffects.None, 1);
+                Color.White, 0, _textOrigin, 1f, SpriteEffects.None, 1);
 
             foreach (var infoRes in _infoRes)
             {
                 spriteBatch.Draw(infoRes.Item1, infoRes.Item2, null,
                     Color.White, 0f, Vector2.Zero, SpriteEffects.None, 1);
                 spriteBatch.DrawString(_font, infoRes.Item3, infoRes.Item4, 
-                    Color.White, 0, Vector2.Zero, 0.24f, SpriteEffects.None, 1);
+                    Color.White, 0, _textOrigin, 1f, SpriteEffects.None, 1);
             }
             
             foreach (var prodRes in _prodRes)
@@ -243,13 +249,13 @@ namespace AttackOnTitan.Components
                 spriteBatch.Draw(prodRes.Item1, prodRes.Item2, null,
                     Color.White, 0f, Vector2.Zero, SpriteEffects.None, 1);
                 spriteBatch.DrawString(_font, prodRes.Item3, prodRes.Item4, 
-                    Color.White, 0, Vector2.Zero, 0.24f, SpriteEffects.None, 1);
+                    Color.White, 0, _textOrigin, 1f, SpriteEffects.None, 1);
             }
             
             spriteBatch.Draw(_peopleAtWork.Item1, _peopleAtWork.Item2, null,
                 Color.White, 0f, Vector2.Zero, SpriteEffects.None, 1);
             spriteBatch.DrawString(_font, _peopleAtWork.Item3, _peopleAtWork.Item4, 
-                Color.White, 0, Vector2.Zero, 0.24f, SpriteEffects.None, 1);
+                Color.White, 0, _textOrigin, 1f, SpriteEffects.None, 1);
 
             DrawBtns(spriteBatch, _minusIconTexture, _minusBtns, _availableMinusBtns);
             DrawBtns(spriteBatch, _plusIconTexture, _plusBtns, _availablePlusBtns);

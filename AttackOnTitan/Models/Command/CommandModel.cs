@@ -5,6 +5,27 @@ using Microsoft.Xna.Framework;
 
 namespace AttackOnTitan.Models
 {
+    public enum CommandType
+    {
+        Attack,
+        AttackDisabled,
+        Fly,
+        FlyDisabled,
+        Walk,
+        WalkDisabled,
+        Refuel,
+        RefuelDisabled,
+        OpenCreatingHouseMenu,
+        OpenCreatingHouseMenuDisabled,
+        OpenCreatingUnitMenu,
+        OpenProductionMenu,
+        CreateHouse,
+        CreateUnit,
+        CloseCreatingMenu,
+        CloseProductionMenu,
+        ChangePeopleAtWork
+    }
+    
     public class CommandModel
     {
         private readonly GameModel _gameModel;
@@ -27,7 +48,7 @@ namespace AttackOnTitan.Models
                     {
                         BuildingType = buildingType,
                         ObjectName = MapCellModel.BuildingNames[buildingType],
-                        ObjectTextureName = MapCellModel.BuildingTextureNames[buildingType],
+                        ObjectTextureName = MapTextures.BuildingTextureNames[buildingType],
                         ObjectResourceDescription = GetObjectResourceDescription(BuildingEconomyModel.CountDiff[buildingType], BuildingEconomyModel.StepCountDiff[buildingType], BuildingEconomyModel.LimitDiff[buildingType]),
                         NotAvailableResource = GetNotAvailableResource(BuildingEconomyModel.CountDiff[buildingType], _gameModel.EconomyModel.ResourceCount)
                     }));
@@ -39,7 +60,7 @@ namespace AttackOnTitan.Models
                     {
                         UnitType = unitType,
                         ObjectName = UnitModel.UnitNames[unitType],
-                        ObjectTextureName = UnitModel.UnitTextureNames[unitType],
+                        ObjectTextureName = UnitTextures.UnitTextureNames[unitType],
                         ObjectResourceDescription = GetObjectResourceDescription(UnitEconomyModel.CountDiff[unitType], UnitEconomyModel.StepCountDiff[unitType], UnitEconomyModel.LimitDiff[unitType]),
                         NotAvailableResource = GetNotAvailableResource(UnitEconomyModel.CountDiff[unitType], _gameModel.EconomyModel.ResourceCount)
                     }));
@@ -68,7 +89,7 @@ namespace AttackOnTitan.Models
                 MapCellInfo = mapCellInfo,
                 CommandInfos = new []
                 {
-                    new OutputCommandInfo(CommandType.CloseCreatingMenu , true, "ExitIcon")
+                    new OutputCommandInfo(CommandType.CloseCreatingMenu , true)
                 }
             });
         }
@@ -90,7 +111,7 @@ namespace AttackOnTitan.Models
                 MapCellInfo = new MapCellInfo(mapCellModel.X, mapCellModel.Y),
                 CommandInfos = new []
                 {
-                    new OutputCommandInfo(CommandType.CloseProductionMenu , true, "ExitIcon")
+                    new OutputCommandInfo(CommandType.CloseProductionMenu , true)
                 }
             });
         }
@@ -99,47 +120,62 @@ namespace AttackOnTitan.Models
             InputCommandInfo commandInfo)
         {
             CloseCreatingMenu(unitModel, mapCellModel);
-            _gameModel.EconomyModel.UpdateResourceSettings(
-                BuildingEconomyModel.CountDiff[commandInfo.CreatingInfo.BuildingType],
-                BuildingEconomyModel.StepCountDiff[commandInfo.CreatingInfo.BuildingType],
-                BuildingEconomyModel.LimitDiff[commandInfo.CreatingInfo.BuildingType]);
-            
+            unitModel.BuiltCount++;
             mapCellModel.UpdateBuildingType(commandInfo.CreatingInfo.BuildingType);
+            _gameModel.EconomyModel.UseResource(BuildingEconomyModel.CountDiff[commandInfo.CreatingInfo.BuildingType]);
+            _gameModel.EconomyModel.UpdateResourceSettings();
+            
+            if (unitModel.BuiltCount == 3)
+            {
+                RemoveUnit(unitModel);
+                ClearCommandBar();
+                _gameModel.UnitPath.SetUnit(null);
+            }
+            else
+            {
+                UpdateCommandBar(unitModel);
+                _gameModel.UnitPath.SetUnit(unitModel);
+            };
         }
 
         public void CreateUnit(UnitModel unitModel, MapCellModel mapCellModel,
             InputCommandInfo commandInfo)
         {
             CloseCreatingMenu(unitModel, mapCellModel);
-            _gameModel.EconomyModel.UpdateResourceSettings(
-                UnitEconomyModel.CountDiff[commandInfo.CreatingInfo.UnitType],
-                UnitEconomyModel.StepCountDiff[commandInfo.CreatingInfo.UnitType],
-                UnitEconomyModel.LimitDiff[commandInfo.CreatingInfo.UnitType]);
-
-            for (var i = 0; i < int.MaxValue; i++)
-            {
-                if (_gameModel.Units.ContainsKey(i)) continue;
-                
-                _gameModel.Units[i] = new UnitModel(i, commandInfo.CreatingInfo.UnitType);
-                _gameModel.Units[i].AddUnitToTheMap(mapCellModel);
-                
-                break;
-            }
+            
+            var id = GetEmptyIDForUnit();
+            _gameModel.Units[id] = new UnitModel(id, commandInfo.CreatingInfo.UnitType);
+            _gameModel.Units[id].AddUnitToTheMap(mapCellModel);
+            _gameModel.EconomyModel.UseResource(UnitEconomyModel.CountDiff[commandInfo.CreatingInfo.UnitType]);
+            _gameModel.EconomyModel.UpdateResourceSettings();
         }
 
         public void CreateTitans(int titansCount)
         {
-            var startY = 5 - titansCount / 2;
-            for (var n = 0; n < titansCount; n++)
+            while (titansCount != 0)
+            {
+                var gates = _gameModel.Map.OuterGates;
+                var gateCount = gates.Length > titansCount ? titansCount : gates.Length;
+
+                foreach (var gate in gates.Take(gateCount))
+                {
+                    var id = GetEmptyIDForUnit();
+                    _gameModel.Units[id] = new UnitModel(id, UnitType.Titan);
+                    _gameModel.Units[id].AddUnitToTheMap(gate);
+                    titansCount--;
+                }
+            }
+        }
+
+        private int GetEmptyIDForUnit()
+        {
             for (var i = 0; i < int.MaxValue; i++)
             {
                 if (_gameModel.Units.ContainsKey(i)) continue;
-                
-                _gameModel.Units[i] = new UnitModel(i, UnitType.Titan);
-                _gameModel.Units[i].AddUnitToTheMap(_gameModel.Map[22, startY + n]);
-                
-                break;
+                return i;
             }
+
+            throw new IndexOutOfRangeException("Нет места для новых юнитов");
         }
 
         public void CloseCreatingMenu(UnitModel unitModel, MapCellModel mapCellModel)
@@ -163,13 +199,16 @@ namespace AttackOnTitan.Models
 
         public void FlyOrWalk(UnitModel unitModel, bool fly)
         {
-            unitModel.TravelMode = fly ? TravelMode.Fly : TravelMode.Run;
+            unitModel.IsFly = fly;
+            unitModel.SetPossibleTravelModes();
+            _gameModel.UnitPath.SetUnit(unitModel);
             UpdateCommandBar(unitModel);
         }
 
         public void RefuelCommand(UnitModel unitModel)
         {
             unitModel.Refuel();
+            _gameModel.UnitPath.SetUnit(unitModel);
             UpdateCommandBar(unitModel);
         }
 
@@ -232,7 +271,7 @@ namespace AttackOnTitan.Models
                 {
                     var cell = mapCellModel.NearCells.Keys.First(cell => cell.IsExistEmptyPositionInCell());
                     var position = mapCellModel.MoveUnitToTheCell(unitModel);
-                    _gameModel.UnitPath.InitMoveUnit(unitModel, mapCellModel.X, mapCellModel.Y, position);
+                    _gameModel.UnitPath.InitMoveUnit(unitModel, cell.X, cell.Y, position);
                 }
             }
         }
@@ -261,9 +300,7 @@ namespace AttackOnTitan.Models
                 ActionType = OutputActionType.RemoveUnit,
                 UnitInfo = new UnitInfo(unitModel.ID)
             });
-            _gameModel.EconomyModel.UpdateResourceSettings(new Dictionary<ResourceType, float>(),
-                UnitEconomyModel.StepCountDiff[unitModel.UnitType],
-                UnitEconomyModel.LimitDiff[unitModel.UnitType], true);
+            _gameModel.EconomyModel.UpdateResourceSettings();
         }
         
         public void UpdateCommandBar(UnitModel unitModel)
@@ -293,7 +330,7 @@ namespace AttackOnTitan.Models
                 OutputCreatingInfo = new OutputCreatingInfo
                 {
                     BackgroundTextureName = "BuilderCard",
-                    ResourceTexturesName = EconomyModel.ResourceTexturesName
+                    ResourceTexturesName = EconomyTextures.ResourceTexturesName
                 }
             });
         }
@@ -306,9 +343,9 @@ namespace AttackOnTitan.Models
             });
         }
 
-        private (ResourceType, string)[] GetObjectResourceDescription(Dictionary<ResourceType, float> countDiff, 
-            Dictionary<ResourceType, float> stepCountDiff,
-            Dictionary<ResourceType, float> limitDiff)
+        private (ResourceType, string)[] GetObjectResourceDescription(Dictionary<ResourceType, int> countDiff, 
+            Dictionary<ResourceType, int> stepCountDiff,
+            Dictionary<ResourceType, int> limitDiff)
         {
             var objectResourceDescription = countDiff
                 .Select(diff => (diff.Key, diff.Value.ToString())).ToList();
@@ -320,8 +357,8 @@ namespace AttackOnTitan.Models
             return objectResourceDescription.ToArray();
         }
         
-        private HashSet<ResourceType> GetNotAvailableResource(Dictionary<ResourceType, float> countDiff, 
-            Dictionary<ResourceType, float> resourceCount)
+        private HashSet<ResourceType> GetNotAvailableResource(Dictionary<ResourceType, int> countDiff, 
+            Dictionary<ResourceType, int> resourceCount)
         {
             return countDiff
                 .Where(pair => Math.Abs(pair.Value) > resourceCount[pair.Key])

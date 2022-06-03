@@ -8,12 +8,10 @@ namespace AttackOnTitan.Components
 {
     public class UnitStatusBarComponent
     {
-        private readonly IScene _scene;
-        
         private Texture2D _backgroundTexture;
         private SpriteFont _font;
-        private readonly float _fontScale;
-        private readonly int _fontSize;
+        private int _fontSize;
+        private Vector2 _textOrigin;
 
         private readonly int _viewportHeight;
         
@@ -23,12 +21,8 @@ namespace AttackOnTitan.Components
         private Vector2[] _strPos = {};
 
         
-        public UnitStatusBarComponent(IScene parent, int viewportWidth, int viewportHeight, int font)
+        public UnitStatusBarComponent(int viewportWidth, int viewportHeight)
         {
-            _scene = parent;
-            _fontScale = font / 100f;
-            _fontSize = font;
-
             _viewportHeight = viewportHeight;
             
             UpdateNoServicedZones();
@@ -39,9 +33,11 @@ namespace AttackOnTitan.Components
             _backgroundTexture = texture;
         }
 
-        public void SetFont(SpriteFont spriteFont)
+        public void SetFont(SpriteFont spriteFont, int fontSize, Vector2 origin)
         {
             _font = spriteFont;
+            _fontSize = fontSize;
+            _textOrigin = origin;
         }
 
         public void UpdateStatusBar(OutputAction action)
@@ -55,7 +51,7 @@ namespace AttackOnTitan.Components
                 Rectangle.Empty;
             _str = unitStatus;
             _strPos = unitStatus
-                .Select((str, i) => new Vector2(10, startY + 10 + i * 30))
+                .Select((str, i) => new Vector2(10, startY + 10 + i * (_fontSize + 6)))
                 .ToArray();
             
             UpdateNoServicedZones();
@@ -68,8 +64,8 @@ namespace AttackOnTitan.Components
             for (var i = 0; i < _str.Length; i++)
             {
                 spriteBatch.DrawString(_font, _str[i], _strPos[i], 
-                    Color.White, 0, Vector2.Zero, 
-                    _fontScale, SpriteEffects.None, 1); 
+                    Color.White, 0, _textOrigin, 
+                    1f, SpriteEffects.None, 1); 
             }
             spriteBatch.End();
         }

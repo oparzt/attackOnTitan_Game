@@ -47,8 +47,8 @@ namespace AttackOnTitan.Components
             
             _viewportWidth = viewportWidth;
             _viewportHeight = viewportHeight;
-            _mapWidth = 3840;
-            _mapHeight = 2160;
+            _mapWidth = mapWidth;
+            _mapHeight = mapHeight;
             _lastScroll = Mouse.GetState().ScrollWheelValue;
 
             MatrixWasUpdated = true;

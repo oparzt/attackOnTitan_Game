@@ -3,22 +3,6 @@ using System.Collections.Generic;
 
 namespace AttackOnTitan.Models
 {
-    public enum CommandType
-    {
-        Attack,
-        Fly,
-        Walk,
-        Refuel,
-        OpenCreatingHouseMenu,
-        OpenCreatingUnitMenu,
-        OpenProductionMenu,
-        CreateHouse,
-        CreateUnit,
-        CloseCreatingMenu,
-        CloseProductionMenu,
-        ChangePeopleAtWork
-    }
-    
     public class CommandEventHandler
     {
         private readonly GameModel _gameModel;
@@ -40,6 +24,7 @@ namespace AttackOnTitan.Models
         
         private void InitializeHandlers()
         {
+            var emptyHandler = new Action<InputAction, UnitModel, MapCellModel>((action, unitModel, mapCellModel) => { });
             _commandHandlers[CommandType.Attack] = HandleAttackCommand;
             _commandHandlers[CommandType.Fly] = HandleFlyCommand;
             _commandHandlers[CommandType.Walk] = HandleWalkCommand;
@@ -52,6 +37,12 @@ namespace AttackOnTitan.Models
             _commandHandlers[CommandType.CloseCreatingMenu] = HandleExitCommand;
             _commandHandlers[CommandType.CloseProductionMenu] = HandleExitProductionMenuCommand;
             _commandHandlers[CommandType.ChangePeopleAtWork] = HandleChangePeopleAtWorkCommand;
+
+            _commandHandlers[CommandType.AttackDisabled] = emptyHandler;
+            _commandHandlers[CommandType.FlyDisabled] = emptyHandler;
+            _commandHandlers[CommandType.WalkDisabled] = emptyHandler;
+            _commandHandlers[CommandType.RefuelDisabled] = emptyHandler;
+            _commandHandlers[CommandType.OpenCreatingHouseMenuDisabled] = emptyHandler;
         }
 
         private void HandleAttackCommand(InputAction action, UnitModel unitModel, MapCellModel mapCellModel)
@@ -93,8 +84,8 @@ namespace AttackOnTitan.Models
         {
             if (unitModel is not null)
             {
-                _gameModel.CommandModel.CreateHouse(unitModel, mapCellModel, action.InputCommandInfo);
                 unitModel.Energy = 0;
+                _gameModel.CommandModel.CreateHouse(unitModel, mapCellModel, action.InputCommandInfo);
             }
             else
             {

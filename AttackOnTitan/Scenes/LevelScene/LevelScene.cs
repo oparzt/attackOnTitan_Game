@@ -1,27 +1,22 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-
-using SpriteFontPlus;
 
 using AttackOnTitan.Components;
 using AttackOnTitan.Models;
 
 namespace AttackOnTitan.Scenes
 {
-    public class LevelScene : DrawableGameComponent, IScene
+    public class LevelScene : DrawableGameComponent
     {
-        public Dictionary<string, Texture2D> Textures { get; }
-        public Dictionary<string, SpriteFont> Fonts { get; }
-        private SpriteBatch Sprite { get; set; }
-
         private readonly Dictionary<OutputActionType, Action<OutputAction>> _commandsActions = new();
 
         private GameModel _gameModel;
+        private SpriteBatch _sprite;
 
         private MapComponent _mapComponent;
         private TopBarComponent _topBarComponent;
@@ -33,29 +28,18 @@ namespace AttackOnTitan.Scenes
 
         private Keys _lastKey = Keys.None;
 
-        private readonly CharacterRange[] _characterRanges =
-        {
-            CharacterRange.BasicLatin,
-            CharacterRange.Cyrillic
-        };
-
-
-        public LevelScene(Game game) : base(game)
-        {
-            Textures = new();
-            Fonts = new();
-        }
+        public LevelScene(Game game) : base(game) {}
 
         public override void Initialize()
         {
             var viewport = SceneManager.GraphicsMgr.GraphicsDevice.Viewport;
-            _mapComponent = new MapComponent(this,222, 192, 60, 60);
-            _topBarComponent = new TopBarComponent(this, viewport.Width, 35, 24);
-            _stepBtnComponent = new StepBtnComponent(this, viewport.Width, viewport.Height, 24);
-            _commandBarComponent = new CommandBarComponent(this, viewport.Width, viewport.Height);
-            _creatingChooseComponent = new CreatingChooseComponent(this, viewport.Width, viewport.Height);
-            _productionMenuComponent = new ProductionMenuComponent(this, viewport.Width, viewport.Height);
-            _unitStatusBarComponent = new UnitStatusBarComponent(this, viewport.Width, viewport.Height, 24);
+            _mapComponent = new MapComponent(222, 192, 60, 60);
+            _topBarComponent = new TopBarComponent(viewport.Width, 35);
+            _stepBtnComponent = new StepBtnComponent(viewport.Width, viewport.Height);
+            _commandBarComponent = new CommandBarComponent(viewport.Width, viewport.Height);
+            _creatingChooseComponent = new CreatingChooseComponent(viewport.Width, viewport.Height);
+            _productionMenuComponent = new ProductionMenuComponent(viewport.Width, viewport.Height);
+            _unitStatusBarComponent = new UnitStatusBarComponent(viewport.Width, viewport.Height);
             
             _commandsActions[OutputActionType.AddUnit] = action => _mapComponent.AddUnit(action.UnitInfo);
             _commandsActions[OutputActionType.MoveUnit] = action => _mapComponent.MoveUnit(action.UnitInfo);
@@ -64,6 +48,7 @@ namespace AttackOnTitan.Scenes
             _commandsActions[OutputActionType.ChangeUnitOpacity] = action => _mapComponent.ChangeUnitOpacity(action.UnitInfo);
             _commandsActions[OutputActionType.InitializeMap] = action => _mapComponent.InitializeMap(action.MapCellInfo);
             _commandsActions[OutputActionType.ChangeTextureIntoCell] = action => _mapComponent.ChangeTextureIntoCell(action.MapCellInfo);
+            _commandsActions[OutputActionType.ChangeTextureOverCell] = action => _mapComponent.ChangeTextureOverCell(action.MapCellInfo);
             _commandsActions[OutputActionType.ClearTextureIntoCell] = action => _mapComponent.ClearTextureIntoCell(action.MapCellInfo);
             _commandsActions[OutputActionType.ChangeCellOpacity] = action => _mapComponent.ChangeCellOpacity(action.MapCellInfo);
             _commandsActions[OutputActionType.SetCellHidden] = action => _mapComponent.SetCellHidden(action.MapCellInfo);
@@ -88,7 +73,9 @@ namespace AttackOnTitan.Scenes
             };
             _commandsActions[OutputActionType.UpdateGameStepCount] = _topBarComponent.UpdateStepCount;
 
-            _gameModel = new GameModel(23, 11);
+            _gameModel = new GameModel(23, 16);
+            _gameModel.InitMapBuildings();
+            _gameModel.EconomyModel.UpdateResourceSettings();
             _gameModel.Run();
 
             base.Initialize();
@@ -103,30 +90,54 @@ namespace AttackOnTitan.Scenes
 
         protected override void LoadContent()
         {
-            var device = SceneManager.GraphicsMgr.GraphicsDevice;
-            Sprite = new SpriteBatch(Game.GraphicsDevice);
+            const string fontName14 = "Medium-14";
+            const string fontName18 = "Medium-18";
+            _sprite = new SpriteBatch(Game.GraphicsDevice);
 
-            var texturesName = new[] { "Hexagon", "Ball", "Scout", "Garrison", 
-                "Police", "Builder", "Cadet", "Titan", "Grass", "Coin", 
-                "Log", "Stone", "TopBarBackground", "Step",
-                "AttackIcon", "AttackIconHalf", "BuildingIcon", "BuildingIconHalf",
-                "GasIcon", "GasIconHalf", "RefuelingIcon", "RefuelingIconHalf",
-                "Barracks", "Centre", "House1", "House2", "House3", "Warehouse",
-                "BuilderCard", "ExitIcon", "ExitIconHalf", "WalkIcon", "WalkIconHalf", "People",
-                "PlusIcon", "MinusIcon", "Wall", "OuterGates", "UnitStatusBar"
+            // UnitTextures
+            // CommandTextures
+            // MapTextures
+            
+            var texturesName = new[] {
+                "TopBarBackground", "Step", "UnitStatusBar", 
+                "Wall", "Grass", "PlusIcon", "MinusIcon",
+                "BuilderCard", 
             };
 
-            Fonts["Medium"] = TtfFontBaker.Bake(File.OpenRead("TTFFonts/OpenSans-Medium.ttf"),
-                100, 2048, 2048, _characterRanges).CreateSpriteFont(device);
-            foreach (var textureName in texturesName)
-                Textures[textureName] = Game.Content.Load<Texture2D>("Textures/" + textureName);
+            if (!SceneManager.Fonts.ContainsKey(fontName18))
+            {
+                SceneManager.Fonts[fontName18] = Game.Content.Load<SpriteFont>($"Fonts/OpenSans-{fontName18}");
+                SceneManager.FontSizes[SceneManager.Fonts[fontName18]] = 18;
+            }
             
-            _topBarComponent.SetFont(Fonts["Medium"]);
-            _stepBtnComponent.SetFont(Fonts["Medium"]);
-            _unitStatusBarComponent.SetFont(Fonts["Medium"]);
-            _topBarComponent.SetBackgroundTexture(Textures["TopBarBackground"]);
-            _stepBtnComponent.SetBackgroundTexture(Textures["Step"]);
-            _unitStatusBarComponent.SetBackgroundTexture(Textures["UnitStatusBar"]);
+            if (!SceneManager.Fonts.ContainsKey(fontName14))
+            {
+                SceneManager.Fonts[fontName14] = Game.Content.Load<SpriteFont>($"Fonts/OpenSans-{fontName14}");
+                SceneManager.FontSizes[SceneManager.Fonts[fontName14]] = 14;
+            }
+            
+            foreach (var textureName in texturesName.Where(textureName => !SceneManager.Textures.ContainsKey(textureName)))
+                SceneManager.Textures[textureName] = Game.Content.Load<Texture2D>("Textures/" + textureName);
+            foreach (var textureName in _gameModel.GetTexturesNames().Where(textureName => !SceneManager.Textures.ContainsKey(textureName)))
+                SceneManager.Textures[textureName] = Game.Content.Load<Texture2D>("Textures/" + textureName);
+            
+            var font18 = SceneManager.Fonts[fontName18];
+            var font18Size = SceneManager.FontSizes[font18];
+            var font18LineHeight = font18.LineSpacing;
+            var font18Origin = new Vector2(0, (font18LineHeight - font18Size) / 2f);
+            _stepBtnComponent.SetFont(font18, font18Size, font18Origin);
+
+            var font14 = SceneManager.Fonts[fontName14];
+            var font14Size = SceneManager.FontSizes[font14];
+            var font14LineHeight = font14.LineSpacing;
+            var font14Origin = new Vector2(0, (font14LineHeight - font14Size) / 2f);
+            _topBarComponent.SetFont(font14, font14Size, font14Origin);
+            _creatingChooseComponent.SetFont(font14, font14Size, font14Origin);
+            _productionMenuComponent.SetFont(font14, font14Size, font14Origin);
+            _unitStatusBarComponent.SetFont(font14, font14Size, font14Origin);
+            _topBarComponent.SetBackgroundTexture(SceneManager.Textures["TopBarBackground"]);
+            _stepBtnComponent.SetBackgroundTexture(SceneManager.Textures["Step"]);
+            _unitStatusBarComponent.SetBackgroundTexture(SceneManager.Textures["UnitStatusBar"]);
             
             RunModelActions();
             
@@ -178,14 +189,14 @@ namespace AttackOnTitan.Scenes
 
         public override void Draw(GameTime gameTime)
         {
-            _mapComponent.Draw(Sprite);
+            _mapComponent.Draw(_sprite);
             
-            _topBarComponent.Draw(Sprite);
-            _stepBtnComponent.Draw(Sprite);
-            _commandBarComponent.Draw(Sprite);
-            _creatingChooseComponent.Draw(Sprite);
-            _productionMenuComponent.Draw(Sprite);
-            _unitStatusBarComponent.Draw(Sprite);
+            _topBarComponent.Draw(_sprite);
+            _stepBtnComponent.Draw(_sprite);
+            _commandBarComponent.Draw(_sprite);
+            _creatingChooseComponent.Draw(_sprite);
+            _productionMenuComponent.Draw(_sprite);
+            _unitStatusBarComponent.Draw(_sprite);
 
             base.Draw(gameTime);
         }

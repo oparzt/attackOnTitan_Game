@@ -7,18 +7,18 @@ namespace AttackOnTitan.Components
     {
         private readonly Texture2D _texture;
         private readonly SpriteFont _font;
-        private readonly float _fontScale;
+        private readonly Vector2 _textOrigin;
 
         private Rectangle _textureRect;
         private Vector2 _textPosition;
         
         private string _resourceCount = "100";
 
-        public TopBarResourceComponent(Texture2D texture, SpriteFont font, float fontScale)
+        public TopBarResourceComponent(Texture2D texture, SpriteFont font, Vector2 textOrigin)
         {
             _texture = texture;
             _font = font;
-            _fontScale = fontScale;
+            _textOrigin = textOrigin;
         }
 
         public void UpdateResourceCount(string resourceCount) => _resourceCount = resourceCount;
@@ -31,7 +31,7 @@ namespace AttackOnTitan.Components
                 Color.White, 0, Vector2.Zero, SpriteEffects.None, 1);
             
             spriteBatch.DrawString(_font, _resourceCount, _textPosition, 
-                Color.White, 0, Vector2.Zero, _fontScale, SpriteEffects.None, 1);
+                Color.White, 0, _textOrigin, 1, SpriteEffects.None, 1);
         } 
     }
 }

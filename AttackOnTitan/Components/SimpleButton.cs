@@ -9,25 +9,32 @@ namespace AttackOnTitan.Components
 {
     public class SimpleButton : IComponent
     {
-        private IScene _parent;
-        private string _font;
-        private string _text;
-        private Vector2 _position;
-        private Rectangle _rectangle;
-        private Color _color;
+        private readonly string _text;
+        private readonly Vector2 _position;
+        private readonly Color _color;
+
+        private SpriteFont _font;
+        private Vector2 _origin;
+        private Rectangle _clickableArea;
         private float _opacity = 0.8f;
 
         public event Action OnClick;
 
-        public SimpleButton(IScene parent, string font, string text,
-            Vector2 position, Rectangle clickableArea, Color color)
+        public SimpleButton(string text, Vector2 position, Color color)
         {
-            _parent = parent;
-            _font = font;
             _text = text;
-            _rectangle = clickableArea;
             _position = position;
             _color = color;
+        }
+
+        public void SetFont(SpriteFont font, Vector2 origin)
+        {
+            var measureSize = font.MeasureString(_text);
+            var curPos = _position - origin;
+
+            _font = font;
+            _origin = origin;
+            _clickableArea = new Rectangle(curPos.ToPoint(), measureSize.ToPoint());
         }
 
         public void Update(GameTime gameTime, MouseState mouseState)
@@ -42,9 +49,10 @@ namespace AttackOnTitan.Components
         }
 
         public void Draw(SpriteBatch spriteBatch) =>
-            spriteBatch.DrawString(_parent.Fonts[_font], _text, _position, _color * _opacity);
+            spriteBatch.DrawString(_font, _text, _position, _color * _opacity,
+                0f, _origin, 1f, SpriteEffects.None, 1);
 
         public bool IsComponentOnPosition(Point point) =>
-            _rectangle.Contains(point);
+            _clickableArea.Contains(point);
     }
 }

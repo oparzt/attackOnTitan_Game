@@ -9,28 +9,24 @@ namespace AttackOnTitan.Components
 {
     public class StepBtnComponent
     {
-        private readonly IScene _scene;
-        
         private Texture2D _backgroundTexture;
         private SpriteFont _font;
-        private readonly float _fontScale;
+        private int _fontSize;
+        private Vector2 _textOrigin;
 
         private const string EndText = "Конец хода";
         private const string WaitText = "Подождите";
-        private readonly Vector2 _textPosition;
+        private string _curText = EndText;
+        private Vector2 _textPosition;
         private Rectangle _backgroundRect;
 
         private bool _endState = true;
         private bool _wasPressed = false;
         
-        public StepBtnComponent(IScene parent, int viewportWidth, int viewportHeight, int font)
+        public StepBtnComponent(int viewportWidth, int viewportHeight)
         {
-            _scene = parent;
-            _fontScale = font / 100f;
-
             _backgroundRect = new Rectangle(viewportWidth - 250, viewportHeight - 40, 
                 250, 40);
-            _textPosition = new Vector2(viewportWidth - 250 + 70, viewportHeight - 40 + 8);
             
             GameModel.InputActions.Enqueue(new InputAction
             {
@@ -70,21 +66,36 @@ namespace AttackOnTitan.Components
                 _wasPressed = pressed && contains;
         }
 
-        public void SetFont(SpriteFont font) => _font = font;
+        public void SetFont(SpriteFont font, int fontSize, Vector2 origin)
+        {
+            _font = font;
+            _fontSize = fontSize;
+            _textOrigin = origin;
+            UpdateTextPos();
+        }
         public void SetBackgroundTexture(Texture2D texture) => _backgroundTexture = texture;
         public void ChangeState()
         {
             _endState = !_endState;
-            
+            _curText = _endState ? EndText : WaitText;
+            UpdateTextPos();
+        }
+
+        private void UpdateTextPos()
+        {
+            var measuredSize = _font.MeasureString(_curText);
+            var diffX = (_backgroundRect.Width - measuredSize.X) / 2;
+            var diffY = (_backgroundRect.Height - _fontSize) / 2;
+            _textPosition = new Vector2(_backgroundRect.Left + diffX, _backgroundRect.Top + diffY);
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Begin();
             spriteBatch.Draw(_backgroundTexture, _backgroundRect, Color.White);
-            spriteBatch.DrawString(_font, _endState ? EndText : WaitText, 
-                _textPosition, Color.White, 0, Vector2.Zero, 
-                _fontScale, SpriteEffects.None, 1);
+            spriteBatch.DrawString(_font, _curText, 
+                _textPosition, Color.White, 0, _textOrigin, 
+                1, SpriteEffects.None, 1);
             spriteBatch.End();
         }
     }

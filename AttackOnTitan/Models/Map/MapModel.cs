@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
 
 namespace AttackOnTitan.Models
 {
-    public class MapModel
+    public class MapModel: IEnumerable<MapCellModel>
     {
         public readonly int ColumnsCount;
         public readonly int RowsCount;
@@ -16,15 +17,15 @@ namespace AttackOnTitan.Models
         public MapCellModel[] OuterGates;
         public MapCellModel[] InnerGates;
 
-        public MapModel(int columnsCount, int rowsCount, Dictionary<BuildingType, (int, int)[]> buildings)
+        public MapModel(int columnsCount, int rowsCount)
         {
             ColumnsCount = columnsCount;
             RowsCount = rowsCount;
 
-            InitializeMap(buildings);
+            InitializeMap();
         }
 
-        private void InitializeMap(Dictionary<BuildingType, (int, int)[]> buildings)
+        private void InitializeMap()
         {
             _mapCells = new MapCellModel[ColumnsCount, RowsCount];
             
@@ -32,6 +33,9 @@ namespace AttackOnTitan.Models
             {
                 ActionType = OutputActionType.InitializeMap,
                 MapCellInfo = new MapCellInfo(ColumnsCount, RowsCount)
+                {
+                    TextureName = MapTextures.SimpleHexagon
+                }
             });
 
             for (var x = 0; x < ColumnsCount; x++)
@@ -41,10 +45,17 @@ namespace AttackOnTitan.Models
             for (var x = 0; x < ColumnsCount; x++)
             for (var y = 0; y < RowsCount; y++)
                 _mapCells[x, y].ConnectWithNearCells(_mapCells, ColumnsCount, RowsCount);
+        }
 
+        public void InitializeBuildings(Dictionary<BuildingType, (int, int)[]> buildings)
+        {
             foreach (var (buildingType, buildingCoords) in buildings)
             foreach (var (x, y) in buildingCoords)
                 _mapCells[x, y].UpdateBuildingType(buildingType);
+            
+            if (buildings.TryGetValue(BuildingType.HiddenNone, out var hiddenBuildingsCoords))
+                foreach (var (x, y) in hiddenBuildingsCoords)
+                    SetHidden(_mapCells[x, y]);
 
             OuterGates = buildings[BuildingType.OuterGates]
                 .Select(coords => _mapCells[coords.Item1, coords.Item2])
@@ -55,14 +66,21 @@ namespace AttackOnTitan.Models
                 .ToArray();
         }
 
-        public static void SetHidden(MapCellModel mapCell)
+        private static void SetHidden(MapCellModel mapCell)
         {
-            GameModel.OutputActions.Enqueue(new OutputAction()
+            GameModel.OutputActions.Enqueue(new OutputAction
             {
                 ActionType = OutputActionType.SetCellHidden,
                 MapCellInfo = new MapCellInfo(mapCell.X, mapCell.Y)
             });
-            SetCellOpacity(mapCell, 0);
+            GameModel.OutputActions.Enqueue(new OutputAction
+            {
+                ActionType = OutputActionType.ChangeTextureOverCell,
+                MapCellInfo = new MapCellInfo(mapCell.X, mapCell.Y)
+                {
+                    TextureName = MapTextures.HexagonTextureNames[BuildingType.HiddenNone]
+                }
+            });
         }
         
         public static void SetUnselectedOpacity(MapCellModel mapCell) =>
@@ -83,5 +101,35 @@ namespace AttackOnTitan.Models
                     Opacity = opacity
                 }
             });
+
+        public static void SetHexTextureFor(IEnumerable<MapCellModel> mapCellModels, bool clear)
+        {
+            foreach (var mapCellModel in mapCellModels)
+            {
+                GameModel.OutputActions.Enqueue(new OutputAction
+                {
+                    ActionType = OutputActionType.ChangeTextureOverCell,
+                    MapCellInfo = new MapCellInfo(mapCellModel.X, mapCellModel.Y)
+                    {
+                        TextureName = clear ?
+                            MapTextures.SimpleHexagon :
+                            MapTextures.HexagonTextureNames[mapCellModel.BuildingType]
+                    }
+                });
+            }
+        }
+
+        public IEnumerator<MapCellModel> GetEnumerator()
+        {
+            if (_mapCells is null) yield break;
+            for (var x = 0; x < ColumnsCount; x++)
+            for (var y = 0; y < RowsCount; y++)
+                yield return this[x, y];
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
     }
 }

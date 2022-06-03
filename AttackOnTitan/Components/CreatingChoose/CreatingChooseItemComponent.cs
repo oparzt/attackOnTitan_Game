@@ -14,7 +14,7 @@ namespace AttackOnTitan.Components
         public CreatingInfo CreatingInfo;
 
         public SpriteFont Font;
-        public float FontScale;
+        public Vector2 TextOrigin;
         
         public string ObjectName;
         public Vector2 ObjectNamePosition;
@@ -71,7 +71,7 @@ namespace AttackOnTitan.Components
                 Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0);
             
             spriteBatch.DrawString(Font, ObjectName, ObjectNamePosition, 
-                Color.White, 0, Vector2.Zero, FontScale, SpriteEffects.None, 1);
+                Color.White, 0, TextOrigin, 1f, SpriteEffects.None, 1);
             
             spriteBatch.Draw(ObjectTexture, ObjectTextureRect, null,
                 Color.White, 0f, Vector2.Zero, SpriteEffects.None, 1);
@@ -85,7 +85,7 @@ namespace AttackOnTitan.Components
                 spriteBatch.DrawString(Font, objectResource.Item3, 
                     objectResource.Item5, 
                     NotAvailableResources.Contains(objectResource.Item1) ? Color.Red : Color.White, 0, 
-                    Vector2.Zero, FontScale, SpriteEffects.None, 1);
+                    TextOrigin, 1f, SpriteEffects.None, 1);
             }
 
             spriteBatch.End();

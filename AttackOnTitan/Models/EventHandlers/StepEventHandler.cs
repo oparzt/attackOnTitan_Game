@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Microsoft.Xna.Framework;
 
 namespace AttackOnTitan.Models
@@ -10,27 +11,57 @@ namespace AttackOnTitan.Models
         private readonly GameModel _gameModel;
         private int _step;
 
-        private Dictionary<int, Action> _wave = new ();
+        private Queue<(int, Action)> _wave = new ();
 
         public StepEventHandler(GameModel gameModel)
         {
             _gameModel = gameModel;
-            _wave[25] = () => _gameModel.CommandModel.CreateTitans(2);
-            _wave[32] = () => _gameModel.CommandModel.CreateTitans(3);
-            _wave[39] = () => _gameModel.CommandModel.CreateTitans(3);
-            _wave[44] = () => _gameModel.CommandModel.CreateTitans(3);
-            _wave[50] = () => _gameModel.CommandModel.CreateTitans(3);
-            _wave[52] = () => _gameModel.CommandModel.CreateTitans(3);
-            _wave[54] = () => _gameModel.CommandModel.CreateTitans(3);
-            _wave[60] = () => _gameModel.CommandModel.CreateTitans(4);
-            _wave[62] = () => _gameModel.CommandModel.CreateTitans(4);
-            _wave[64] = () => _gameModel.CommandModel.CreateTitans(4);
-            _wave[70] = () => _gameModel.CommandModel.CreateTitans(5);
-            _wave[72] = () => _gameModel.CommandModel.CreateTitans(5);
+            _wave.Enqueue((25, () => _gameModel.CommandModel.CreateTitans(2)));
+            _wave.Enqueue((32, () => _gameModel.CommandModel.CreateTitans(3)));
+            _wave.Enqueue((39, () => _gameModel.CommandModel.CreateTitans(3)));
+            _wave.Enqueue((44, () => _gameModel.CommandModel.CreateTitans(3)));
+            _wave.Enqueue((50, () => _gameModel.CommandModel.CreateTitans(3)));
+            _wave.Enqueue((52, () => _gameModel.CommandModel.CreateTitans(3)));
+            _wave.Enqueue((54, () => _gameModel.CommandModel.CreateTitans(3)));
+            _wave.Enqueue((60, () => _gameModel.CommandModel.CreateTitans(4)));
+            _wave.Enqueue((62, () => _gameModel.CommandModel.CreateTitans(4)));
+            _wave.Enqueue((64, () => _gameModel.CommandModel.CreateTitans(4)));
+            _wave.Enqueue((70, () => _gameModel.CommandModel.CreateTitans(5)));
+
+            for (var i = 72; i < 2000; i += 3)
+                _wave.Enqueue((i, () => _gameModel.CommandModel.CreateTitans(8)));
+            
+            UpdateStepCount();
+            HandleWave();
+        }
+
+        private void UpdateStepCount()
+        {
+            _step++;
+            var waveStr = _wave.TryPeek(out var wave) ? 
+                $" До следующей атаки {wave.Item1 - _step}" : 
+                string.Empty;
+
+            GameModel.OutputActions.Enqueue(new OutputAction
+            {
+                ActionType = OutputActionType.UpdateGameStepCount,
+                StepInfo = $"Ход {_step}.{waveStr}"
+            });
+        }
+
+        private void HandleWave()
+        {
+            if (!_wave.TryPeek(out var wave) || wave.Item1 != _step) return;
+            
+            wave.Item2();
+            _wave.Dequeue();
         }
 
         public void HandleStepBtnPressed(InputAction action)
         {
+            UpdateStepCount();
+            HandleWave();
+
             _gameModel.StepEnd = true;
             _gameModel.SelectedUnit?.SetUnselectedOpacity();
             _gameModel.PreselectedUnit?.SetUnselectedOpacity();
@@ -41,32 +72,29 @@ namespace AttackOnTitan.Models
             {
                 ActionType = OutputActionType.ChangeStepBtnState
             });
-           _gameModel.CommandModel.ClearCommandBar();
-           _gameModel.CommandModel.ClearCreatingChoose();
-           _step++;
-           GameModel.OutputActions.Enqueue(new OutputAction
-           {
-               ActionType = OutputActionType.UpdateGameStepCount,
-               StepCount = _step
-           });
-           _gameModel.EconomyModel.FillResource();
-
-           if (_wave.TryGetValue(_step, out var wave)) wave();
+            _gameModel.CommandModel.ClearCommandBar();
+            _gameModel.CommandModel.ClearCreatingChoose();
+            _gameModel.EconomyModel.FillResource();
            
-           var titans = _gameModel.Units.Values
-               .Where(unit => unit.UnitType == UnitType.Titan)
-               .ToArray();
-           
-           RestoreUnitsEnergy(_gameModel.Units.Values);
-           
-           CheckMapForBattles();
+            var titans = _gameModel.Units.Values
+            .Where(unit => unit.UnitType == UnitType.Titan)
+            .ToArray();
             
+            RestoreUnitsEnergy(_gameModel.Units.Values);
+           
+            CheckMapForBattles();
 
-            while (titans.Any(titan => titan.Energy > titan.GetEnergyCost()))
-                foreach (var titan in titans.Where(titan => titan.Energy > titan.GetEnergyCost()))
-                    _gameModel.TitanPath.TitanStep(titan);
+            while (titans.Any(titan => titan.Energy > titan.GetEnergyCost(TravelMode.TitanRun)))
+            {
+               foreach (var titan in titans.Where(titan => 
+                            titan.Energy > titan.GetEnergyCost(TravelMode.TitanRun)))
+                   _gameModel.TitanPath.TitanStep(titan);
+               
+               Thread.Sleep(1000);
+            }
             
             CheckMapForBattles();
+            CheckMapForDestroyBuildings();
             
             GameModel.InputActions.Enqueue(new InputAction
             {
@@ -76,15 +104,8 @@ namespace AttackOnTitan.Models
             {
                 ActionType = OutputActionType.ChangeStepBtnState
             });
-            
-            if (_gameModel.Units.Values
-                .Where(unit => unit.UnitType == UnitType.Titan)
-                .Any(unit => _gameModel.Map.InnerGates.Contains(unit.CurCell)))
-                GameModel.InputActions.Enqueue(new InputAction
-                {
-                    ActionType = InputActionType.GameOver,
-                    Win = false
-                });
+
+            CheckForTitanWin();
         }
 
         private void RestoreUnitsEnergy(IEnumerable<UnitModel> unitModels)
@@ -105,6 +126,32 @@ namespace AttackOnTitan.Models
                 .Where(mapCell => mapCell.GetAllUnitInCell(false).Any() && 
                     mapCell.GetAllUnitInCell(true).Any()))
                 _gameModel.CommandModel.AttackCommand(mapCell);
+        }
+
+        private void CheckMapForDestroyBuildings()
+        {
+            var mapCells = _gameModel.Units.Values
+                .Where(unit => unit.UnitType == UnitType.Titan)
+                .Where(titan => !MapCellModel.WallBuildingTypes.Contains(titan.CurCell.BuildingType))
+                .Select(titan => titan.CurCell)
+                .ToHashSet();
+
+            foreach (var mapCell in mapCells)
+                mapCell.UpdateBuildingType(BuildingType.None);
+            
+            _gameModel.EconomyModel.UpdateResourceSettings();
+        }
+
+        private void CheckForTitanWin()
+        {
+            if (_gameModel.Units.Values
+                .Where(unit => unit.UnitType == UnitType.Titan)
+                .Any(unit => _gameModel.Map.InnerGates.Contains(unit.CurCell)))
+                GameModel.InputActions.Enqueue(new InputAction
+                {
+                    ActionType = InputActionType.GameOver,
+                    Win = false
+                });
         }
     }
 }

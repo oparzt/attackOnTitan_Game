@@ -17,7 +17,6 @@ namespace AttackOnTitan.Components
         private Rectangle _destRect;
         private int _hitRadius;
         private float _opacity = 0.65f;
-        private IScene _scene;
         private string _textureName;
 
         // Сколько пикселей пройдет за одну миллисекунду;
@@ -36,11 +35,10 @@ namespace AttackOnTitan.Components
 
         private bool _isMove;
 
-        public UnitComponent(IScene scene, int id, string textureName, Rectangle destRect, int hitRadius)
+        public UnitComponent(int id, string textureName, Rectangle destRect, int hitRadius)
         {
             ID = id;
 
-            _scene = scene;
             _textureName = textureName;
             _destRect = destRect;
 
@@ -102,7 +100,7 @@ namespace AttackOnTitan.Components
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(_scene.Textures[_textureName], _destRect, null, 
+            spriteBatch.Draw(SceneManager.Textures[_textureName], _destRect, null, 
                 Color.White * _opacity, 0f, Vector2.Zero, 
                 SpriteEffects.None, 1f);
         }

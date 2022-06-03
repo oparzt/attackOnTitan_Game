@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
-
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Media;
@@ -14,6 +11,9 @@ namespace AttackOnTitan
     public class SceneManager : Game
     {
         public static GraphicsDeviceManager GraphicsMgr;
+        public static readonly Dictionary<string, Texture2D> Textures = new ();
+        public static readonly Dictionary<string, SpriteFont> Fonts = new ();
+        public static readonly Dictionary<SpriteFont, int> FontSizes = new ();
 
         public SceneManager()
         {
@@ -29,32 +29,30 @@ namespace AttackOnTitan
         {
             Window.Title = "Attack On Titan - Rebirth of Humanity";
             Window.IsBorderless = true;
-            //Window.BeginScreenDeviceChange(true);
             GraphicsMgr.PreferMultiSampling = true;
             GraphicsMgr.GraphicsDevice.PresentationParameters.MultiSampleCount = 8;
             GraphicsMgr.PreferredBackBufferWidth = GraphicsMgr.GraphicsDevice.DisplayMode.Width;
             GraphicsMgr.PreferredBackBufferHeight = GraphicsMgr.GraphicsDevice.DisplayMode.Height;
             GraphicsMgr.ApplyChanges();
-            //Window.EndScreenDeviceChange("Attack On Titan - Game",
-            //    _graphics.GraphicsDevice.DisplayMode.Width,
-            //    _graphics.GraphicsDevice.DisplayMode.Height);
-
 
             Components.Add(new StartScene(this));
             base.Initialize();
         }
 
-        protected override void LoadContent()
+        protected override void Dispose(bool disposing)
         {
-            // var song = Content.Load<Song>("Songs/BackgroundSong");
-            // MediaPlayer.Play(song);
-            // MediaPlayer.IsRepeating = true;
-            base.LoadContent();
+            Content.Unload();
+            base.Dispose(disposing);
         }
 
-        protected override void Update(GameTime gameTime)
+        protected override void LoadContent()
         {
-            base.Update(gameTime);
+            var song = Content.Load<Song>("Songs/BackgroundSong");
+            MediaPlayer.Play(song);
+            MediaPlayer.IsRepeating = true;
+            MediaPlayer.Volume = 0.15f;
+
+            base.LoadContent();
         }
 
         protected override void Draw(GameTime gameTime)

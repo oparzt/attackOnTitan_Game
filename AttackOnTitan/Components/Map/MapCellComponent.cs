@@ -14,8 +14,8 @@ namespace AttackOnTitan.Components
         public readonly int X;
         public readonly int Y;
 
-        private readonly Texture2D _hexagonTexture;
         private readonly Rectangle _hexagonRect;
+        private Texture2D _hexagonTexture;
         private Texture2D _houseTexture;
         private float _opacity = 0.3f;
 
@@ -36,10 +36,8 @@ namespace AttackOnTitan.Components
 
         public void SetHidden() => _hidden = true;
 
-        public void UpdateHouseTexture(Texture2D houseTexture)
-        {
-            _houseTexture = houseTexture;
-        }
+        public void UpdateHouseTexture(Texture2D houseTexture) => _houseTexture = houseTexture;
+        public void UpdateHexagonTexture(Texture2D hexagonTexture) => _hexagonTexture = hexagonTexture;
         
         public void ClearHouseTexture()
         {

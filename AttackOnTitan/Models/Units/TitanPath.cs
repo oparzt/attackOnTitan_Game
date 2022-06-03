@@ -13,7 +13,7 @@ namespace AttackOnTitan.Models
 
         public void TitanStep(UnitModel unitModel)
         {
-            unitModel.Energy -= unitModel.GetEnergyCost();
+            unitModel.Energy -= unitModel.GetEnergyCost(TravelMode.TitanRun);
 
             if (unitModel.TitanTargetType == TitanTargetType.None)
                 SetTitanTargetType(unitModel);
@@ -27,13 +27,14 @@ namespace AttackOnTitan.Models
                 unitModel.TitanTargetType = TitanTargetType.None;
             }
 
-            if (unitModel.TitanTarget == unitModel.CurCell)
+            if (unitModel.TitanTarget == unitModel.CurCell
+                || unitModel.CurCell.BuildingType == BuildingType.InnerGates
+                || MapCellModel.HousesBuildingTypes.Contains(unitModel.CurCell.BuildingType)
+                || unitModel.CurCell.GetAllUnitInCell(false).Any())
                 unitModel.Energy = 0;
-
-            CheckForDestroy(unitModel);
         }
 
-        public void TitanStepToTarget(UnitModel unitModel)
+        private void TitanStepToTarget(UnitModel unitModel)
         {
             var possibleNextCells = GetPossibleNearCellsPositions(unitModel);
 
@@ -48,23 +49,20 @@ namespace AttackOnTitan.Models
             InitMoveUnit(unitModel, nextCell, position);
         }
 
-        public void SetTitanTargetType(UnitModel unitModel) =>
-            unitModel.TitanTargetType = unitModel.CurCell.BuildingType == BuildingType.OuterNone ? 
-                TitanTargetType.OuterGate : 
-                unitModel.CurCell.NearCells.Keys.Any(cell => cell.GetAllUnitInCell(false).Any()) ?
+        private void SetTitanTargetType(UnitModel unitModel) =>
+            unitModel.TitanTargetType = unitModel.CurCell.NearCells.Keys.Any(cell => 
+                cell.GetAllUnitInCell(false).Any()) ?
                 TitanTargetType.Attack : 
                 TitanTargetType.InnerGate;
 
-        public void SetTitanTarget(UnitModel unitModel)
+        private void SetTitanTarget(UnitModel unitModel)
         {
-            unitModel.TitanTarget = unitModel.TitanTargetType == TitanTargetType.OuterGate ? 
-                _gameModel.Map.OuterGates[Random.Next(0, _gameModel.Map.OuterGates.Length)] :
-                unitModel.TitanTargetType == TitanTargetType.InnerGate ?
+            unitModel.TitanTarget = unitModel.TitanTargetType == TitanTargetType.InnerGate ?
                 _gameModel.Map.InnerGates[Random.Next(0, _gameModel.Map.InnerGates.Length)] :
                 unitModel.CurCell.NearCells.Keys.First(cell => cell.GetAllUnitInCell(false).Any());
         }
         
-        public MapCellModel[] GetPossibleNearCellsPositions(UnitModel unitModel)
+        private MapCellModel[] GetPossibleNearCellsPositions(UnitModel unitModel)
         {
             return unitModel.CurCell.NearCells.Keys
                 .Where(cell => 
@@ -80,24 +78,8 @@ namespace AttackOnTitan.Models
                             0 : Math.Sqrt(diffX * diffX + diffY * diffY);
                     }
                 )
-                .TakeWhile((pair, pairIndex) => pairIndex < 2)
+                .Take(2)
                 .ToArray();
-        }
-
-        private void CheckForDestroy(UnitModel unitModel)
-        {
-            if (!MapCellModel.HousesBuildingTypes.Contains(unitModel.CurCell.BuildingType)) return;
-            
-            var cell = unitModel.CurCell;
-            _gameModel.EconomyModel.UpdateResourceSettings(new Dictionary<ResourceType, float>(),
-                BuildingEconomyModel.StepCountDiff[cell.BuildingType], 
-                BuildingEconomyModel.LimitDiff[cell.BuildingType], 
-                true);
-            cell.UpdateBuildingType(cell.NearCells.Keys.Any(nearCell => 
-                MapCellModel.HousesBuildingTypes.Contains(nearCell.BuildingType)) ? 
-                BuildingType.BetweenHousesNone : 
-                BuildingType.None);
-            unitModel.Energy = 0;
         }
         
         private void InitMoveUnit(UnitModel unitModel, MapCellModel mapCellModel, Position position)

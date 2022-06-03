@@ -11,8 +11,6 @@ namespace AttackOnTitan.Components
 {
     public class CreatingChooseComponent
     {
-        private readonly IScene _scene;
-        
         private readonly int _viewportWidth;
         private readonly int _viewportHeight;
 
@@ -20,10 +18,11 @@ namespace AttackOnTitan.Components
         private Dictionary<ResourceType, Texture2D> _resourceTextures;
         private Texture2D _backgroundTexture;
         private SpriteFont _font;
+        private int _fontSize;
+        private Vector2 _textOrigin;
 
-        public CreatingChooseComponent(IScene parent, int viewportWidth, int viewportHeight)
+        public CreatingChooseComponent(int viewportWidth, int viewportHeight)
         {
-            _scene = parent;
             _viewportWidth = viewportWidth;
             _viewportHeight = viewportHeight;
         }
@@ -32,10 +31,16 @@ namespace AttackOnTitan.Components
         {
             var creatingInfo = action.OutputCreatingInfo;
             _resourceTextures = creatingInfo.ResourceTexturesName
-                .Select(pair => new KeyValuePair<ResourceType, Texture2D>(pair.Key, _scene.Textures[pair.Value]))
+                .Select(pair => new KeyValuePair<ResourceType, Texture2D>(pair.Key, SceneManager.Textures[pair.Value]))
                 .ToDictionary(pair => pair.Key, pair => pair.Value);
-            _backgroundTexture = _scene.Textures[creatingInfo.BackgroundTextureName];
-            _font = _scene.Fonts["Medium"];
+            _backgroundTexture = SceneManager.Textures[creatingInfo.BackgroundTextureName];
+        }
+
+        public void SetFont(SpriteFont font, int fontSize, Vector2 origin)
+        {
+            _font = font;
+            _fontSize = fontSize;
+            _textOrigin = origin;
         }
 
         public void UpdateBuildings(OutputAction action)
@@ -68,12 +73,12 @@ namespace AttackOnTitan.Components
                     CreatingInfo = creatingInfos[i],
                     
                     Font = _font,
-                    FontScale = 0.24f,
+                    TextOrigin = _textOrigin,
                     
                     ObjectName = creatingInfos[i].ObjectName,
                     ObjectNamePosition = new Vector2(curX + 10, curY + 160),
                     
-                    ObjectTexture = _scene.Textures[creatingInfos[i].ObjectTextureName],
+                    ObjectTexture = SceneManager.Textures[creatingInfos[i].ObjectTextureName],
                     ObjectTextureRect = objectTextureRect,
                     
                     BackgroundTexture = _backgroundTexture,
@@ -82,10 +87,14 @@ namespace AttackOnTitan.Components
                         new Point(backgroundWidth, cardHeight)),
                     
                     ObjectResources = creatingInfos[i].ObjectResourceDescription
-                        .Select((pair, pairIndex) => (pair.Item1,
-                            _resourceTextures[pair.Item1], pair.Item2, 
-                            new Rectangle(curX + 10, curY + 200 + 35 * pairIndex, 30, 30),
-                            new Vector2(curX + 50, curY + 203 + 35 * pairIndex)))
+                        .Select((pair, pairIndex) =>
+                        {
+                            var textureRect = new Rectangle(curX + 10, curY + 200 + 35 * pairIndex, 30, 30);
+                            var textPos = new Vector2(curX + 50, curY + 200 + (30 - _fontSize) / 2 + 35 * pairIndex);
+                            return (pair.Item1,
+                                _resourceTextures[pair.Item1], pair.Item2,
+                                textureRect, textPos);
+                        })
                         .ToArray(),
                     NotAvailableResources = creatingInfos[i].NotAvailableResource
                 });

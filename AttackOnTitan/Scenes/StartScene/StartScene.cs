@@ -1,57 +1,36 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-
+using System.Net.Mime;
+using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-using SpriteFontPlus;
-
 using AttackOnTitan.Components;
-
 
 namespace AttackOnTitan.Scenes
 {
-   
-
-    public class StartScene : DrawableGameComponent, IScene
+    public class StartScene : DrawableGameComponent
     {
-        public Dictionary<string, Texture2D> Textures { get; }
-        public Dictionary<string, SpriteFont> Fonts { get; }
-        public SpriteBatch Sprite { get; private set; }
-        public List<IComponent> Components { get; }
+        private SpriteBatch _sprite;
+        private readonly List<IComponent> _components = new();
 
-        private CharacterRange[] _characterRanges = new CharacterRange[]
-        {
-            CharacterRange.BasicLatin,
-            CharacterRange.Cyrillic
-        };
-
-
-        public StartScene(Game game) : base(game)
-        {
-            Textures = new();
-            Fonts = new();
-            Components = new();
-        }
+        public StartScene(Game game) : base(game) {}
 
         public override void Initialize()
         {
             var device = SceneManager.GraphicsMgr.GraphicsDevice;
 
-            var startBtn = new SimpleButton(this, "Medium", "Играть",
-                new Vector2(50, device.Viewport.Height - 250),
-                new Rectangle(45, device.Viewport.Height - 260, 90, 50),
-                Color.White);
-            var settingsBtn = new SimpleButton(this, "Medium", "Настройки",
+            var startBtn = new SimpleButton("Играть",
                 new Vector2(50, device.Viewport.Height - 200),
-                new Rectangle(45, device.Viewport.Height - 210, 90, 50),
                 Color.White);
-            var exitBtn = new SimpleButton(this, "Medium", "Выход",
+            // var settingsBtn = new SimpleButton("Настройки",
+            //     new Vector2(50, device.Viewport.Height - 200),
+            //     Color.White);
+            var exitBtn = new SimpleButton("Выход",
                 new Vector2(50, device.Viewport.Height - 150),
-                new Rectangle(45, device.Viewport.Height - 160, 90, 50),
                 Color.White);
 
             startBtn.OnClick += () =>
@@ -61,21 +40,35 @@ namespace AttackOnTitan.Scenes
             };
             exitBtn.OnClick += () => Game.Exit();
 
-            Components.Add(startBtn);
-            Components.Add(settingsBtn);
-            Components.Add(exitBtn);
+            _components.Add(startBtn);
+            // _components.Add(settingsBtn);
+            _components.Add(exitBtn);
 
             base.Initialize();
         }
 
         protected override void LoadContent()
         {
-            var device = SceneManager.GraphicsMgr.GraphicsDevice;
-            Sprite = new SpriteBatch(Game.GraphicsDevice);
+            const string fontName = "Medium-18";
+            _sprite = new SpriteBatch(Game.GraphicsDevice);
 
-            Textures["Background"] = Game.Content.Load<Texture2D>("Textures/startBackground");
-            Fonts["Medium"] = TtfFontBaker.Bake(File.OpenRead("TTFFonts/OpenSans-Medium.ttf"),
-                30, 2048, 2048, _characterRanges).CreateSpriteFont(device);
+            if (!SceneManager.Textures.ContainsKey("Background"))
+                SceneManager.Textures["Background"] = Game.Content.Load<Texture2D>("Textures/startBackground");
+            if (!SceneManager.Fonts.ContainsKey(fontName))
+            {
+                SceneManager.Fonts[fontName] = Game.Content.Load<SpriteFont>("Fonts/OpenSans-Medium-18");
+                SceneManager.FontSizes[SceneManager.Fonts[fontName]] = 18;
+            }
+
+            foreach (var component in _components)
+            {
+                var font = SceneManager.Fonts[fontName];
+                var fontSize = SceneManager.FontSizes[font];
+                var lineHeight = font.LineSpacing;
+                var origin = new Vector2(0, (lineHeight - fontSize) / 2f);
+                
+                component.SetFont(font, origin);
+            }
 
             base.LoadContent();
         }
@@ -84,7 +77,7 @@ namespace AttackOnTitan.Scenes
         {
             var mouseState = Mouse.GetState();
 
-            foreach (var component in Components)
+            foreach (var component in _components)
                 component.Update(gameTime, mouseState);
 
             base.Update(gameTime);
@@ -93,11 +86,11 @@ namespace AttackOnTitan.Scenes
         public override void Draw(GameTime gameTime)
         {
             var device = SceneManager.GraphicsMgr.GraphicsDevice;
-            Sprite.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
-            Sprite.Draw(Textures["Background"], device.ScissorRectangle, Color.White);
-            foreach (var component in Components)
-                component.Draw(Sprite);
-            Sprite.End();
+            _sprite.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
+            _sprite.Draw(SceneManager.Textures["Background"], device.ScissorRectangle, Color.White);
+            foreach (var component in _components)
+                component.Draw(_sprite);
+            _sprite.End();
 
             base.Draw(gameTime);
         }

@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace AttackOnTitan.Scenes
 {
-    public class StoryScene: DrawableGameComponent, IScene
+    public class StoryScene: DrawableGameComponent
     {
         public Dictionary<string, Texture2D> Textures { get; }
         public Dictionary<string, SpriteFont> Fonts { get; }
@@ -14,6 +14,7 @@ namespace AttackOnTitan.Scenes
         private SpriteBatch Sprite { get; set; }
 
         private int _curPage = 1;
+        private const int PagesCount = 19;
         private Keys _lastKey = Keys.None;
         
         public StoryScene(Game game) : base(game)
@@ -27,8 +28,9 @@ namespace AttackOnTitan.Scenes
             var device = SceneManager.GraphicsMgr.GraphicsDevice;
             Sprite = new SpriteBatch(Game.GraphicsDevice);
 
-            for (var i = 1; i < 19; i++)
-                Textures[$"Page{i}"] = Game.Content.Load<Texture2D>($"Textures/Page{i}");
+            for (var i = 1; i <= PagesCount; i++)
+                if (!SceneManager.Textures.ContainsKey($"Page{i}"))
+                    Textures[$"Page{i}"] = Game.Content.Load<Texture2D>($"Textures/Page{i}");
             
             base.LoadContent();
         }
@@ -39,14 +41,21 @@ namespace AttackOnTitan.Scenes
             var keyboardPressed = keyboardState.GetPressedKeys();
             var keyPressed = keyboardPressed.Length == 0 ? Keys.None : keyboardPressed[0];
 
-            if (keyPressed != _lastKey && keyPressed == Keys.Enter)
+            if (_lastKey == Keys.None)
             {
-                if (_curPage + 1 == 19)
+                switch (keyPressed)
                 {
-                    Game.Components.Add(new LevelScene(Game));
-                    Game.Components.Remove(this);
-                } else
-                    _curPage++;
+                    case Keys.Enter:
+                        Game.Components.Add(new LevelScene(Game));
+                        Game.Components.Remove(this);
+                        break;
+                    case Keys.Right:
+                        if (_curPage < PagesCount) _curPage++;
+                        break;
+                    case Keys.Left:
+                        if (_curPage > 1) _curPage--;
+                        break;
+                }
             }
 
             _lastKey = keyPressed;

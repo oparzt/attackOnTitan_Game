@@ -13,6 +13,7 @@ namespace AttackOnTitan.Models
 
         InitializeMap,
         ChangeTextureIntoCell,
+        ChangeTextureOverCell,
         ClearTextureIntoCell,
         ChangeCellOpacity,
         SetCellHidden,
@@ -45,7 +46,7 @@ namespace AttackOnTitan.Models
     {
         public OutputActionType ActionType;
 
-        public int StepCount;
+        public string StepInfo;
         public bool Win;
         public UnitInfo UnitInfo;
         public string[] UnitStatus;
@@ -111,11 +112,11 @@ namespace AttackOnTitan.Models
         public readonly bool IsAvailable;
         public readonly string TextureName;
 
-        public OutputCommandInfo(CommandType commandType, bool isAvailable, string textureName)
+        public OutputCommandInfo(CommandType commandType, bool isAvailable)
         {
             CommandType = commandType;
             IsAvailable = isAvailable;
-            TextureName = textureName;
+            TextureName = CommandTextures.CommandTexturesNames[commandType];
         }
     }
 
