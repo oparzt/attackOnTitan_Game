@@ -75,8 +75,9 @@ namespace AttackOnTitan.Models
                                 GasCost = path.GasCost + _unit.GetGasCost(travelMode),
                                 IsEnemyCell = isEnemyInCell
                             });
-                    return null;
+                    return Enumerable.Empty<DijkstraPath>();
                 })
+                .Where(curPath => curPath is not null)
                 .Where(curPath => _unit.IsExistTravel(curPath.EnergyCost, curPath.GasCost));
         }
     }

@@ -269,7 +269,8 @@ namespace AttackOnTitan.Models
                 }
                 else
                 {
-                    var cell = mapCellModel.NearCells.Keys.First(cell => cell.IsExistEmptyPositionInCell());
+                    var cell = mapCellModel.NearCells.Keys.FirstOrDefault(cell => cell.IsExistEmptyPositionInCell());
+                    if (cell is null) continue;
                     var position = mapCellModel.MoveUnitToTheCell(unitModel);
                     _gameModel.UnitPath.InitMoveUnit(unitModel, cell.X, cell.Y, position);
                 }
