@@ -47,10 +47,10 @@ namespace AttackOnTitan
 
         protected override void LoadContent()
         {
-            // var song = Content.Load<Song>("Songs/BackgroundSong");
-            // MediaPlayer.Play(song);
-            // MediaPlayer.IsRepeating = true;
-            // MediaPlayer.Volume = 0.15f;
+            var song = Content.Load<Song>("Songs/BackgroundSong");
+            MediaPlayer.Play(song);
+            MediaPlayer.IsRepeating = true;
+            MediaPlayer.Volume = 0.15f;
 
             base.LoadContent();
         }
