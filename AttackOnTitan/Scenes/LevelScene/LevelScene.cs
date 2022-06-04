@@ -70,6 +70,7 @@ namespace AttackOnTitan.Scenes
             {
                 Game.Components.Add(new EndScene(Game, action.Win));
                 Game.Components.Remove(this);
+                Dispose();
             };
             _commandsActions[OutputActionType.UpdateGameStepCount] = _topBarComponent.UpdateStepCount;
 

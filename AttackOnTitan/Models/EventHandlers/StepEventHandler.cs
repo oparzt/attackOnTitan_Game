@@ -65,6 +65,8 @@ namespace AttackOnTitan.Models
             _gameModel.StepEnd = true;
             _gameModel.SelectedUnit?.SetUnselectedOpacity();
             _gameModel.PreselectedUnit?.SetUnselectedOpacity();
+            if (_gameModel.PreSelectedMapCellModel is not null)
+                MapModel.SetUnselectedOpacity(_gameModel.PreSelectedMapCellModel);
             _gameModel.SelectedUnit = null;
             _gameModel.PreselectedUnit = null;
             _gameModel.UnitPath.SetUnit(null);

@@ -35,6 +35,7 @@ namespace AttackOnTitan.Models
 
         public UnitModel PreselectedUnit;
         public UnitModel SelectedUnit;
+        public MapCellModel PreSelectedMapCellModel;
         public readonly UnitPath UnitPath;
         public readonly TitanPath TitanPath;
         public readonly PathFinder PathFinder;
